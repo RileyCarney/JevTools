@@ -23,3 +23,10 @@
     node_modules/
     scratch/
     *.log
+
+    # Secrets & Environment Variables
+    .env
+    .env.*
+    !.env.example  # (Optional: allows committing a safe template file)
+    *.pem
+    secrets.json
