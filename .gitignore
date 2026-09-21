@@ -1,0 +1,25 @@
+    # ============================================
+    # Riley Carney - Git Ignore 9.20.2026
+    # ============================================
+
+    # Operating System Files
+    .DS_Store
+    .DS_Store?
+    ._*
+    .Spotlight-V100
+    .Trashes
+    ehthumbs.db
+    Thumbs.db
+    desktop.ini
+
+    # Editor & IDE Directories
+    .vscode/
+    .idea/
+    *.swp
+    *.swo
+    *~
+
+    # Node / Scratch / Temp
+    node_modules/
+    scratch/
+    *.log
