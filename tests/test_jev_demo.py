@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+test_jev_demo.py - Comprehensive unit test suite for jev_demo.py and server helpers.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import sys
+import unittest
+
+# Ensure parent directory is in path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PARENT_DIR = os.path.dirname(CURRENT_DIR)
+if PARENT_DIR not in sys.path:
+    sys.path.insert(0, PARENT_DIR)
+
+import jev_demo
+
+
+class TestJevDemoExtraction(unittest.TestCase):
+    """Test safe extraction helpers for Noul, Score, and Choice primitives."""
+
+    def test_extract_noul_dict(self):
+        self.assertAlmostEqual(jev_demo.extract_noul({"noul": 0.85}), 0.85)
+        self.assertAlmostEqual(jev_demo.extract_noul({"value": 0.42}), 0.42)
+        self.assertAlmostEqual(jev_demo.extract_noul({"probability": 0.99}), 0.99)
+
+    def test_extract_noul_scalar_and_clamping(self):
+        self.assertAlmostEqual(jev_demo.extract_noul(0.7), 0.7)
+        self.assertAlmostEqual(jev_demo.extract_noul("0.65"), 0.65)
+        self.assertEqual(jev_demo.extract_noul(1.5), 1.0)
+        self.assertEqual(jev_demo.extract_noul(-0.5), 0.0)
+        self.assertEqual(jev_demo.extract_noul("invalid"), 0.0)
+
+    def test_extract_score_dict(self):
+        raw, norm, probs, conf = jev_demo.extract_score(
+            {"score": 2.0, "probabilities": [0.1, 0.2, 0.7], "confidence": 0.9},
+            max_score=2.0
+        )
+        self.assertEqual(raw, 2.0)
+        self.assertEqual(norm, 1.0)
+        self.assertEqual(len(probs), 3)
+        self.assertEqual(conf, 0.9)
+
+    def test_extract_choice_dict(self):
+        choice, conf, probs = jev_demo.extract_choice(
+            {"choice": "delighted", "confidence": 0.95, "probabilities": {"delighted": 0.95, "calm": 0.05}}
+        )
+        self.assertEqual(choice, "delighted")
+        self.assertEqual(conf, 0.95)
+        self.assertIn("delighted", probs)
+
+
+class TestJevDemoProviderConfig(unittest.TestCase):
+    """Test API key resolution and provider configuration."""
+
+    def test_mask_key(self):
+        self.assertEqual(jev_demo.mask_key(""), "[NOT SET]")
+        self.assertEqual(jev_demo.mask_key("mock-key-for-testing"), "[MOCK MODE - NO KEY USED]")
+        self.assertEqual(jev_demo.mask_key("sk-or-v1-abcdef0123456789xyz"), "sk-...")
+        self.assertEqual(jev_demo.mask_key("sk-test1234"), "sk-...")
+        self.assertEqual(jev_demo.mask_key("ts-abcdef0123456789"), "ts-...")
+
+    def test_provider_heuristics(self):
+        prov1, ep1, mdl1 = jev_demo.get_provider_config("sk-or-v1-testkey")
+        self.assertEqual(prov1, "openrouter")
+        self.assertIn("openrouter.ai", ep1)
+
+        prov2, ep2, mdl2 = jev_demo.get_provider_config("ts-testkey")
+        self.assertEqual(prov2, "typesafe")
+        self.assertIn("typesafe.ai", ep2)
+
+
+class TestJevDemoReviewPipeline(unittest.TestCase):
+    """Test customer review speculative fan-out in mock mode."""
+
+    def test_review_enthusiast(self):
+        rev = jev_demo.REVIEW_CASES[0][0]
+        prod = jev_demo.REVIEW_CASES[0][1]
+        res = jev_demo.analyze_review("mock", rev, prod, mock=True)
+        self.assertGreater(res.overall_sentiment, 0.8)
+        self.assertGreater(res.would_recommend, 0.9)
+        self.assertLess(res.mentions_defect, 0.1)
+        self.assertIn("[POSITIVE]", res.action)
+        self.assertIsInstance(res.to_dict(), dict)
+
+    def test_review_defect_escalation(self):
+        rev = jev_demo.REVIEW_CASES[1][0]
+        prod = jev_demo.REVIEW_CASES[1][1]
+        res = jev_demo.analyze_review("mock", rev, prod, mock=True)
+        self.assertGreater(res.mentions_defect, 0.75)
+        self.assertIn("[ESCALATE]", res.action)
+
+    def test_review_ambiguous_routing(self):
+        rev = jev_demo.REVIEW_CASES[3][0] # "ok"
+        prod = jev_demo.REVIEW_CASES[3][1]
+        res = jev_demo.analyze_review("mock", rev, prod, mock=True)
+        self.assertLess(res.emotion_confidence, 0.5)
+        self.assertIn("[FLAG]", res.action)
+
+
+class TestJevDemoTopicPipeline(unittest.TestCase):
+    """Test topic classification in mock mode."""
+
+    def test_topic_technology(self):
+        para = jev_demo.TOPIC_CASES[0] # Transformer LLMs
+        res = jev_demo.classify_topic("mock", para, mock=True)
+        self.assertEqual(res.primary_topic, "technology")
+        self.assertGreater(res.topic_confidence, 0.8)
+        self.assertIn("[TECHNICAL: TECHNOLOGY]", res.routing_suggestion)
+        self.assertIsInstance(res.to_dict(), dict)
+
+    def test_topic_editorial_health(self):
+        para = jev_demo.TOPIC_CASES[1] # Screen time opinion
+        res = jev_demo.classify_topic("mock", para, mock=True)
+        self.assertEqual(res.primary_topic, "health")
+        self.assertGreater(res.is_opinion, 0.8)
+        self.assertIn("[EDITORIAL: HEALTH]", res.routing_suggestion)
+
+
+class TestJevDemoCustomPlayground(unittest.TestCase):
+    """Test arbitrary custom questions evaluation."""
+
+    def test_custom_decision(self):
+        state = {"user": "Alice", "query": "Cancel my order"}
+        questions = {
+            "wants_cancel": {"type": "noul", "instructions": "Does query request order cancellation?"},
+            "category": {"type": "choice", "criteria": {"cancel": "Cancel", "help": "Help"}}
+        }
+        res = jev_demo.evaluate_custom_decision("mock", state, questions, mock=True)
+        self.assertIn("answers", res)
+        self.assertIn("wants_cancel", res["answers"])
+        self.assertIn("metadata", res)
+        self.assertEqual(res["metadata"]["question_count"], 2)
+
+
+class TestJevDemoCLI(unittest.TestCase):
+    """Test CLI execution and JSON formatting."""
+
+    def test_cli_mock_json(self):
+        cmd = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--mock", "--demo", "reviews", "--json"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        self.assertIn("reviews", data)
+        self.assertEqual(len(data["reviews"]), 5)
+
+    def test_cli_custom_review(self):
+        cmd = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--mock", "--review", "Best earbuds ever!", "--json"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        self.assertIn("overall_sentiment", data)
+        self.assertIn("composite_score", data)
+
+    def test_cli_custom_topic(self):
+        cmd = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--mock", "--topic", "The president signed new legislation.", "--json"]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        data = json.loads(result.stdout)
+        self.assertIn("primary_topic", data)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)

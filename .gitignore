@@ -1,32 +1,34 @@
-    # ============================================
-    # Riley Carney - Git Ignore 9.20.2026
-    # ============================================
+# ============================================
+# Riley Carney - Git Ignore 9.20.2026
+# ============================================
 
-    # Operating System Files
-    .DS_Store
-    .DS_Store?
-    ._*
-    .Spotlight-V100
-    .Trashes
-    ehthumbs.db
-    Thumbs.db
-    desktop.ini
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
 
-    # Editor & IDE Directories
-    .vscode/
-    .idea/
-    *.swp
-    *.swo
-    *~
+# Editor & IDE Directories
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
-    # Node / Scratch / Temp
-    node_modules/
-    scratch/
-    *.log
+# Node / Scratch / Temp / Python
+node_modules/
+scratch/
+*.log
+__pycache__/
+*.py[cod]
 
-    # Secrets & Environment Variables
-    .env
-    .env.*
-    !.env.example  # (Optional: allows committing a safe template file)
-    *.pem
-    secrets.json
+# Secrets & Environment Variables
+.env
+.env.*
+!.env.example  # (Optional: allows committing a safe template file)
+*.pem
+secrets.json

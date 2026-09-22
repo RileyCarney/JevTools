@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 494" width="960" height="494">
+  <defs>
+    <!-- Frame Gradient: Dark Blue to Electric Purple -->
+    <linearGradient id="jev-frame-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0a1329" />
+      <stop offset="32%" stop-color="#1e2c88" />
+      <stop offset="70%" stop-color="#7b2cbf" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+
+    <!-- Background Gradient: Dark Blue -> Deep Indigo -> Rich Purple -->
+    <linearGradient id="jev-banner-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#070e24" />
+      <stop offset="25%" stop-color="#0f347a" />
+      <stop offset="52%" stop-color="#1e2c88" />
+      <stop offset="78%" stop-color="#4c1d95" />
+      <stop offset="100%" stop-color="#6b21a8" />
+    </linearGradient>
+
+    <!-- 3D Shadow Extrusion Gradient -->
+    <linearGradient id="jev-extrude-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#732ba6" />
+      <stop offset="100%" stop-color="#4c1d95" />
+    </linearGradient>
+
+    <!-- Filter for subtle drop glow -->
+    <filter id="purple-glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#8b5cf6" flood-opacity="0.8" />
+    </filter>
+
+    <style>
+      .circuit-line {
+        stroke: #000000;
+        stroke-width: 4.5;
+        stroke-linecap: square;
+        stroke-linejoin: miter;
+        fill: none;
+      }
+      .circuit-node {
+        fill: #000000;
+      }
+      .jev-text-shadow {
+        font-family: 'Impact', 'Arial Black', 'Trebuchet MS', sans-serif;
+        font-weight: 900;
+        font-size: 215px;
+        letter-spacing: 5px;
+        fill: #581c87;
+        stroke: #000000;
+        stroke-width: 14;
+        stroke-linejoin: round;
+      }
+      .jev-text-face {
+        font-family: 'Impact', 'Arial Black', 'Trebuchet MS', sans-serif;
+        font-weight: 900;
+        font-size: 215px;
+        letter-spacing: 5px;
+        fill: #ffffff;
+        stroke: #000000;
+        stroke-width: 10;
+        stroke-linejoin: round;
+      }
+    </style>
+  </defs>
+
+  <!-- Outer Dark Blue to Purple Transition Frame -->
+  <rect x="0" y="0" width="960" height="494" fill="url(#jev-frame-grad)" />
+  
+  <!-- Inner Black Margin -->
+  <rect x="4" y="4" width="952" height="486" fill="#000000" />
+  
+  <!-- Main Blue-Indigo-Purple Gradient Field -->
+  <rect x="10" y="10" width="940" height="474" fill="url(#jev-banner-grad)" />
+
+  <!-- PCB Circuit Board Geometric Traces -->
+  <g class="circuit-line">
+    <!-- Left Region (Dark to Electric Blue) -->
+    <path d="M 10 70 L 130 70 L 130 130 L 190 130 L 190 40 L 290 40" />
+    <path d="M 10 120 L 70 120 L 70 360 L 130 360 L 130 440 L 80 440 L 80 484" />
+    <path d="M 10 240 L 40 240 L 40 400 L 100 400 L 100 484" />
+    <path d="M 10 170 L 100 170 L 100 230 L 120 230 L 120 310 L 170 310" />
+    <path d="M 10 300 L 40 300 L 40 340 L 10 340" />
+    <path d="M 140 484 L 140 410 L 210 410 L 210 484" />
+    <path d="M 180 484 L 180 445 L 240 445 L 270 415 L 270 380" />
+    <path d="M 230 484 L 230 450 L 290 390 L 330 390 L 330 484" />
+
+    <!-- Top & Middle Traces -->
+    <path d="M 250 10 L 250 60 L 290 60 L 290 110 L 350 110 L 380 80 L 380 10" />
+    <path d="M 330 10 L 330 40 L 420 40 L 420 80 L 460 80 L 460 10" />
+    <path d="M 400 10 L 400 50 L 510 50 L 510 110 L 560 110 L 590 80 L 590 10" />
+    <path d="M 490 10 L 490 30 L 550 30 L 550 70 L 650 70 L 680 40 L 680 10" />
+
+    <!-- Bottom Center Traces -->
+    <path d="M 360 484 L 360 440 L 440 360 L 530 360 L 580 410 L 580 484" />
+    <path d="M 410 484 L 410 450 L 470 390 L 510 390 L 550 430 L 550 484" />
+    <path d="M 460 484 L 490 454 L 490 414 L 520 414 L 520 484" />
+    <path d="M 610 484 L 610 430 L 660 380 L 710 380 L 740 410 L 740 484" />
+
+    <!-- Right Region (Deep Violet / Plum) -->
+    <path d="M 720 10 L 720 60 L 770 110 L 820 110 L 820 40 L 870 40 L 870 10" />
+    <path d="M 790 10 L 790 50 L 840 100 L 910 100 L 910 40 L 950 40" />
+    <path d="M 950 100 L 880 100 L 880 160 L 920 160 L 920 220 L 950 220" />
+    <path d="M 950 160 L 930 160 L 930 290 L 880 290 L 880 210 L 820 210" />
+    <path d="M 950 270 L 910 270 L 910 340 L 950 340" />
+    <path d="M 950 380 L 900 380 L 860 420 L 860 484" />
+    <path d="M 950 430 L 920 430 L 920 484" />
+    <path d="M 800 484 L 800 450 L 760 410 L 760 360 L 810 310 L 870 310 L 870 350 L 910 390 L 910 460 L 890 484" />
+  </g>
+
+  <!-- JEVTOOLS Wordmark with 3D Extrusion -->
+  <!-- 3D Shadow layers for smooth extrusion effect -->
+  <text x="85" y="328" class="jev-text-shadow" dx="14" dy="14">JEVTOOLS</text>
+  <text x="85" y="328" class="jev-text-shadow" dx="10" dy="10">JEVTOOLS</text>
+  <text x="85" y="328" class="jev-text-shadow" dx="6" dy="6">JEVTOOLS</text>
+
+  <!-- Front White Lettering with Bold Black Border -->
+  <text x="85" y="328" class="jev-text-face">JEVTOOLS</text>
+
+  <!-- Circular GitHub Octocat Badge at Bottom Right near S -->
+  <g transform="translate(816, 350)">
+    <!-- Outer Black Frame Ring -->
+    <circle cx="0" cy="0" r="54" fill="#000000" />
+    <!-- Deep Plum Inner Circle -->
+    <circle cx="0" cy="0" r="50" fill="#2d0b47" stroke="#10051c" stroke-width="4" />
+    <!-- Solid Black Octocat Silhouette Backing -->
+    <circle cx="0" cy="0" r="43" fill="#000000" />
+    <!-- GitHub Octocat Silhouette in rich purple/indigo -->
+    <g transform="translate(-32, -32) scale(2.66)">
+      <path fill="#7b2cbf" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+    </g>
+  </g>
+</svg>

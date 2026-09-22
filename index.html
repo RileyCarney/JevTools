@@ -1,0 +1,3052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JevTools // System One Cockpit</title>
+
+    <!-- Brand Favicons & App Icons -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="assets/icon.png">
+    <link rel="shortcut icon" href="assets/favicon.ico">
+
+    <!-- OpenGraph & Twitter Social Preview matching GitHub Repository Banner -->
+    <meta property="og:title" content="JevTools // System One Cockpit">
+    <meta property="og:description" content="Sub-second typed semantic judgments & calibrated probability distributions via OpenRouter and TypeSafe System One.">
+    <meta property="og:image" content="https://repository-images.githubusercontent.com/1379027574/d9770636-5e32-4332-a030-72d119b8227f">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://repository-images.githubusercontent.com/1379027574/d9770636-5e32-4332-a030-72d119b8227f">
+    <meta name="theme-color" content="#0a1329">
+
+    <style>
+        :root {
+            /* Color Scheme: Purple, White, Black, Dark Blue (with Dark Blue to Purple Transitions) */
+            --dark-blue-deep: #050b1a;
+            --dark-blue: #0a1329;
+            --dark-blue-surface: #0f1c3f;
+            --dark-blue-glow: rgba(15, 28, 63, 0.6);
+
+            --brand-blue: #0f4bb5;
+            --brand-blue-glow: rgba(15, 75, 181, 0.45);
+            --brand-indigo: #232f8a;
+            --brand-purple: #7b2cbf;
+            --brand-purple-light: #a855f7;
+            --brand-purple-glow: rgba(123, 44, 191, 0.5);
+            --brand-shadow: #6c2ea9;
+            --brand-shadow-glow: rgba(108, 46, 169, 0.5);
+
+            /* No Red - mapped to vibrant purple and purple glow */
+            --brand-red: #8b5cf6;
+            --brand-red-glow: rgba(139, 92, 246, 0.45);
+
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.45);
+            --secondary: #7b2cbf;
+            --secondary-glow: rgba(123, 44, 191, 0.4);
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --success: #c084fc;
+            --danger: #c084fc;
+            --warning: #c084fc;
+            --bg-color: #030712;
+            --card-bg: rgba(10, 19, 41, 0.88);
+            --card-border: rgba(123, 44, 191, 0.28);
+            --card-hover-border: rgba(168, 85, 247, 0.65);
+            --modal-bg: rgba(7, 12, 28, 0.98);
+            --text-main: #ffffff;
+            --text-muted: #cbd5e1;
+            --font-mono: "Consolas", "Fira Code", "Courier New", monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Top Accent Neon Frame Transitioning from Dark Blue to Purple */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #0a1329 0%, #0f347a 25%, #232f8a 50%, #7b2cbf 75%, #a855f7 100%);
+            z-index: 9999;
+            box-shadow: 0 0 16px rgba(168, 85, 247, 0.6);
+        }
+
+        body, html {
+            width: 100%;
+            min-height: 100%;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Canvas Background */
+        #background-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 2rem 5rem 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Top Notification / Engine Bar */
+        .engine-status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.94) 0%, rgba(30, 20, 60, 0.9) 100%);
+            border: 1px solid var(--card-border);
+            border-left: 3px solid #8b5cf6;
+            padding: 0.75rem 1.4rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .engine-status-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .bar-brand-link {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            text-decoration: none;
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 0.95rem;
+            letter-spacing: 0.5px;
+            padding-right: 0.8rem;
+            border-right: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .bar-brand-link:hover .bar-brand-icon {
+            transform: scale(1.08);
+            box-shadow: 0 0 14px rgba(168, 85, 247, 0.6);
+        }
+
+        .bar-brand-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 8px rgba(123, 44, 191, 0.4);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .status-pill {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #d0d0f0;
+        }
+
+        .status-pill strong {
+            color: var(--primary);
+        }
+
+        .engine-status-right {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-github-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.42rem 0.85rem;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-github-pill:hover {
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.8) 0%, rgba(123, 44, 191, 0.3) 100%);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 14px rgba(139, 92, 246, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-toggle-mock {
+            background: rgba(123, 44, 191, 0.2);
+            border: 1px solid var(--secondary);
+            color: #e0b0ff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-toggle-mock:hover {
+            background: var(--secondary);
+            color: #fff;
+            box-shadow: 0 0 12px var(--secondary-glow);
+        }
+
+        .btn-config-key {
+            background: rgba(123, 44, 191, 0.2);
+            border: 1px solid var(--primary);
+            color: #ffffff;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-config-key:hover {
+            background: linear-gradient(135deg, #0a1329 0%, #7b2cbf 100%);
+            color: #ffffff;
+            box-shadow: 0 0 14px var(--primary-glow);
+        }
+
+        /* JevTools Brand Hero Banner matching GitHub Repository Image */
+        .hero-banner-container {
+            position: relative;
+            margin-bottom: 2.2rem;
+            animation: fadeInDown 0.8s ease-out forwards;
+        }
+
+        .hero-banner-card {
+            position: relative;
+            background: #000000;
+            border: 3px solid transparent;
+            background-image: linear-gradient(#000000, #000000), linear-gradient(135deg, #0a1329 0%, #1e2c88 40%, #7b2cbf 80%, #a855f7 100%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            border-radius: 16px;
+            padding: 4px;
+            box-shadow: 0 0 30px rgba(123, 44, 191, 0.35), 0 16px 45px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+
+        .hero-banner-card:hover {
+            box-shadow: 0 0 45px rgba(168, 85, 247, 0.55), 0 20px 55px rgba(0, 0, 0, 0.9);
+            transform: translateY(-2px);
+        }
+
+        .hero-banner-inner {
+            position: relative;
+            background: linear-gradient(90deg, #081126 0%, #0d2861 25%, #1d2578 52%, #38196e 78%, #541372 100%);
+            border-radius: 12px;
+            padding: 1.8rem 1.4rem 1.6rem 1.4rem;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Wordmark & GitHub Icon Arrangement */
+        .hero-brand-wrap {
+            position: relative;
+            display: inline-block;
+            margin: 0 auto;
+            max-width: 960px;
+            width: 100%;
+            z-index: 2;
+        }
+
+        .hero-wordmark-svg {
+            max-width: 100%;
+            width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.65));
+        }
+
+        /* Clickable GitHub Octocat Emblem overlay */
+        .hero-octocat-link {
+            position: absolute;
+            right: 12%;
+            bottom: 6%;
+            width: 14%;
+            aspect-ratio: 1 / 1;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.25s ease, filter 0.25s ease;
+            text-decoration: none;
+        }
+
+        .hero-octocat-link:hover {
+            transform: scale(1.12);
+            filter: drop-shadow(0 0 16px #8b5cf6) drop-shadow(0 0 25px #7b2cbf);
+        }
+
+        .hero-octocat-tooltip {
+            position: absolute;
+            bottom: -32px;
+            right: 0;
+            background: rgba(7, 12, 28, 0.95);
+            border: 1px solid #8b5cf6;
+            color: #ffffff;
+            font-size: 0.75rem;
+            font-family: var(--font-mono);
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            transform: translateY(4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+        }
+
+        .hero-octocat-link:hover .hero-octocat-tooltip {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Banner Switcher & Tagline Bar */
+        .hero-banner-footer {
+            margin-top: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            position: relative;
+            z-index: 3;
+            background: rgba(8, 10, 24, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 0.8rem 1.2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-subtitle-box {
+            text-align: left;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .hero-subtitle-box h2 {
+            font-size: 1.12rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-subtitle-box h2 .neon-tag {
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.85) 0%, rgba(123, 44, 191, 0.35) 100%);
+            border: 1px solid #a855f7;
+            color: #ffffff;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+        }
+
+        .hero-subtitle-box p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .hero-actions-box {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-hero-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(20, 24, 52, 0.85);
+            border: 1px solid var(--card-border);
+            color: #d0d8f0;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.5rem 0.95rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .btn-hero-action:hover {
+            background: rgba(15, 75, 181, 0.35);
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 14px var(--primary-glow);
+            transform: translateY(-2px);
+        }
+
+        .btn-hero-action.btn-hero-primary {
+            background: linear-gradient(135deg, #0c1b3e 0%, #271758 50%, #7b2cbf 100%);
+            border-color: #a855f7;
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(123, 44, 191, 0.4);
+        }
+
+        .btn-hero-action.btn-hero-primary:hover {
+            background: linear-gradient(135deg, #102454 0%, #3a1c84 50%, #9333ea 100%);
+            box-shadow: 0 0 22px rgba(168, 85, 247, 0.65);
+        }
+
+        /* Stats Banner */
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 2.2rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1.3rem;
+            text-align: center;
+            backdrop-filter: blur(12px);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(0, 255, 204, 0.15);
+        }
+
+        .stat-val {
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: var(--font-mono);
+        }
+
+        .stat-lbl {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.35rem;
+        }
+
+        /* Navigation Tab Bar */
+        .tab-bar {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            background: rgba(18, 18, 35, 0.7);
+            padding: 0.6rem;
+            border-radius: 14px;
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            min-width: 180px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 0.85rem 1.2rem;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #0b1836 0%, #1e1b4b 40%, #581c87 75%, #7b2cbf 100%);
+            border-color: #a855f7;
+            color: #ffffff;
+            box-shadow: 0 0 18px rgba(139, 92, 246, 0.4);
+        }
+
+        /* Workspace Grid Container */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Studio Split Layout */
+        .studio-layout {
+            display: grid;
+            grid-template-columns: 1.1fr 1.3fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .studio-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Frosted Panels */
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.8rem;
+            backdrop-filter: blur(14px);
+            position: relative;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.9rem;
+        }
+
+        .panel-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .panel-badge {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            background: rgba(123, 44, 191, 0.25);
+            color: #e0b0ff;
+            border: 1px solid var(--primary);
+        }
+
+        /* Benchmark Selectors */
+        .preset-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+        }
+
+        .preset-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.45rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--primary);
+            color: #ffffff;
+            background: rgba(139, 92, 246, 0.18);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.9) 0%, rgba(123, 44, 191, 0.45) 100%);
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            background: rgba(5, 5, 15, 0.75);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            color: var(--text-main);
+            padding: 0.8rem 1rem;
+            font-size: 0.95rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.5;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 14px var(--primary-glow);
+        }
+
+        .btn-action-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #0c1b3e 0%, #251656 45%, #6b21a8 80%, #8b5cf6 100%);
+            border: 1px solid #a855f7;
+            color: #ffffff;
+            padding: 0.9rem 1.4rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 800;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 18px rgba(10, 19, 41, 0.6);
+        }
+
+        .btn-action-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #112659 0%, #371a80 45%, #7e22ce 80%, #a855f7 100%);
+            color: #ffffff;
+            box-shadow: 0 0 28px rgba(168, 85, 247, 0.65);
+            transform: translateY(-2px);
+        }
+
+        .btn-action-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Results & Output Visualizations */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.4rem;
+        }
+
+        /* Action Routing Banner */
+        .action-banner {
+            padding: 1rem 1.4rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            border: 1px solid transparent;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .action-banner.positive {
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.95) 0%, rgba(123, 44, 191, 0.35) 100%);
+            border-color: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .action-banner.escalate {
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.95) 0%, rgba(88, 28, 135, 0.45) 100%);
+            border-color: #c084fc;
+            color: #ffffff;
+            animation: glowPurple 2s infinite alternate;
+        }
+
+        .action-banner.contact {
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.95) 0%, rgba(123, 44, 191, 0.35) 100%);
+            border-color: #a855f7;
+            color: #ffffff;
+        }
+
+        .action-banner.review {
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.95) 0%, rgba(30, 41, 89, 0.45) 100%);
+            border-color: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .action-banner.flag {
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.95) 0%, rgba(123, 44, 191, 0.35) 100%);
+            border-color: var(--secondary);
+            color: #e0b0ff;
+        }
+
+        @keyframes glowPurple {
+            from { box-shadow: 0 0 10px rgba(123, 44, 191, 0.35); }
+            to { box-shadow: 0 0 24px rgba(192, 132, 252, 0.7); }
+        }
+
+        /* Composite Card */
+        .composite-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .composite-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .composite-score-num {
+            font-family: var(--font-mono);
+            font-size: 2.3rem;
+            font-weight: 900;
+            color: var(--primary);
+        }
+
+        .composite-formula {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        /* Meter Bars */
+        .signal-meter {
+            margin-bottom: 0.9rem;
+        }
+
+        .meter-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .meter-title {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .meter-val {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .meter-bar-bg {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .meter-bar-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 0.7s cubic-bezier(0.1, 0.9, 0.2, 1);
+            background: linear-gradient(90deg, #0a1329 0%, #1e295d 25%, #4c1d95 65%, #8b5cf6 100%);
+        }
+
+        .meter-bar-fill.danger {
+            background: linear-gradient(90deg, #0a1329 0%, #2e1065 40%, #7c3aed 80%, #c084fc 100%);
+        }
+
+        .meter-bar-fill.accent {
+            background: linear-gradient(90deg, #0a1329 0%, #1e1b4b 30%, #6b21a8 70%, #a855f7 100%);
+        }
+
+        /* Distribution Charts */
+        .dist-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .dist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-size: 0.82rem;
+        }
+
+        .dist-label {
+            width: 110px;
+            text-transform: capitalize;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .dist-bar-track {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .dist-bar-inner {
+            height: 100%;
+            background: var(--secondary);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .dist-val {
+            width: 50px;
+            text-align: right;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: #d0d0ff;
+        }
+
+        /* Raw Inspector Drawer */
+        .raw-inspector {
+            background: rgba(5, 5, 12, 0.85);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .raw-inspector-header {
+            padding: 0.7rem 1.2rem;
+            background: rgba(255, 255, 255, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .raw-inspector-header:hover {
+            color: var(--primary);
+        }
+
+        .raw-inspector-body {
+            max-height: 250px;
+            overflow-y: auto;
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: #00ffcc;
+            background: #020208;
+            display: none;
+        }
+
+        .raw-inspector-body.open {
+            display: block;
+        }
+
+        /* Controls & Filter Bar for Tab 4 */
+        .controls-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid var(--card-border);
+            padding: 1rem 1.5rem;
+            border-radius: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 280px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.8rem;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.6rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: linear-gradient(135deg, #0a1329 0%, #1e1b4b 50%, #7b2cbf 100%);
+            border-color: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .quick-jump-container select {
+            background: rgba(10, 10, 25, 0.9);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.65rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Projects Grid */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.8rem;
+        }
+
+        .project-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.8rem;
+            backdrop-filter: blur(14px);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.5) 0%, rgba(123, 44, 191, 0.15) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 0;
+        }
+
+        .project-card:hover {
+            transform: translateY(-8px) scale(1.015);
+            border-color: var(--card-hover-border);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.7), 0 0 25px rgba(139, 92, 246, 0.35);
+        }
+
+        .project-card:hover::before {
+            opacity: 1;
+        }
+
+        .project-card > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1.2rem;
+        }
+
+        .icon-container {
+            width: 54px;
+            height: 54px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.4s ease;
+        }
+
+        .project-card:hover .icon-container {
+            transform: scale(1.1) rotate(5deg);
+            background: rgba(123, 44, 191, 0.25);
+            border-color: var(--primary);
+        }
+
+        .badge-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.4rem;
+        }
+
+        .badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.25rem 0.6rem;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .badge-status-active { background: rgba(123, 44, 191, 0.25); color: #e0b0ff; border: 1px solid #a855f7; }
+        .badge-status-pipeline { background: rgba(15, 28, 63, 0.5); color: #8b5cf6; border: 1px solid #8b5cf6; }
+        .badge-status-service { background: rgba(108, 46, 169, 0.25); color: #d8b4fe; border: 1px solid var(--secondary); }
+        .badge-status-doc { background: rgba(88, 28, 135, 0.25); color: #c084fc; border: 1px solid var(--accent); }
+
+        .project-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            color: var(--text-main);
+        }
+
+        .tech-stack-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .pill {
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: #b0c0e0;
+            padding: 0.2rem 0.55rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+
+        .project-desc {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.55;
+            flex-grow: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .btn-inspect {
+            flex: 1;
+            background: linear-gradient(135deg, #0a1329 0%, #201750 45%, #6b21a8 85%, #8b5cf6 100%);
+            border: 1px solid #8b5cf6;
+            color: #ffffff;
+            padding: 0.65rem 1rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-inspect:hover {
+            background: linear-gradient(135deg, #0f1c3f 0%, #311c6d 45%, #7c3aed 85%, #a855f7 100%);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.55);
+        }
+
+        /* Modal Overlay & Drawer */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            width: 90%;
+            max-width: 960px;
+            max-height: 88vh;
+            background: var(--modal-bg);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(123, 44, 191, 0.3);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-title-area {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .modal-icon {
+            font-size: 2.2rem;
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .btn-nav {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.5rem 0.9rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-nav:hover {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--primary);
+            color: #ffffff;
+        }
+
+        .modal-jump-select {
+            background: rgba(10, 10, 25, 0.95);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 0.48rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-close {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: var(--text-muted);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .btn-close:hover {
+            background: rgba(123, 44, 191, 0.35);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+        }
+
+        .modal-body {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.8rem;
+        }
+
+        .modal-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .code-block {
+            background: rgba(5, 5, 12, 0.95);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            color: #e0b0ff;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .btn-copy {
+            position: absolute;
+            top: 0.6rem;
+            right: 0.6rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--text-muted);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .kbd-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        kbd {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-family: var(--font-mono);
+            color: var(--primary);
+        }
+
+        /* Key Config Modal */
+        .config-dialog-box {
+            width: 90%;
+            max-width: 520px;
+            background: var(--modal-bg);
+            border: 1px solid var(--primary);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px var(--primary-glow);
+        }
+
+        .dialog-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .dialog-desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            border-top-color: currentColor;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="background-canvas"></canvas>
+
+    <div class="container">
+        <!-- Top Engine Status Bar -->
+        <div class="engine-status-bar">
+            <div class="engine-status-left">
+                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="bar-brand-link" title="JevTools on GitHub">
+                    <img src="assets/favicon.svg" alt="JevTools Logo" class="bar-brand-icon">
+                    <span>JevTools</span>
+                </a>
+                <div class="status-dot" id="status-dot"></div>
+                <div class="status-pill">Engine: <strong id="bar-provider">OpenRouter</strong></div>
+                <div class="status-pill">Model: <strong id="bar-model">~typesafe/jev-latest</strong></div>
+                <div class="status-pill">Key: <strong id="bar-key">[MOCK MODE]</strong></div>
+                <div class="status-pill" id="bar-mode-badge" style="color: var(--accent);">MOCK MODE</div>
+            </div>
+            <div class="engine-status-right">
+                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="btn-github-pill" title="Open RileyCarney/JevTools on GitHub">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span>RileyCarney/JevTools</span>
+                </a>
+                <button class="btn-toggle-mock" id="btn-toggle-mock" onclick="toggleMockMode()">⚡ Switch to Live</button>
+                <button class="btn-config-key" onclick="openConfigModal()">⚙️ Set Key</button>
+            </div>
+        </div>
+
+        <!-- JevTools Brand Hero Banner matching GitHub Repository Image -->
+        <header class="hero-banner-container">
+            <div class="hero-banner-card" id="hero-banner-card">
+                <div class="hero-banner-inner">
+                    <!-- Brand Wordmark & GitHub Emblem -->
+                    <div class="hero-brand-wrap" id="hero-brand-wrap">
+                        <!-- Embedded High-Fidelity SVG Brand Banner matching repository image -->
+                        <div id="hero-svg-view">
+                            <svg class="hero-wordmark-svg" viewBox="0 0 960 494" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JEVTOOLS">
+                              <defs>
+                                <linearGradient id="jev-hbg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stop-color="#0077da" />
+                                  <stop offset="25%" stop-color="#0f4bb5" />
+                                  <stop offset="52%" stop-color="#1e2c88" />
+                                  <stop offset="78%" stop-color="#341b73" />
+                                  <stop offset="100%" stop-color="#4a1566" />
+                                </linearGradient>
+                                <style>
+                                  .h-circuit { stroke: #000000; stroke-width: 4.5; stroke-linecap: square; fill: none; }
+                                  .h-text-shadow { font-family: 'Impact', 'Arial Black', sans-serif; font-weight: 900; font-size: 215px; letter-spacing: 5px; fill: #682aa2; stroke: #000000; stroke-width: 14; stroke-linejoin: round; }
+                                  .h-text-face { font-family: 'Impact', 'Arial Black', sans-serif; font-weight: 900; font-size: 215px; letter-spacing: 5px; fill: #ffffff; stroke: #000000; stroke-width: 10; stroke-linejoin: round; }
+                                </style>
+                              </defs>
+                              <rect width="960" height="494" fill="url(#jev-hbg-grad)" />
+                              <g class="h-circuit">
+                                <path d="M 10 70 L 130 70 L 130 130 L 190 130 L 190 40 L 290 40" />
+                                <path d="M 10 120 L 70 120 L 70 360 L 130 360 L 130 440 L 80 440 L 80 484" />
+                                <path d="M 10 240 L 40 240 L 40 400 L 100 400 L 100 484" />
+                                <path d="M 10 170 L 100 170 L 100 230 L 120 230 L 120 310 L 170 310" />
+                                <path d="M 10 300 L 40 300 L 40 340 L 10 340" />
+                                <path d="M 140 484 L 140 410 L 210 410 L 210 484" />
+                                <path d="M 180 484 L 180 445 L 240 445 L 270 415 L 270 380" />
+                                <path d="M 230 484 L 230 450 L 290 390 L 330 390 L 330 484" />
+                                <path d="M 250 10 L 250 60 L 290 60 L 290 110 L 350 110 L 380 80 L 380 10" />
+                                <path d="M 330 10 L 330 40 L 420 40 L 420 80 L 460 80 L 460 10" />
+                                <path d="M 400 10 L 400 50 L 510 50 L 510 110 L 560 110 L 590 80 L 590 10" />
+                                <path d="M 490 10 L 490 30 L 550 30 L 550 70 L 650 70 L 680 40 L 680 10" />
+                                <path d="M 360 484 L 360 440 L 440 360 L 530 360 L 580 410 L 580 484" />
+                                <path d="M 410 484 L 410 450 L 470 390 L 510 390 L 550 430 L 550 484" />
+                                <path d="M 460 484 L 490 454 L 490 414 L 520 414 L 520 484" />
+                                <path d="M 610 484 L 610 430 L 660 380 L 710 380 L 740 410 L 740 484" />
+                                <path d="M 720 10 L 720 60 L 770 110 L 820 110 L 820 40 L 870 40 L 870 10" />
+                                <path d="M 790 10 L 790 50 L 840 100 L 910 100 L 910 40 L 950 40" />
+                                <path d="M 950 100 L 880 100 L 880 160 L 920 160 L 920 220 L 950 220" />
+                                <path d="M 950 160 L 930 160 L 930 290 L 880 290 L 880 210 L 820 210" />
+                                <path d="M 950 270 L 910 270 L 910 340 L 950 340" />
+                                <path d="M 950 380 L 900 380 L 860 420 L 860 484" />
+                                <path d="M 950 430 L 920 430 L 920 484" />
+                                <path d="M 800 484 L 800 450 L 760 410 L 760 360 L 810 310 L 870 310 L 870 350 L 910 390 L 910 460 L 890 484" />
+                              </g>
+                              <!-- 3D Extruded Shadow Layers -->
+                              <text x="85" y="328" class="h-text-shadow" dx="14" dy="14">JEVTOOLS</text>
+                              <text x="85" y="328" class="h-text-shadow" dx="10" dy="10">JEVTOOLS</text>
+                              <text x="85" y="328" class="h-text-shadow" dx="6" dy="6">JEVTOOLS</text>
+                              <!-- Front Face -->
+                              <text x="85" y="328" class="h-text-face">JEVTOOLS</text>
+                              <!-- Octocat Emblem at S -->
+                              <g transform="translate(816, 350)">
+                                <circle cx="0" cy="0" r="54" fill="#000000" />
+                                <circle cx="0" cy="0" r="50" fill="#2d0b47" stroke="#10051c" stroke-width="4" />
+                                <circle cx="0" cy="0" r="43" fill="#000000" />
+                                <g transform="translate(-32, -32) scale(2.66)">
+                                  <path fill="#551a8b" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                                </g>
+                              </g>
+                            </svg>
+                        </div>
+                        <div id="hero-img-view" style="display: none;">
+                            <img src="assets/jevtools_card.png" alt="JevTools GitHub Social Banner" class="hero-wordmark-svg" style="border-radius: 8px;">
+                        </div>
+
+                        <!-- Clickable GitHub Octocat Link Overlay -->
+                        <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="hero-octocat-link" title="Open RileyCarney/JevTools on GitHub">
+                            <div class="hero-octocat-tooltip">GitHub: RileyCarney/JevTools ↗</div>
+                        </a>
+                    </div>
+
+                    <!-- Banner Footer: Taglines, Spec Pills, Actions -->
+                    <div class="hero-banner-footer">
+                        <div class="hero-subtitle-box">
+                            <h2>System One Cockpit <span class="neon-tag">TypeSafe AI</span></h2>
+                            <p>Fast, Typed Semantic Judgments &amp; Calibrated Probability Distributions via OpenRouter and TypeSafe Jev</p>
+                        </div>
+                        <div class="hero-actions-box">
+                            <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="btn-hero-action btn-hero-primary">
+                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                                <span>GitHub Repo</span>
+                            </a>
+                            <button class="btn-hero-action" onclick="toggleBannerMode()" id="btn-banner-mode">
+                                🖼️ View HQ Image Card
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Overview Banner -->
+        <div class="stats-banner">
+            <div class="stat-card">
+                <div class="stat-val">~100 ms</div>
+                <div class="stat-lbl">Inference Latency</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">3 Primitives</div>
+                <div class="stat-lbl">Noul · Choice · Score</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="stat-benchmarks">10 Cases</div>
+                <div class="stat-lbl">Calibrated Benchmarks</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">12.2x Faster</div>
+                <div class="stat-lbl">Speculative Fan-Out</div>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('reviews')">💬 Customer Review Studio</button>
+            <button class="tab-btn" onclick="switchTab('topics')">📰 Topic Classification Studio</button>
+            <button class="tab-btn" onclick="switchTab('playground')">🧪 Custom Decision Playground</button>
+            <button class="tab-btn" onclick="switchTab('hub')">🏛️ Architecture & Knowledge Hub</button>
+        </div>
+
+        <!-- ================= TAB 1: CUSTOMER REVIEW STUDIO ================= -->
+        <div class="tab-content active" id="tab-reviews">
+            <div class="studio-layout">
+                <!-- Left Input Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>💬</span> Review Input Spec</div>
+                        <span class="panel-badge">6 Qs Fan-Out</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Benchmark Presets</label>
+                        <div class="preset-row">
+                            <button class="preset-btn active" onclick="loadReviewPreset(0)">#1 Enthusiast</button>
+                            <button class="preset-btn" onclick="loadReviewPreset(1)">#2 Battery Defect</button>
+                            <button class="preset-btn" onclick="loadReviewPreset(2)">#3 Shipping/Mixed</button>
+                            <button class="preset-btn" onclick="loadReviewPreset(3)">#4 Ambiguous 'ok'</button>
+                            <button class="preset-btn" onclick="loadReviewPreset(4)">#5 Commuter Pro</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" class="form-input" id="review-product" value="Wireless Earbuds Pro">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Customer Review Text</label>
+                        <textarea class="form-textarea" id="review-text" rows="5"></textarea>
+                    </div>
+
+                    <button class="btn-action-primary" id="btn-run-review" onclick="runReviewAnalysis()">
+                        <span>⚡</span> Run Speculative Fan-Out Evaluation
+                    </button>
+                </div>
+
+                <!-- Right Results Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>📊</span> Decision Evaluation & Signals</div>
+                        <span class="panel-badge" id="review-engine-badge">Jev Model</span>
+                    </div>
+
+                    <div class="results-container" id="review-results-area">
+                        <!-- Action Routing Banner -->
+                        <div class="action-banner positive" id="review-action-banner">
+                            <span id="review-action-icon">🚀</span>
+                            <span id="review-action-text">[POSITIVE] Feature as testimonial or send thank-you</span>
+                        </div>
+
+                        <!-- Composite Score Card -->
+                        <div class="composite-card">
+                            <div class="composite-left">
+                                <span class="meter-title">Composite Review Score</span>
+                                <span class="composite-formula">0.40·Sent + 0.25·Rec + 0.20·Qual + 0.15·(1-Defect)</span>
+                            </div>
+                            <div class="composite-score-num" id="review-composite-score">0.99</div>
+                        </div>
+
+                        <!-- Sentiment & Quality Scores -->
+                        <div>
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">Overall Sentiment (Score: 4 levels)</span>
+                                    <span class="meter-val" id="review-sentiment-val">1.00</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill" id="review-sentiment-bar" style="width: 100%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">Feedback Quality & Actionability (Score: 3 levels)</span>
+                                    <span class="meter-val" id="review-quality-val">1.00</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill accent" id="review-quality-bar" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Noul Probability Meters -->
+                        <div>
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">P(Would Recommend) [Noul]</span>
+                                    <span class="meter-val" id="review-recommend-val">98.0%</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill" id="review-recommend-bar" style="width: 98%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">P(Mentions Defect / Quality Issue) [Noul]</span>
+                                    <span class="meter-val" id="review-defect-val">1.0%</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill danger" id="review-defect-bar" style="width: 1%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">P(Mentions Shipping / Packaging) [Noul]</span>
+                                    <span class="meter-val" id="review-shipping-val">95.0%</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill" id="review-shipping-bar" style="width: 95%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Emotion Tone Choice -->
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 10px; padding: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                                <span class="meter-title">Emotional Tone (Choice)</span>
+                                <span class="badge badge-status-active" id="review-tone-badge">Delighted (0.97)</span>
+                            </div>
+                            <div class="dist-chart" id="review-tone-dist"></div>
+                        </div>
+
+                        <!-- Raw Jev JSON Payload Drawer -->
+                        <div class="raw-inspector">
+                            <div class="raw-inspector-header" onclick="toggleRaw('review-raw-body')">
+                                <span>🔍 Inspect Raw Jev Response Payload</span>
+                                <span id="review-raw-toggle-icon">▼</span>
+                            </div>
+                            <div class="raw-inspector-body" id="review-raw-body">
+                                <pre id="review-raw-json"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: TOPIC CLASSIFICATION STUDIO ================= -->
+        <div class="tab-content" id="tab-topics">
+            <div class="studio-layout">
+                <!-- Left Input Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>📰</span> Passage Input Spec</div>
+                        <span class="panel-badge">Multi-Dimensional</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Benchmark Presets</label>
+                        <div class="preset-row">
+                            <button class="preset-btn active" onclick="loadTopicPreset(0)">#1 AI Models (Tech)</button>
+                            <button class="preset-btn" onclick="loadTopicPreset(1)">#2 Screen Time (Health/Op)</button>
+                            <button class="preset-btn" onclick="loadTopicPreset(2)">#3 Fed Rates (Business)</button>
+                            <button class="preset-btn" onclick="loadTopicPreset(3)">#4 Risotto (Culture/Action)</button>
+                            <button class="preset-btn" onclick="loadTopicPreset(4)">#5 AMOC (Science)</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Paragraph Text</label>
+                        <textarea class="form-textarea" id="topic-text" rows="7"></textarea>
+                    </div>
+
+                    <button class="btn-action-primary" id="btn-run-topic" onclick="runTopicClassification()">
+                        <span>⚡</span> Classify & Route Paragraph
+                    </button>
+                </div>
+
+                <!-- Right Results Panel -->
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>🎯</span> Classification & Routing Policy</div>
+                        <span class="panel-badge" id="topic-engine-badge">Jev Model</span>
+                    </div>
+
+                    <div class="results-container" id="topic-results-area">
+                        <!-- Routing Suggestion Banner -->
+                        <div class="action-banner review" id="topic-action-banner">
+                            <span id="topic-action-icon">🎯</span>
+                            <span id="topic-action-text">[TECHNICAL: TECHNOLOGY] Specialist-level content - route to SME</span>
+                        </div>
+
+                        <!-- Primary Topic Header -->
+                        <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.2rem; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span class="meter-title" style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted);">Primary Topic Choice</span>
+                                <div style="font-size: 1.6rem; font-weight: 800; color: var(--primary);" id="topic-primary-label">TECHNOLOGY</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-family: var(--font-mono); font-size: 1.5rem; font-weight: 800; color: var(--primary);" id="topic-confidence-val">98%</div>
+                                <span class="badge badge-status-active" id="topic-conf-tier">HIGH [OK]</span>
+                            </div>
+                        </div>
+
+                        <!-- Topic Probabilities Distribution Bar Chart -->
+                        <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--card-border); border-radius: 10px; padding: 1.2rem;">
+                            <div class="meter-title" style="margin-bottom: 0.8rem;">Topic Probability Spectrum across 9 Candidates</div>
+                            <div class="dist-chart" id="topic-dist-chart"></div>
+                        </div>
+
+                        <!-- Signals & Depth -->
+                        <div>
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">P(Is Opinion / Editorial) [Noul]</span>
+                                    <span class="meter-val" id="topic-opinion-val">8.0%</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill accent" id="topic-opinion-bar" style="width: 8%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">P(Has Call-to-Action / Directive) [Noul]</span>
+                                    <span class="meter-val" id="topic-actionable-val">5.0%</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill" id="topic-actionable-bar" style="width: 5%;"></div>
+                                </div>
+                            </div>
+
+                            <div class="signal-meter">
+                                <div class="meter-label-row">
+                                    <span class="meter-title">Technical Depth (Score: General → Informed → Specialist)</span>
+                                    <span class="meter-val" id="topic-depth-val">1.00</span>
+                                </div>
+                                <div class="meter-bar-bg">
+                                    <div class="meter-bar-fill" id="topic-depth-bar" style="width: 100%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Raw Jev Payload Drawer -->
+                        <div class="raw-inspector">
+                            <div class="raw-inspector-header" onclick="toggleRaw('topic-raw-body')">
+                                <span>🔍 Inspect Raw Jev Response Payload</span>
+                                <span id="topic-raw-toggle-icon">▼</span>
+                            </div>
+                            <div class="raw-inspector-body" id="topic-raw-body">
+                                <pre id="topic-raw-json"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: CUSTOM PLAYGROUND ================= -->
+        <div class="tab-content" id="tab-playground">
+            <div class="studio-layout">
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>🧪</span> Custom Jev Question Builder</div>
+                        <span class="panel-badge">Interactive State</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Application State (JSON or Plain String)</label>
+                        <textarea class="form-textarea" id="custom-state" rows="6">{
+  "ticket_id": "T-9042",
+  "message": "I was charged $49.99 twice on my visa card. Please refund the duplicate immediately.",
+  "plan": "Pro Annual"
+}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Questions Payload (JSON Dictionary)</label>
+                        <textarea class="form-textarea" id="custom-questions" rows="10" style="font-family: var(--font-mono); font-size: 0.85rem;">{
+  "requests_refund": {
+    "type": "noul",
+    "instructions": "Does `message` request a refund or dispute a charge?"
+  },
+  "charge_type": {
+    "type": "choice",
+    "instructions": "What type of billing issue is described?",
+    "criteria": {
+      "duplicate": "Charged more than once for same item",
+      "unauthorized": "Customer did not initiate charge",
+      "cancellation": "Charged after requesting cancel",
+      "other": "Other billing problem"
+    }
+  },
+  "frustration_level": {
+    "type": "score",
+    "instructions": "How frustrated is the customer in `message`?",
+    "criteria": [
+      "Calm and civil",
+      "Mildly annoyed",
+      "Demanding and angry"
+    ]
+  }
+}</textarea>
+                    </div>
+
+                    <button class="btn-action-primary" id="btn-run-custom" onclick="runCustomEvaluation()">
+                        <span>⚡</span> Send Custom Request to Jev
+                    </button>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title"><span>📋</span> Evaluated Decision Output</div>
+                        <span class="panel-badge" id="custom-elapsed-badge">0 ms</span>
+                    </div>
+
+                    <div class="code-block" style="min-height: 420px; max-height: 520px; overflow-y: auto;">
+                        <button class="btn-copy" onclick="copyCode('custom-output-pre')">Copy JSON</button>
+                        <pre id="custom-output-pre" style="color: #e0b0ff;">Click "Send Custom Request to Jev" to evaluate.</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: ARCHITECTURE & HUB EXPLORER ================= -->
+        <div class="tab-content" id="tab-hub">
+            <div class="controls-bar">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="search-input" placeholder="Search architecture, primitives, pipelines, or cookbooks... (Press '/' to focus)">
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All Modules (7)</button>
+                    <button class="filter-btn" data-filter="core">Core Engine (2)</button>
+                    <button class="filter-btn" data-filter="pipeline">Pipelines (2)</button>
+                    <button class="filter-btn" data-filter="gateway">Gateways (3)</button>
+                </div>
+                <div class="quick-jump-container">
+                    <select id="quick-jump">
+                        <option value="">Jump to Module...</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Grid of Cards matching Website Project Tracking Template -->
+            <main class="projects-grid" id="hub-cards-container">
+                <!-- Rendered dynamically -->
+            </main>
+
+            <p class="kbd-hint">Keyboard Maneuvering: <kbd>←</kbd> Previous Item | <kbd>→</kbd> Next Item | <kbd>Esc</kbd> Close View | <kbd>/</kbd> Search</p>
+        </div>
+    </div>
+
+    <!-- Interactive Detail Modal Drawer (from Website Project Tracking Template) -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-box" id="modal-box">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span class="modal-icon" id="modal-icon">👤</span>
+                    <div>
+                        <div class="modal-title" id="modal-title">Module Name</div>
+                        <div id="modal-subtitle" style="font-size: 0.85rem; color: var(--text-muted);">Tech Stack</div>
+                    </div>
+                </div>
+                <div class="nav-controls">
+                    <button class="btn-nav" id="btn-prev-card" title="Previous Item (←)">◄ Prev</button>
+                    <select class="modal-jump-select" id="modal-jump-select"></select>
+                    <button class="btn-nav" id="btn-next-card" title="Next Item (→)">Next ►</button>
+                    <button class="btn-close" id="btn-close-modal" title="Close (Esc)">&times;</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div class="modal-section-title">📌 Executive Summary & Purpose</div>
+                    <p id="modal-desc" style="line-height: 1.6; color: #d0d0e0; font-size: 0.98rem;"></p>
+                </div>
+
+                <div id="modal-web-services-section">
+                    <div class="modal-section-title">🌐 Active Local Web Services & Endpoints</div>
+                    <div class="links-flex" id="modal-web-links"></div>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">🚀 Main Execution Command</div>
+                    <div class="code-block">
+                        <button class="btn-copy" onclick="copyCode('modal-cmd-run')">Copy</button>
+                        <code id="modal-cmd-run">py jev_demo.py --mock</code>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">🧪 Automated Test Suite Command</div>
+                    <div class="code-block">
+                        <button class="btn-copy" onclick="copyCode('modal-cmd-test')">Copy</button>
+                        <code id="modal-cmd-test">py jev_demo.py --mock --demo reviews --json</code>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="modal-section-title">🏗️ Key Architectural Features & Details</div>
+                    <ul id="modal-features" style="padding-left: 1.2rem; color: var(--text-muted); line-height: 1.7; font-size: 0.92rem;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Key Configuration Modal Dialog -->
+    <div class="modal-overlay" id="config-modal-overlay">
+        <div class="config-dialog-box">
+            <div class="dialog-title">🔑 Configure Jev Engine & API Key</div>
+            <p class="dialog-desc">Keys are kept strictly in server memory during the active session and are never exposed in client bundles.</p>
+
+            <div class="form-group">
+                <label class="form-label">Provider Gateway</label>
+                <select class="form-select" id="cfg-provider">
+                    <option value="openrouter">OpenRouter (Alpha Decisions API)</option>
+                    <option value="typesafe">TypeSafe Direct API</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">API Key (sk-or-v1-... or ts-...)</label>
+                <input type="password" class="form-input" id="cfg-api-key" placeholder="Paste your API key here">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Execution Mode</label>
+                <select class="form-select" id="cfg-mode">
+                    <option value="live">Live API (Requires credits)</option>
+                    <option value="mock">Offline Mock (Zero-Credit Testing)</option>
+                </select>
+            </div>
+
+            <div class="dialog-actions">
+                <button class="btn-secondary" onclick="closeConfigModal()">Cancel</button>
+                <button class="btn-action-primary" style="width: auto; padding: 0.6rem 1.4rem;" onclick="saveConfig()">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Benchmarks Master Data
+        const reviewPresets = [
+            {
+                text: "Absolutely love this product! Works exactly as described and shipping was super fast. Already recommended it to three friends. Will definitely buy again from this seller.",
+                product: "Wireless Earbuds Pro"
+            },
+            {
+                text: "The battery died after two weeks of normal use. Contacted support but they were unhelpful. The charging cable also stopped working. Very disappointed - expected better quality for this price point. Do not buy.",
+                product: "Wireless Earbuds Pro"
+            },
+            {
+                text: "Decent product overall. Sound quality is good but the ear tips are a bit uncomfortable after an hour. Arrived on time and packaging was nice. Probably wouldn't buy again but not terrible.",
+                product: "Wireless Earbuds Pro"
+            },
+            {
+                text: "ok",
+                product: "Wireless Earbuds Pro"
+            },
+            {
+                text: "These headphones have completely transformed my daily commute! The noise cancellation is incredible - I can barely hear the subway. The touch controls are intuitive and battery life is exactly as advertised at 28 hours. Build quality feels premium. Best purchase I've made this year without a doubt. If you're on the fence, just buy them!",
+                product: "Wireless Earbuds Pro"
+            }
+        ];
+
+        const topicPresets = [
+            {
+                text: "Transformer-based large language models have demonstrated emergent capabilities at scale, including few-shot reasoning and chain-of-thought prompting. Recent interpretability work suggests that attention heads specialize in syntactic roles such as subject-verb agreement and coreference resolution, pointing toward mechanistic explanations of in-context learning."
+            },
+            {
+                text: "Every parent should limit their child's screen time to no more than two hours per day. Excessive social media use has been linked to anxiety, poor sleep, and reduced attention spans in adolescents. It's time for governments to regulate algorithm-driven content before an entire generation is harmed."
+            },
+            {
+                text: "The Federal Reserve raised interest rates by 25 basis points at its September meeting, citing continued resilience in the labor market and core inflation remaining above the 2% target. Markets responded with a brief sell-off in equities before recovering most losses by close."
+            },
+            {
+                text: "To prepare the perfect risotto, toast the arborio rice in butter for two minutes before adding white wine. Add warm stock one ladle at a time, stirring constantly, and finish with cold butter and parmesan off the heat. Serve immediately - risotto waits for no one."
+            },
+            {
+                text: "Climate scientists at NOAA report that the Atlantic Meridional Overturning Circulation (AMOC) has weakened significantly compared to pre-industrial levels. A substantial weakening or collapse could dramatically alter precipitation patterns across Europe and North America and accelerate sea level rise along the eastern US coastline."
+            }
+        ];
+
+        // Architecture Hub Master Data (Template Style)
+        const hubModules = [
+            {
+                id: "jev_core",
+                title: "Jev System One Core",
+                icon: "⚡",
+                category: "core",
+                status: "Active / Engine",
+                statusClass: "badge-status-active",
+                modularity: "100.00%",
+                tech: ["Python 3", "OpenRouter", "RLCD Training"],
+                desc: "TypeSafe's System One model delivering typed decisions (Choice, Score, Noul) and calibrated probabilities in ~100ms. Code retains full control flow while Jev fills atomic semantic judgment slots.",
+                runCmd: "py D:\\programming\\jevtools\\jev_demo.py --mock",
+                testCmd: "py -c \"import jev_demo; print(jev_demo.mask_key('sk-or-v1-test1234'))\"",
+                webServices: [
+                    { name: "System One Cockpit (:8089)", url: "http://localhost:8089" }
+                ],
+                features: [
+                    "RLCD-calibrated probabilities that represent true uncertainty rather than model overconfidence.",
+                    "Consolidated parallel evaluation: all questions in a request evaluate against shared state in ~100ms.",
+                    "Strict typing contract with zero unstructured free-form conversational text to parse."
+                ]
+            },
+            {
+                id: "customer_review_pipeline",
+                title: "Customer Review Speculative Fan-Out",
+                icon: "💬",
+                category: "pipeline",
+                status: "Production Pipeline",
+                statusClass: "badge-status-pipeline",
+                modularity: "95.00%",
+                tech: ["Score 0-3", "Score 0-2", "Noul x3", "Choice"],
+                desc: "Evaluates 6 distinct evaluation dimensions in a single parallel request: sentiment, quality, product defects, shipping condition, recommendation likelihood, and emotional tone.",
+                runCmd: "py D:\\programming\\jevtools\\jev_demo.py --demo reviews --mock",
+                testCmd: "py D:\\programming\\jevtools\\jev_demo.py --demo reviews --mock --json",
+                webServices: [
+                    { name: "Review Studio (:8089)", url: "http://localhost:8089" }
+                ],
+                features: [
+                    "Composite scoring formula: 0.40·Sentiment + 0.25·Recommend + 0.20·Quality + 0.15·(1 - Defect).",
+                    "Deterministic routing policy with automated escalation paths for product defect probabilities > 75%.",
+                    "Confidence-gated triage routing ambiguous emotional tones directly to human audit queues."
+                ]
+            },
+            {
+                id: "topic_classifier_pipeline",
+                title: "Multi-Dimensional Topic Classifier",
+                icon: "📰",
+                category: "pipeline",
+                status: "Production Pipeline",
+                statusClass: "badge-status-pipeline",
+                modularity: "92.00%",
+                tech: ["9-Way Choice", "Noul Opinion", "Noul Actionable", "Score Depth"],
+                desc: "Classifies unstructured articles across 9 discrete domains while simultaneously extracting opinion quotient, technical complexity, and actionability in one parallel call.",
+                runCmd: "py D:\\programming\\jevtools\\jev_demo.py --demo topics --mock",
+                testCmd: "py D:\\programming\\jevtools\\jev_demo.py --demo topics --mock --json",
+                webServices: [
+                    { name: "Topic Studio (:8089)", url: "http://localhost:8089" }
+                ],
+                features: [
+                    "9 discrete topic domains: Technology, Science, Business, Politics, Health, Environment, Culture, Education, Other.",
+                    "Editorial desk dispatching when opinion quotient exceeds 80% on sensitive subject areas.",
+                    "Subject-matter specialist routing when technical depth reaches level 2/2 in STEM domains."
+                ]
+            },
+            {
+                id: "openrouter_gateway",
+                title: "OpenRouter Alpha Decisions Gateway",
+                icon: "🌐",
+                category: "gateway",
+                status: "Active Gateway",
+                statusClass: "badge-status-service",
+                modularity: "100.00%",
+                tech: ["OpenRouter API", "HTTP POST", "Decisions Endpoint"],
+                desc: "Standard OpenRouter gateway routing requests to the ~typesafe/jev-latest model via the https://openrouter.ai/api/alpha/decisions endpoint with masked bearer token authorization.",
+                runCmd: "py D:\\programming\\jevtools\\jev_demo.py --provider openrouter --mock",
+                testCmd: "py -c \"import requests; print('requests OK')\"",
+                webServices: [
+                    { name: "OpenRouter Documentation", url: "https://openrouter.ai/docs" }
+                ],
+                features: [
+                    "Seamless authentication using standard sk-or-v1-... bearer tokens.",
+                    "Includes HTTP-Referer and X-OpenRouter-Title headers for telemetry rankings.",
+                    "Fully compatible with OpenRouter credit balances and usage tracking."
+                ]
+            },
+            {
+                id: "typesafe_gateway",
+                title: "TypeSafe Direct Gateway",
+                icon: "🛡️",
+                category: "gateway",
+                status: "Active Gateway",
+                statusClass: "badge-status-service",
+                modularity: "100.00%",
+                tech: ["TypeSafe API", "HTTP POST", "v1/systemone"],
+                desc: "Direct native gateway connecting to https://api.typesafe.ai/v1/systemone using native TYPESAFE_API_KEY tokens with jev-latest model bindings.",
+                runCmd: "py D:\\programming\\jevtools\\jev_demo.py --provider typesafe --mock",
+                testCmd: "py D:\\programming\\jevtools\\jev_demo.py --help",
+                webServices: [
+                    { name: "TypeSafe Live Documentation", url: "https://docs.typesafe.ai" }
+                ],
+                features: [
+                    "Direct connection to TypeSafe System One without intermediary routing hops.",
+                    "Full compatibility with the typesafe-sdk Python library and @typesafe-ai/sdk JS package.",
+                    "Zero text generation overhead: deterministic JSON payload contracts."
+                ]
+            },
+            {
+                id: "obsidian_vault",
+                title: "Obsidian Knowledge Vault & Cookbooks",
+                icon: "📓",
+                category: "core",
+                status: "Knowledge Base",
+                statusClass: "badge-status-doc",
+                modularity: "100.00%",
+                tech: ["Markdown", "Obsidian MOCs", "System One Specs"],
+                desc: "Curated local Obsidian knowledge base housed in D:\\programming\\jevtools\\vault. Contains complete reference sheets for Jev Core, Design patterns, SDKs, and 18 canonical cookbooks.",
+                runCmd: "Get-ChildItem D:\\programming\\jevtools\\vault",
+                testCmd: "Get-Content \"D:\\programming\\jevtools\\vault\\Jev MOC.md\"",
+                webServices: [],
+                features: [
+                    "Jev MOC (Map of Content) linking all architectural guides.",
+                    "Detailed decomposition rules: atomic judgments, criteria guidelines, and state design.",
+                    "Complete cookbook reference index spanning citation checks, RAG reranking, and guardrails."
+                ]
+            },
+            {
+                id: "project_template_hub",
+                title: "Website Project Tracking Template",
+                icon: "🖥️",
+                category: "gateway",
+                status: "Host Hub",
+                statusClass: "badge-status-service",
+                modularity: "100.00%",
+                tech: ["HTML5 Canvas 2D", "Glassmorphism", "Python HTTP"],
+                desc: "Visual design language and architectural host template located at D:\\Programming\\Website Project Tracking Template. Provides particle mesh canvas and unified dashboard cockpit.",
+                runCmd: "py \"D:\\Programming\\Website Project Tracking Template\\server.py\"",
+                testCmd: "py \"D:\\programming\\jevtools\\server.py\" --help",
+                webServices: [
+                    { name: "Parent Hub (:8088)", url: "http://localhost:8088/index.html" }
+                ],
+                features: [
+                    "Dynamic mesh filament network with mouse proximity gravity attraction.",
+                    "Zero-build-step vanilla ES6+ and CSS glassmorphism implementation.",
+                    "Integrated with all monitored local projects across D:\\programming."
+                ]
+            }
+        ];
+
+        let currentModalIndex = 0;
+
+        // UI Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            initCanvas();
+            createParticles();
+            animateCanvas();
+
+            loadReviewPreset(0);
+            loadTopicPreset(0);
+
+            populateHubCards(hubModules);
+            populateHubDropdowns();
+            fetchServerStatus();
+        });
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
+            if (targetBtn) targetBtn.classList.add('active');
+
+            const targetContent = document.getElementById(`tab-${tabId}`);
+            if (targetContent) targetContent.classList.add('active');
+        }
+
+        // Fetch Server Status
+        async function fetchServerStatus() {
+            try {
+                const res = await fetch('/api/status');
+                if (!res.ok) return;
+                const data = await res.json();
+
+                document.getElementById('bar-provider').textContent = data.provider.toUpperCase();
+                document.getElementById('bar-model').textContent = data.model;
+                document.getElementById('bar-key').textContent = data.api_key_masked;
+
+                const modeBadge = document.getElementById('bar-mode-badge');
+                const toggleBtn = document.getElementById('btn-toggle-mock');
+                if (data.mock) {
+                    modeBadge.textContent = 'MOCK MODE';
+                    modeBadge.style.color = 'var(--accent)';
+                    toggleBtn.textContent = '⚡ Switch to Live';
+                } else {
+                    modeBadge.textContent = 'LIVE API ACTIVE';
+                    modeBadge.style.color = 'var(--success)';
+                    toggleBtn.textContent = '🛡️ Switch to Mock';
+                }
+            } catch (e) {
+                console.warn('Status fetch warning:', e);
+            }
+        }
+
+        async function toggleMockMode() {
+            try {
+                const statusRes = await fetch('/api/status');
+                const statusData = await statusRes.json();
+                const newMock = !statusData.mock;
+
+                const updateRes = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mock: newMock })
+                });
+
+                if (updateRes.ok) {
+                    fetchServerStatus();
+                }
+            } catch (e) {
+                alert('Failed to toggle mode: ' + e);
+            }
+        }
+
+        // Review Presets
+        function loadReviewPreset(index) {
+            const p = reviewPresets[index];
+            if (!p) return;
+            document.getElementById('review-product').value = p.product;
+            document.getElementById('review-text').value = p.text;
+
+            document.querySelectorAll('#tab-reviews .preset-btn').forEach((b, idx) => {
+                b.classList.toggle('active', idx === index);
+            });
+        }
+
+        // Topic Presets
+        function loadTopicPreset(index) {
+            const p = topicPresets[index];
+            if (!p) return;
+            document.getElementById('topic-text').value = p.text;
+
+            document.querySelectorAll('#tab-topics .preset-btn').forEach((b, idx) => {
+                b.classList.toggle('active', idx === index);
+            });
+        }
+
+        // Review Analysis Execution
+        async function runReviewAnalysis() {
+            const btn = document.getElementById('btn-run-review');
+            const reviewText = document.getElementById('review-text').value.trim();
+            const product = document.getElementById('review-product').value.trim();
+
+            if (!reviewText) {
+                alert('Please enter review text.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Evaluating 6 Questions in Parallel...`;
+
+            try {
+                const res = await fetch('/api/analyze-review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ review: reviewText, product: product })
+                });
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                renderReviewResults(data);
+            } catch (err) {
+                alert('Evaluation Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>⚡</span> Run Speculative Fan-Out Evaluation`;
+            }
+        }
+
+        function renderReviewResults(res) {
+            // Action Banner
+            const banner = document.getElementById('review-action-banner');
+            const actionText = document.getElementById('review-action-text');
+            const actionIcon = document.getElementById('review-action-icon');
+
+            actionText.textContent = res.action;
+            banner.className = 'action-banner';
+
+            if (res.action.includes('[POSITIVE]')) {
+                banner.classList.add('positive');
+                actionIcon.textContent = '🌟';
+            } else if (res.action.includes('[ESCALATE]')) {
+                banner.classList.add('escalate');
+                actionIcon.textContent = '🚨';
+            } else if (res.action.includes('[CONTACT]')) {
+                banner.classList.add('contact');
+                actionIcon.textContent = '📞';
+            } else if (res.action.includes('[FLAG]')) {
+                banner.classList.add('flag');
+                actionIcon.textContent = '🚩';
+            } else {
+                banner.classList.add('review');
+                actionIcon.textContent = '📝';
+            }
+
+            // Composite
+            document.getElementById('review-composite-score').textContent = res.composite_score.toFixed(2);
+
+            // Sentiment & Quality
+            document.getElementById('review-sentiment-val').textContent = `${res.overall_sentiment.toFixed(2)} (Raw: ${res.sentiment_raw_score}/3)`;
+            document.getElementById('review-sentiment-bar').style.width = `${res.overall_sentiment * 100}%`;
+
+            document.getElementById('review-quality-val').textContent = `${res.quality_of_feedback.toFixed(2)} (Raw: ${res.quality_raw_score}/2)`;
+            document.getElementById('review-quality-bar').style.width = `${res.quality_of_feedback * 100}%`;
+
+            // Nouls
+            document.getElementById('review-recommend-val').textContent = `${(res.would_recommend * 100).toFixed(1)}%`;
+            document.getElementById('review-recommend-bar').style.width = `${res.would_recommend * 100}%`;
+
+            document.getElementById('review-defect-val').textContent = `${(res.mentions_defect * 100).toFixed(1)}%`;
+            document.getElementById('review-defect-bar').style.width = `${res.mentions_defect * 100}%`;
+
+            document.getElementById('review-shipping-val').textContent = `${(res.mentions_shipping * 100).toFixed(1)}%`;
+            document.getElementById('review-shipping-bar').style.width = `${res.mentions_shipping * 100}%`;
+
+            // Tone
+            const toneBadge = document.getElementById('review-tone-badge');
+            toneBadge.textContent = `${res.emotion_tone.toUpperCase()} (${res.emotion_confidence.toFixed(2)})`;
+
+            // Tone distribution
+            const distContainer = document.getElementById('review-tone-dist');
+            distContainer.innerHTML = '';
+            const probs = res.emotion_probabilities || {};
+            for (const [tone, prob] of Object.entries(probs)) {
+                distContainer.innerHTML += `
+                    <div class="dist-item">
+                        <span class="dist-label">${tone}</span>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-inner" style="width: ${prob * 100}%;"></div>
+                        </div>
+                        <span class="dist-val">${(prob * 100).toFixed(0)}%</span>
+                    </div>
+                `;
+            }
+
+            // Raw JSON
+            document.getElementById('review-raw-json').textContent = JSON.stringify(res.raw_answers || res, null, 2);
+        }
+
+        // Topic Classification Execution
+        async function runTopicClassification() {
+            const btn = document.getElementById('btn-run-topic');
+            const text = document.getElementById('topic-text').value.trim();
+
+            if (!text) {
+                alert('Please enter paragraph text.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Classifying and Routing...`;
+
+            try {
+                const res = await fetch('/api/classify-topic', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paragraph: text })
+                });
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                renderTopicResults(data);
+            } catch (err) {
+                alert('Classification Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>⚡</span> Classify & Route Paragraph`;
+            }
+        }
+
+        function renderTopicResults(res) {
+            // Action Banner
+            const banner = document.getElementById('topic-action-banner');
+            const actionText = document.getElementById('topic-action-text');
+            const actionIcon = document.getElementById('topic-action-icon');
+
+            actionText.textContent = res.routing_suggestion;
+            banner.className = 'action-banner';
+
+            if (res.routing_suggestion.includes('EDITORIAL')) {
+                banner.classList.add('contact');
+                actionIcon.textContent = '✍️';
+            } else if (res.routing_suggestion.includes('TECHNICAL')) {
+                banner.classList.add('positive');
+                actionIcon.textContent = '🔬';
+            } else if (res.routing_suggestion.includes('ACTIONABLE')) {
+                banner.classList.add('review');
+                actionIcon.textContent = '📣';
+            } else if (res.routing_suggestion.includes('MULTI-TOPIC')) {
+                banner.classList.add('flag');
+                actionIcon.textContent = '🔀';
+            } else {
+                banner.classList.add('positive');
+                actionIcon.textContent = '📁';
+            }
+
+            // Primary Topic
+            document.getElementById('topic-primary-label').textContent = res.primary_topic.toUpperCase();
+            document.getElementById('topic-confidence-val').textContent = `${(res.topic_confidence * 100).toFixed(0)}%`;
+
+            const tierBadge = document.getElementById('topic-conf-tier');
+            if (res.topic_confidence >= 0.8) {
+                tierBadge.textContent = 'HIGH [OK]';
+                tierBadge.className = 'badge badge-status-active';
+            } else if (res.topic_confidence >= 0.5) {
+                tierBadge.textContent = 'MEDIUM [!]';
+                tierBadge.className = 'badge badge-status-doc';
+            } else {
+                tierBadge.textContent = 'LOW [X]';
+                tierBadge.className = 'badge badge-status-service';
+            }
+
+            // Spectrum bar chart
+            const chart = document.getElementById('topic-dist-chart');
+            chart.innerHTML = '';
+            const sortedProbs = Object.entries(res.topic_probabilities || {}).sort((a, b) => b[1] - a[1]);
+            sortedProbs.forEach(([topic, prob]) => {
+                chart.innerHTML += `
+                    <div class="dist-item">
+                        <span class="dist-label">${topic}</span>
+                        <div class="dist-bar-track">
+                            <div class="dist-bar-inner" style="width: ${prob * 100}%; background: ${topic === res.primary_topic ? 'var(--primary)' : 'var(--secondary)'};"></div>
+                        </div>
+                        <span class="dist-val">${(prob * 100).toFixed(1)}%</span>
+                    </div>
+                `;
+            });
+
+            // Signals
+            document.getElementById('topic-opinion-val').textContent = `${(res.is_opinion * 100).toFixed(1)}%`;
+            document.getElementById('topic-opinion-bar').style.width = `${res.is_opinion * 100}%`;
+
+            document.getElementById('topic-actionable-val').textContent = `${(res.has_actionable * 100).toFixed(1)}%`;
+            document.getElementById('topic-actionable-bar').style.width = `${res.has_actionable * 100}%`;
+
+            document.getElementById('topic-depth-val').textContent = `${res.technical_depth.toFixed(2)} (Raw: ${res.technical_depth_raw}/2)`;
+            document.getElementById('topic-depth-bar').style.width = `${res.technical_depth * 100}%`;
+
+            // Raw JSON
+            document.getElementById('topic-raw-json').textContent = JSON.stringify(res.raw_answers || res, null, 2);
+        }
+
+        // Custom Decision Playground
+        async function runCustomEvaluation() {
+            const btn = document.getElementById('btn-run-custom');
+            const stateStr = document.getElementById('custom-state').value.trim();
+            const questionsStr = document.getElementById('custom-questions').value.trim();
+
+            let stateObj, questionsObj;
+            try {
+                stateObj = JSON.parse(stateStr);
+            } catch (e) {
+                stateObj = stateStr; // plain text fallback
+            }
+
+            try {
+                questionsObj = JSON.parse(questionsStr);
+            } catch (e) {
+                alert('Questions must be valid JSON: ' + e.message);
+                return;
+            }
+
+            if (typeof questionsObj !== 'object' || questionsObj === null || Array.isArray(questionsObj)) {
+                alert('Questions must be a JSON dictionary mapping question IDs to specifications.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner"></span> Processing Custom Questions...`;
+
+            try {
+                const res = await fetch('/api/custom-decision', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ state: stateObj, questions: questionsObj })
+                });
+
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                document.getElementById('custom-output-pre').textContent = JSON.stringify(data, null, 2);
+                if (data.metadata?.elapsed_ms) {
+                    document.getElementById('custom-elapsed-badge').textContent = `${data.metadata.elapsed_ms} ms`;
+                }
+            } catch (err) {
+                alert('Custom Evaluation Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>⚡</span> Send Custom Request to Jev`;
+            }
+        }
+
+        // Hub Cards Rendering (Website Project Tracking Template Pattern)
+        function populateHubCards(data) {
+            const container = document.getElementById('hub-cards-container');
+            container.innerHTML = '';
+
+            if (data.length === 0) {
+                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem;">No matching modules found.</div>`;
+                return;
+            }
+
+            data.forEach((mod) => {
+                const card = document.createElement('div');
+                card.className = 'project-card';
+                card.onclick = (e) => {
+                    if (e.target.tagName === 'A' || e.target.closest('a')) return;
+                    openModalById(mod.id);
+                };
+
+                const pillsHtml = mod.tech.map(t => `<span class="pill">${t}</span>`).join('');
+
+                card.innerHTML = `
+                    <div class="card-top">
+                        <div class="icon-container">${mod.icon}</div>
+                        <div class="badge-group">
+                            <span class="badge ${mod.statusClass}">${mod.status}</span>
+                            <span class="pill" style="font-family: var(--font-mono); font-size: 0.72rem;">Modularity: ${mod.modularity}</span>
+                        </div>
+                    </div>
+                    <div class="project-title">${mod.title}</div>
+                    <div class="tech-stack-pills">${pillsHtml}</div>
+                    <p class="project-desc">${mod.desc}</p>
+                    <div class="card-actions">
+                        <button class="btn-inspect" onclick="openModalById('${mod.id}')">Inspect & Run ➔</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function populateHubDropdowns() {
+            const quickJump = document.getElementById('quick-jump');
+            const modalJump = document.getElementById('modal-jump-select');
+            quickJump.innerHTML = `<option value="">Jump to Module...</option>`;
+            modalJump.innerHTML = '';
+
+            hubModules.forEach(m => {
+                const opt1 = document.createElement('option');
+                opt1.value = m.id;
+                opt1.textContent = `${m.icon} ${m.title}`;
+                quickJump.appendChild(opt1);
+
+                const opt2 = document.createElement('option');
+                opt2.value = m.id;
+                opt2.textContent = `${m.icon} ${m.title}`;
+                modalJump.appendChild(opt2);
+            });
+        }
+
+        // Filtering & Search
+        const searchInput = document.getElementById('search-input');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+
+        function filterHub() {
+            const query = searchInput.value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-btn.active').dataset.filter;
+
+            const filtered = hubModules.filter(m => {
+                const matchesQuery = m.title.toLowerCase().includes(query) ||
+                                     m.desc.toLowerCase().includes(query) ||
+                                     m.tech.some(t => t.toLowerCase().includes(query));
+
+                const matchesFilter = (activeFilter === 'all') ||
+                                      (activeFilter === 'core' && m.category === 'core') ||
+                                      (activeFilter === 'pipeline' && m.category === 'pipeline') ||
+                                      (activeFilter === 'gateway' && m.category === 'gateway');
+
+                return matchesQuery && matchesFilter;
+            });
+
+            populateHubCards(filtered);
+        }
+
+        searchInput.addEventListener('input', filterHub);
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                filterHub();
+            });
+        });
+
+        document.getElementById('quick-jump').addEventListener('change', (e) => {
+            if (e.target.value) openModalById(e.target.value);
+        });
+
+        // Interactive Detail Modal
+        const modalOverlay = document.getElementById('modal-overlay');
+        const btnPrevCard = document.getElementById('btn-prev-card');
+        const btnNextCard = document.getElementById('btn-next-card');
+        const btnCloseModal = document.getElementById('btn-close-modal');
+
+        function openModalByIndex(index) {
+            if (index < 0) index = hubModules.length - 1;
+            if (index >= hubModules.length) index = 0;
+
+            currentModalIndex = index;
+            const mod = hubModules[currentModalIndex];
+
+            document.getElementById('modal-icon').textContent = mod.icon;
+            document.getElementById('modal-title').textContent = mod.title;
+            document.getElementById('modal-subtitle').textContent = `${mod.status} • Stack: ${mod.tech.join(', ')}`;
+            document.getElementById('modal-desc').textContent = mod.desc;
+            document.getElementById('modal-cmd-run').textContent = mod.runCmd;
+            document.getElementById('modal-cmd-test').textContent = mod.testCmd;
+
+            const featUl = document.getElementById('modal-features');
+            featUl.innerHTML = mod.features.map(f => `<li>${f}</li>`).join('');
+
+            const webSec = document.getElementById('modal-web-services-section');
+            const webDiv = document.getElementById('modal-web-links');
+            if (mod.webServices.length > 0) {
+                webSec.style.display = 'block';
+                webDiv.innerHTML = mod.webServices.map(w => `<a href="${w.url}" target="_blank" class="service-link-btn" style="background: linear-gradient(135deg, #0a1329 0%, #1e1b4b 50%, #7b2cbf 100%); border: 1px solid #8b5cf6; color: #ffffff; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; display: inline-block; margin-right: 0.5rem; box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);">🌐 Launch ${w.name}</a>`).join('');
+            } else {
+                webSec.style.display = 'none';
+            }
+
+            document.getElementById('modal-jump-select').value = mod.id;
+            modalOverlay.classList.add('active');
+        }
+
+        function openModalById(id) {
+            const idx = hubModules.findIndex(m => m.id === id);
+            if (idx !== -1) openModalByIndex(idx);
+        }
+
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        btnPrevCard.addEventListener('click', () => openModalByIndex(currentModalIndex - 1));
+        btnNextCard.addEventListener('click', () => openModalByIndex(currentModalIndex + 1));
+        btnCloseModal.addEventListener('click', closeModal);
+        document.getElementById('modal-jump-select').addEventListener('change', (e) => {
+            if (e.target.value) openModalById(e.target.value);
+        });
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+
+        // Config Modal
+        const configModal = document.getElementById('config-modal-overlay');
+        function openConfigModal() {
+            configModal.classList.add('active');
+        }
+        function closeConfigModal() {
+            configModal.classList.remove('active');
+        }
+        async function saveConfig() {
+            const prov = document.getElementById('cfg-provider').value;
+            const key = document.getElementById('cfg-api-key').value.trim();
+            const mode = document.getElementById('cfg-mode').value;
+
+            const payload = {
+                provider: prov,
+                mock: mode === 'mock'
+            };
+            if (key) payload.api_key = key;
+
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Failed to update config');
+                fetchServerStatus();
+                closeConfigModal();
+            } catch (e) {
+                alert(e.message);
+            }
+        }
+        configModal.addEventListener('click', (e) => {
+            if (e.target === configModal) closeConfigModal();
+        });
+
+        // Utilities
+        function toggleRaw(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('open');
+        }
+
+        function copyCode(elementId) {
+            const text = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = document.getElementById(elementId).parentElement.querySelector('.btn-copy');
+                if (btn) {
+                    const orig = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = orig, 1500);
+                }
+            });
+        }
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            if (e.key === '/') {
+                if (document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    switchTab('hub');
+                    searchInput.focus();
+                }
+            } else if (e.key === 'Escape') {
+                closeModal();
+                closeConfigModal();
+            } else if (modalOverlay.classList.contains('active')) {
+                if (e.key === 'ArrowLeft' || e.key === 'p') {
+                    openModalByIndex(currentModalIndex - 1);
+                } else if (e.key === 'ArrowRight' || e.key === 'n') {
+                    openModalByIndex(currentModalIndex + 1);
+                }
+            }
+        });
+
+        // Toggle between Vector SVG Banner and High-Res Preview Card Image
+        function toggleBannerMode() {
+            const svgView = document.getElementById('hero-svg-view');
+            const imgView = document.getElementById('hero-img-view');
+            const btn = document.getElementById('btn-banner-mode');
+            if (!svgView || !imgView || !btn) return;
+            if (svgView.style.display !== 'none') {
+                svgView.style.display = 'none';
+                imgView.style.display = 'block';
+                btn.innerHTML = '⚡ View Vector Banner';
+            } else {
+                svgView.style.display = 'block';
+                imgView.style.display = 'none';
+                btn.innerHTML = '🖼️ View HQ Image Card';
+            }
+        }
+
+        // ==========================================
+        // DYNAMIC PCB CIRCUIT BOARD MATRIX ENGINE
+        // Authentic styling matching the GitHub Preview Banner
+        // ==========================================
+        const canvas = document.getElementById('background-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        const GRID_STEP = 55;
+        let circuitTraces = [];
+        let circuitVias = [];
+        let signalPackets = [];
+
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            buildCircuitGrid();
+        }
+
+        function getCircuitColor(x, alpha = 1) {
+            const ratio = Math.max(0, Math.min(1, x / (width || 1)));
+            let r, g, b;
+            if (ratio < 0.32) {
+                // Electric Cyan / Blue (#0077da -> #0f4bb5)
+                const t = ratio / 0.32;
+                r = Math.round(0 + 15 * t);
+                g = Math.round(119 - 44 * t);
+                b = Math.round(218 - 37 * t);
+            } else if (ratio < 0.68) {
+                // Royal Cobalt to Deep Indigo (#0f4bb5 -> #2a2082)
+                const t = (ratio - 0.32) / 0.36;
+                r = Math.round(15 + 27 * t);
+                g = Math.round(75 - 43 * t);
+                b = Math.round(181 - 51 * t);
+            } else {
+                // Deep Indigo to Vivid Purple (#2a2082 -> #722aa4)
+                const t = (ratio - 0.68) / 0.32;
+                r = Math.round(42 + 72 * t);
+                g = Math.round(32 + 10 * t);
+                b = Math.round(130 + 34 * t);
+            }
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function buildCircuitGrid() {
+            circuitTraces = [];
+            circuitVias = [];
+            signalPackets = [];
+
+            const cols = Math.ceil(width / GRID_STEP) + 2;
+            const rows = Math.ceil(height / GRID_STEP) + 2;
+
+            // Generate structured circuit paths
+            const numPaths = Math.max(35, Math.floor((width * height) / 20000));
+
+            for (let p = 0; p < numPaths; p++) {
+                let gx = Math.floor(Math.random() * cols);
+                let gy = Math.floor(Math.random() * rows);
+                let curX = gx * GRID_STEP;
+                let curY = gy * GRID_STEP;
+
+                const points = [{ x: curX, y: curY }];
+                const segments = Math.floor(Math.random() * 5) + 3;
+
+                for (let s = 0; s < segments; s++) {
+                    const dir = Math.floor(Math.random() * 6);
+                    const len = (Math.floor(Math.random() * 3) + 1) * GRID_STEP;
+
+                    if (dir === 0) curX += len; // right
+                    else if (dir === 1) curX -= len; // left
+                    else if (dir === 2) curY += len; // down
+                    else if (dir === 3) curY -= len; // up
+                    else if (dir === 4) { curX += len; curY += len; } // 45-deg down-right
+                    else { curX += len; curY -= len; } // 45-deg up-right
+
+                    // Clamp softly within bounds
+                    curX = Math.max(-GRID_STEP, Math.min(width + GRID_STEP, curX));
+                    curY = Math.max(-GRID_STEP, Math.min(height + GRID_STEP, curY));
+
+                    points.push({ x: curX, y: curY });
+                }
+
+                // Add circular via at endpoint
+                circuitVias.push({
+                    x: points[points.length - 1].x,
+                    y: points[points.length - 1].y,
+                    r: Math.random() > 0.6 ? 3.5 : 2.2
+                });
+
+                circuitTraces.push({
+                    points: points,
+                    width: Math.random() > 0.75 ? 2.5 : 1.5,
+                    baseAlpha: 0.16 + Math.random() * 0.12
+                });
+
+                // Spawn 1-2 packets per trace
+                const numPackets = Math.random() > 0.45 ? 2 : 1;
+                for (let k = 0; k < numPackets; k++) {
+                    signalPackets.push(new SignalPacket(points, Math.random()));
+                }
+            }
+        }
+
+        class SignalPacket {
+            constructor(points, initialProgress = 0) {
+                this.points = points;
+                this.totalSegments = Math.max(1, points.length - 1);
+                this.currentSeg = Math.floor(initialProgress * this.totalSegments);
+                this.t = (initialProgress * this.totalSegments) % 1;
+                this.speed = 0.006 + Math.random() * 0.010;
+                this.accentColor = Math.random() > 0.65 ? '#c084fc' : (Math.random() > 0.35 ? '#8b5cf6' : (Math.random() > 0.15 ? '#ffffff' : '#0f4bb5'));
+            }
+
+            update() {
+                if (this.points.length < 2) return;
+                this.t += this.speed;
+                if (this.t >= 1) {
+                    this.t = 0;
+                    this.currentSeg++;
+                    if (this.currentSeg >= this.totalSegments) {
+                        this.currentSeg = 0;
+                        if (Math.random() > 0.65 && circuitTraces.length > 0) {
+                            this.points = circuitTraces[Math.floor(Math.random() * circuitTraces.length)].points;
+                            this.totalSegments = Math.max(1, this.points.length - 1);
+                        }
+                    }
+                }
+            }
+
+            draw() {
+                if (this.currentSeg >= this.totalSegments) return;
+                const p1 = this.points[this.currentSeg];
+                const p2 = this.points[this.currentSeg + 1];
+                if (!p1 || !p2) return;
+
+                const x = p1.x + (p2.x - p1.x) * this.t;
+                const y = p1.y + (p2.y - p1.y) * this.t;
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+                ctx.fillStyle = this.accentColor;
+                ctx.shadowColor = this.accentColor;
+                ctx.shadowBlur = 9;
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        let mouse = { x: null, y: null };
+        window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+        window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+        window.addEventListener('click', () => {
+            // Pulse shockwave on click
+            for (let i = 0; i < 4; i++) {
+                if (circuitTraces.length > 0) {
+                    const randomTrace = circuitTraces[Math.floor(Math.random() * circuitTraces.length)];
+                    const p = new SignalPacket(randomTrace.points, 0);
+                    p.speed = 0.035;
+                    p.accentColor = '#c084fc';
+                    signalPackets.push(p);
+                }
+            }
+        });
+
+        function animateCanvas() {
+            requestAnimationFrame(animateCanvas);
+            ctx.clearRect(0, 0, width, height);
+
+            // Draw base circuit background gradient
+            const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+            bgGrad.addColorStop(0, '#030712');
+            bgGrad.addColorStop(0.5, '#070e24');
+            bgGrad.addColorStop(1, '#1a0b2e');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            // Draw circuit traces
+            for (let i = 0; i < circuitTraces.length; i++) {
+                const tr = circuitTraces[i];
+                const pts = tr.points;
+                if (pts.length < 2) continue;
+
+                // Check distance to mouse for interactive trace glow
+                let mouseGlow = 0;
+                if (mouse.x !== null && mouse.y !== null) {
+                    for (let k = 0; k < pts.length; k++) {
+                        const mdx = mouse.x - pts[k].x;
+                        const mdy = mouse.y - pts[k].y;
+                        const d = Math.sqrt(mdx * mdx + mdy * mdy);
+                        if (d < 160) {
+                            mouseGlow = Math.max(mouseGlow, (1 - d / 160) * 0.65);
+                        }
+                    }
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(pts[0].x, pts[0].y);
+                for (let k = 1; k < pts.length; k++) {
+                    ctx.lineTo(pts[k].x, pts[k].y);
+                }
+
+                const traceColor = getCircuitColor(pts[0].x, Math.min(0.9, tr.baseAlpha + mouseGlow));
+                ctx.strokeStyle = traceColor;
+                ctx.lineWidth = tr.width + (mouseGlow > 0 ? 1 : 0);
+                ctx.lineCap = 'square';
+                ctx.lineJoin = 'miter';
+
+                if (mouseGlow > 0.2) {
+                    ctx.save();
+                    ctx.shadowColor = traceColor;
+                    ctx.shadowBlur = 12 * mouseGlow;
+                    ctx.stroke();
+                    ctx.restore();
+                } else {
+                    ctx.stroke();
+                }
+            }
+
+            // Draw vias (connection rings)
+            for (let i = 0; i < circuitVias.length; i++) {
+                const v = circuitVias[i];
+                ctx.beginPath();
+                ctx.arc(v.x, v.y, v.r, 0, Math.PI * 2);
+                ctx.fillStyle = getCircuitColor(v.x, 0.45);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(v.x, v.y, v.r + 1.5, 0, Math.PI * 2);
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Update & draw pulses
+            for (let i = 0; i < signalPackets.length; i++) {
+                signalPackets[i].update();
+                signalPackets[i].draw();
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+        });
+
+        initCanvas();
+        animateCanvas();
+    </script>
+</body>
+</html>
