@@ -18,7 +18,7 @@ desktop.ini
 *.swp
 *.swo
 *~
-.code-workspace
+*.code-workspace
 
 # Node / Scratch / Temp / Python
 node_modules/
