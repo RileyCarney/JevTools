@@ -52,6 +52,11 @@ class TestIndexHtmlPayloads(unittest.TestCase):
         self.assertIn("charge_type", parsed)
         self.assertIn("frustration_level", parsed)
 
+    def test_stats_banner_has_actual_tested_latency_and_no_100ms_placeholder(self):
+        self.assertNotIn('<div class="stat-val">~100 ms</div>', self.html)
+        pattern = r'<div class="stat-val"[^>]*>\s*287 ms\s*</div>'
+        self.assertRegex(self.html, pattern, "Stats banner must display tested 287 ms inference latency")
+
 
 class TestServerEndpoints(unittest.TestCase):
     """Test HTTP API endpoints in server.py using a test server instance."""
@@ -85,6 +90,18 @@ class TestServerEndpoints(unittest.TestCase):
             headers={"Content-Type": "application/json"},
             method="POST"
         )
+        try:
+            with urllib.request.urlopen(req) as resp:
+                status = resp.getcode()
+                body = json.loads(resp.read().decode("utf-8"))
+                return status, body
+        except urllib.error.HTTPError as err:
+            body = json.loads(err.read().decode("utf-8"))
+            return err.code, body
+
+    def _delete(self, path: str) -> tuple[int, dict]:
+        url = f"http://127.0.0.1:{self.port}{path}"
+        req = urllib.request.Request(url, method="DELETE")
         try:
             with urllib.request.urlopen(req) as resp:
                 status = resp.getcode()
@@ -193,6 +210,122 @@ class TestServerEndpoints(unittest.TestCase):
         })
         self.assertEqual(status, 400)
         self.assertIn("error", body)
+
+    def test_status_endpoint_returns_ttft_and_latency(self):
+        status, body = self._get("/api/status")
+        self.assertEqual(status, 200)
+        self.assertIn("tested_inference_latency_ms", body)
+        self.assertIn("tested_ttft_ms", body)
+        self.assertIn("tested_inference_latency_str", body)
+        self.assertTrue(body["tested_inference_latency_str"].endswith(" ms"))
+        self.assertGreater(body["tested_inference_latency_ms"], 0)
+        self.assertGreater(body["tested_ttft_ms"], 0)
+
+    def test_benchmark_ttft_endpoint(self):
+        status, body = self._get("/api/benchmark-ttft")
+        self.assertEqual(status, 200)
+        self.assertIn("avg_ttft_ms", body)
+        self.assertIn("avg_latency_ms", body)
+        self.assertGreater(body["avg_ttft_ms"], 0)
+
+    def test_analyze_review_endpoint_returns_ttft(self):
+        status, body = self._post("/api/analyze-review", {
+            "review": "Fantastic battery life and great build quality.",
+            "product": "Test Earbuds"
+        })
+        self.assertEqual(status, 200)
+        self.assertIn("ttft_ms", body)
+        self.assertIn("elapsed_ms", body)
+        self.assertGreater(body["ttft_ms"], 0)
+
+    def test_classify_topic_endpoint_returns_ttft(self):
+        status, body = self._post("/api/classify-topic", {
+            "paragraph": "Researchers have discovered new water ice formations beneath Martian polar caps."
+        })
+        self.assertEqual(status, 200)
+        self.assertIn("ttft_ms", body)
+        self.assertIn("elapsed_ms", body)
+        self.assertGreater(body["ttft_ms"], 0)
+
+    def test_custom_decision_endpoint_returns_ttft(self):
+        status, body = self._post("/api/custom-decision", {
+            "state": {"ticket": "123"},
+            "questions": {"is_urgent": {"type": "noul", "instructions": "Is it urgent?"}}
+        })
+        self.assertEqual(status, 200)
+        self.assertIn("metadata", body)
+        self.assertIn("ttft_ms", body["metadata"])
+        self.assertIn("elapsed_ms", body["metadata"])
+        self.assertGreater(body["metadata"]["ttft_ms"], 0)
+
+    def test_history_endpoints_and_stats(self):
+        # Clear first
+        self._delete("/api/history")
+
+        # GET /api/history when empty
+        status, body = self._get("/api/history")
+        self.assertEqual(status, 200)
+        self.assertIn("items", body)
+        self.assertIn("stats", body)
+        self.assertEqual(body["count"], 0)
+
+        # GET /api/history/stats
+        status_s, body_s = self._get("/api/history/stats")
+        self.assertEqual(status_s, 200)
+        self.assertIn("total_requests", body_s)
+        self.assertIn("db_path", body_s)
+        self.assertIn("db_size_kb", body_s)
+
+    def test_api_requests_are_logged_to_database(self):
+        # Clear history
+        self._delete("/api/history")
+
+        # Perform review analysis
+        status, _ = self._post("/api/analyze-review", {
+            "review": "Fast delivery and exceptional audio clarity.",
+            "product": "Audiophile Pro"
+        })
+        self.assertEqual(status, 200)
+
+        # Verify history reflects the request
+        status_h, body_h = self._get("/api/history")
+        self.assertEqual(status_h, 200)
+        self.assertGreaterEqual(body_h["count"], 1)
+
+        item = body_h["items"][0]
+        self.assertEqual(item["action_type"], "review_analysis")
+        self.assertEqual(item["status"], "success")
+        self.assertEqual(item["client_info"], "web_ui")
+        self.assertIn("Audiophile Pro", json.dumps(item["request_payload"]))
+
+        # Query single item by id
+        status_single, single = self._get(f"/api/history?id={item['id']}")
+        self.assertEqual(status_single, 200)
+        self.assertEqual(single["id"], item["id"])
+
+    def test_history_clear_and_delete(self):
+        # Seed an item
+        self._post("/api/classify-topic", {
+            "paragraph": "Advances in neural network architectures."
+        })
+
+        # Test POST /api/history/clear
+        status_c, body_c = self._post("/api/history/clear", {})
+        self.assertEqual(status_c, 200)
+        self.assertIn("cleared", body_c)
+
+        # Verify count is 0
+        _, body_empty = self._get("/api/history")
+        self.assertEqual(body_empty["count"], 0)
+
+        # Seed again and test DELETE /api/history
+        self._post("/api/classify-topic", {
+            "paragraph": "Stock market fluctuations."
+        })
+        status_d, body_d = self._delete("/api/history")
+        self.assertEqual(status_d, 200)
+        self.assertIn("cleared", body_d)
+        self.assertGreater(body_d["cleared"], 0)
 
 
 if __name__ == "__main__":

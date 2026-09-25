@@ -33,3 +33,12 @@ __pycache__/
 !.env.example  # (Optional: allows committing a safe template file)
 *.pem
 secrets.json
+
+# Local SQLite Database & Personal User Data Store
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+data/
+jevtools.db
+

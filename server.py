@@ -26,6 +26,7 @@ if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
 import jev_demo
+import database
 
 DEFAULT_PORT = 8089
 
@@ -36,7 +37,10 @@ RUNTIME_STATE = {
     "provider": "openrouter",
     "model": jev_demo.OPENROUTER_DEFAULT_MODEL,
     "endpoint": jev_demo.OPENROUTER_API_URL,
+    "tested_latency_ms": jev_demo.OPENROUTER_TESTED_LATENCY_MS,
+    "tested_ttft_ms": jev_demo.OPENROUTER_TESTED_TTFT_MS,
 }
+
 
 
 def _init_server_state(cli_key: str | None = None, force_mock: bool = False) -> None:
@@ -73,7 +77,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
 
     def end_headers(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
         super().end_headers()
@@ -122,6 +126,10 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "endpoint": ep if not RUNTIME_STATE["mock"] else "[OFFLINE MOCK]",
                 "api_key_masked": jev_demo.mask_key(RUNTIME_STATE["api_key"]),
                 "has_real_key": bool(RUNTIME_STATE["api_key"] and not RUNTIME_STATE["api_key"].startswith("mock-")),
+                "tested_inference_latency_ms": RUNTIME_STATE["tested_latency_ms"],
+                "tested_ttft_ms": RUNTIME_STATE["tested_ttft_ms"],
+                "tested_inference_latency_str": f"{round(RUNTIME_STATE['tested_latency_ms'])} ms",
+                "tested_ttft_str": f"{round(RUNTIME_STATE['tested_ttft_ms'])} ms",
                 "benchmarks": {
                     "reviews_count": len(jev_demo.REVIEW_CASES),
                     "topics_count": len(jev_demo.TOPIC_CASES),
@@ -129,6 +137,58 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             }
             self._send_json_response(data)
             return
+
+        if path == "/api/benchmark-ttft":
+            runs = 3
+            stats = jev_demo.measure_openrouter_ttft(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
+            if stats.get("avg_latency_ms"):
+                RUNTIME_STATE["tested_latency_ms"] = stats["avg_latency_ms"]
+            if stats.get("avg_ttft_ms"):
+                RUNTIME_STATE["tested_ttft_ms"] = stats["avg_ttft_ms"]
+            self._send_json_response(stats)
+            return
+
+        if path == "/api/history":
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            req_id_list = query_params.get("id")
+            if req_id_list:
+                try:
+                    entry = database.get_request(int(req_id_list[0]))
+                    if entry:
+                        self._send_json_response(entry)
+                    else:
+                        self._send_json_error("Log entry not found", status=404)
+                except ValueError:
+                    self._send_json_error("Invalid ID format", status=400)
+                return
+
+            limit = int(query_params.get("limit", [50])[0])
+            offset = int(query_params.get("offset", [0])[0])
+            action_type = query_params.get("action_type", [None])[0]
+            status_filter = query_params.get("status", [None])[0]
+            search = query_params.get("search", [None])[0]
+
+            items = database.get_history(
+                limit=limit,
+                offset=offset,
+                action_type=action_type,
+                status=status_filter,
+                search=search,
+            )
+            stats = database.get_stats()
+            self._send_json_response({
+                "items": items,
+                "count": len(items),
+                "limit": limit,
+                "offset": offset,
+                "stats": stats,
+            })
+            return
+
+        if path == "/api/history/stats":
+            self._send_json_response(database.get_stats())
+            return
+
 
         # Serve index.html for root path, and assets/favicon.ico for favicon requests
         if path in ("", "/"):
@@ -180,6 +240,14 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             })
             return
 
+        if path == "/api/history/clear":
+            count = database.clear_history()
+            self._send_json_response({
+                "message": f"Successfully cleared {count} interaction logs",
+                "cleared": count,
+            })
+            return
+
         if path == "/api/analyze-review":
             review_text = str(body.get("review", "")).strip()
             product_name = str(body.get("product", "Wireless Earbuds Pro")).strip() or "Wireless Earbuds Pro"
@@ -199,6 +267,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     provider=RUNTIME_STATE["provider"],
                     model=RUNTIME_STATE["model"],
                     endpoint=RUNTIME_STATE["endpoint"],
+                    client_info="web_ui",
                 )
                 self._send_json_response(result.to_dict())
             except Exception as exc:
@@ -222,6 +291,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     provider=RUNTIME_STATE["provider"],
                     model=RUNTIME_STATE["model"],
                     endpoint=RUNTIME_STATE["endpoint"],
+                    client_info="web_ui",
                 )
                 self._send_json_response(result.to_dict())
             except Exception as exc:
@@ -250,10 +320,35 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     provider=RUNTIME_STATE["provider"],
                     model=RUNTIME_STATE["model"],
                     endpoint=RUNTIME_STATE["endpoint"],
+                    client_info="web_ui",
                 )
                 self._send_json_response(res)
             except Exception as exc:
                 self._send_json_error(f"Custom evaluation failed: {exc}", status=500)
+            return
+
+        if path == "/api/benchmark-ttft":
+            runs = int(body.get("runs", 3)) if isinstance(body, dict) else 3
+            stats = jev_demo.measure_openrouter_ttft(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
+            if stats.get("avg_latency_ms"):
+                RUNTIME_STATE["tested_latency_ms"] = stats["avg_latency_ms"]
+            if stats.get("avg_ttft_ms"):
+                RUNTIME_STATE["tested_ttft_ms"] = stats["avg_ttft_ms"]
+            self._send_json_response(stats)
+            return
+
+        self._send_json_error(f"Endpoint not found: {path}", status=404)
+
+    def do_DELETE(self) -> None:
+        parsed_url = urllib.parse.urlparse(self.path)
+        path = parsed_url.path
+
+        if path == "/api/history":
+            count = database.clear_history()
+            self._send_json_response({
+                "message": f"Successfully cleared {count} interaction logs",
+                "cleared": count,
+            })
             return
 
         self._send_json_error(f"Endpoint not found: {path}", status=404)

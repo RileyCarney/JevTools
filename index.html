@@ -1424,6 +1424,276 @@
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
+
+        /* History & Local Storage Studio */
+        .history-summary-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.2rem;
+            margin-bottom: 1.6rem;
+        }
+
+        .history-stat-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.1rem 1.3rem;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            transition: all 0.25s ease;
+        }
+
+        .history-stat-box:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 18px rgba(139, 92, 246, 0.2);
+        }
+
+        .history-stat-val {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--primary);
+            font-family: var(--font-mono);
+        }
+
+        .history-stat-lbl {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+        }
+
+        .history-privacy-banner {
+            background: linear-gradient(135deg, rgba(16, 24, 52, 0.9) 0%, rgba(38, 20, 72, 0.85) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            border-left: 4px solid #10b981;
+            padding: 0.9rem 1.4rem;
+            border-radius: 12px;
+            margin-bottom: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .history-privacy-text {
+            font-size: 0.9rem;
+            color: #d1d5db;
+            line-height: 1.4;
+        }
+
+        .history-privacy-text strong {
+            color: #34d399;
+        }
+
+        .history-toolbar {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.2rem;
+            background: rgba(10, 10, 24, 0.6);
+            border: 1px solid var(--card-border);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+        }
+
+        .history-search-input {
+            flex: 1;
+            min-width: 220px;
+            background: rgba(5, 5, 15, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 0.55rem 0.9rem;
+            font-size: 0.88rem;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .history-search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.4);
+        }
+
+        .history-filter-select {
+            background: rgba(5, 5, 15, 0.85);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 0.55rem 0.8rem;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .history-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }
+
+        .history-btn:hover {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--primary);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .history-btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        .history-table-container {
+            width: 100%;
+            overflow-x: auto;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            text-align: left;
+        }
+
+        .history-table th {
+            background: rgba(15, 18, 40, 0.85);
+            color: var(--text-muted);
+            font-weight: 700;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            padding: 0.9rem 1.1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+
+        .history-table td {
+            padding: 0.85rem 1.1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+            color: #e2e8f0;
+        }
+
+        .history-table tr:hover td {
+            background: rgba(139, 92, 246, 0.08);
+        }
+
+        .badge-action {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-action-review {
+            background: rgba(123, 44, 191, 0.25);
+            color: #d8b4fe;
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+
+        .badge-action-topic {
+            background: rgba(14, 165, 233, 0.2);
+            color: #7dd3fc;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+
+        .badge-action-custom {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+            border: 1px solid rgba(251, 191, 36, 0.4);
+        }
+
+        .badge-action-benchmark {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+        }
+
+        .badge-status-ok {
+            color: #34d399;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .badge-status-err {
+            color: #f87171;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-inspect {
+            background: rgba(139, 92, 246, 0.18);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #e9d5ff;
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-inspect:hover {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.6);
+            transform: translateY(-1px);
+        }
+
+        /* Payload Inspector Modal */
+        .payload-dialog-box {
+            width: 94%;
+            max-width: 1040px;
+            max-height: 90vh;
+            background: var(--modal-bg);
+            border: 1px solid #8b5cf6;
+            border-radius: 16px;
+            padding: 1.8rem;
+            box-shadow: 0 10px 45px rgba(0, 0, 0, 0.9), 0 0 30px rgba(139, 92, 246, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            overflow-y: auto;
+        }
+
+        .payload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.4rem;
+        }
+
+        @media (max-width: 860px) {
+            .payload-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1553,9 +1823,9 @@
 
         <!-- Stats Overview Banner -->
         <div class="stats-banner">
-            <div class="stat-card">
-                <div class="stat-val">~100 ms</div>
-                <div class="stat-lbl">Inference Latency</div>
+            <div class="stat-card" id="stat-latency-card" title="Tested OpenRouter API Inference Latency & TTFT">
+                <div class="stat-val" id="stat-latency-val">287 ms</div>
+                <div class="stat-lbl" id="stat-latency-lbl">Inference Latency (TTFT ~287 ms)</div>
             </div>
             <div class="stat-card">
                 <div class="stat-val">3 Primitives</div>
@@ -1577,6 +1847,7 @@
             <button class="tab-btn" onclick="switchTab('topics')">📰 Topic Classification Studio</button>
             <button class="tab-btn" onclick="switchTab('playground')">🧪 Custom Decision Playground</button>
             <button class="tab-btn" onclick="switchTab('hub')">🏛️ Architecture & Knowledge Hub</button>
+            <button class="tab-btn" onclick="switchTab('history')">📜 Request History &amp; Storage</button>
         </div>
 
         <!-- ================= TAB 1: CUSTOMER REVIEW STUDIO ================= -->
@@ -1619,7 +1890,11 @@
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title"><span>📊</span> Decision Evaluation & Signals</div>
-                        <span class="panel-badge" id="review-engine-badge">Jev Model</span>
+                        <div style="display: flex; gap: 0.4rem; align-items: center;">
+                            <span class="panel-badge" id="review-ttft-badge">TTFT: 287 ms</span>
+                            <span class="panel-badge" id="review-elapsed-badge">287 ms</span>
+                            <span class="panel-badge" id="review-engine-badge">Jev Model</span>
+                        </div>
                     </div>
 
                     <div class="results-container" id="review-results-area">
@@ -1753,7 +2028,11 @@
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title"><span>🎯</span> Classification & Routing Policy</div>
-                        <span class="panel-badge" id="topic-engine-badge">Jev Model</span>
+                        <div style="display: flex; gap: 0.4rem; align-items: center;">
+                            <span class="panel-badge" id="topic-ttft-badge">TTFT: 287 ms</span>
+                            <span class="panel-badge" id="topic-elapsed-badge">287 ms</span>
+                            <span class="panel-badge" id="topic-engine-badge">Jev Model</span>
+                        </div>
                     </div>
 
                     <div class="results-container" id="topic-results-area">
@@ -1884,7 +2163,10 @@
                 <div class="panel">
                     <div class="panel-header">
                         <div class="panel-title"><span>📋</span> Evaluated Decision Output</div>
-                        <span class="panel-badge" id="custom-elapsed-badge">0 ms</span>
+                        <div style="display: flex; gap: 0.4rem; align-items: center;">
+                            <span class="panel-badge" id="custom-ttft-badge">TTFT: --</span>
+                            <span class="panel-badge" id="custom-elapsed-badge">0 ms</span>
+                        </div>
                     </div>
 
                     <div class="code-block" style="min-height: 420px; max-height: 520px; overflow-y: auto;">
@@ -1921,6 +2203,90 @@
             </main>
 
             <p class="kbd-hint">Keyboard Maneuvering: <kbd>←</kbd> Previous Item | <kbd>→</kbd> Next Item | <kbd>Esc</kbd> Close View | <kbd>/</kbd> Search</p>
+        </div>
+
+        <!-- ================= TAB 5: REQUEST HISTORY & LOCAL STORAGE ================= -->
+        <div class="tab-content" id="tab-history">
+            <!-- Privacy & Local Store Notice -->
+            <div class="history-privacy-banner">
+                <div class="history-privacy-text">
+                    🔒 <strong>Local Personal Device Storage Active:</strong> Every request sent and response received is stored locally on your device in <code style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; color: #34d399;">jevtools.db</code>. This SQLite database is strictly added to <code style="background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; color: #34d399;">.gitignore</code> and never committed or synced to public git repositories.
+                </div>
+                <div style="display: flex; gap: 0.6rem; align-items: center;">
+                    <span class="panel-badge" id="hist-db-file-badge">jevtools.db</span>
+                    <span class="panel-badge" id="hist-db-size-badge">24 KB</span>
+                </div>
+            </div>
+
+            <!-- Summary Stats Banner -->
+            <div class="history-summary-banner">
+                <div class="history-stat-box">
+                    <span class="history-stat-val" id="hist-total-count">0</span>
+                    <span class="history-stat-lbl">Total Logged Requests</span>
+                </div>
+                <div class="history-stat-box">
+                    <span class="history-stat-val" id="hist-success-rate">100%</span>
+                    <span class="history-stat-lbl">Success Rate (<span id="hist-ok-err-counts">0 / 0</span>)</span>
+                </div>
+                <div class="history-stat-box">
+                    <span class="history-stat-val" id="hist-avg-ttft">0 ms</span>
+                    <span class="history-stat-lbl">Average TTFT (Time To First Token)</span>
+                </div>
+                <div class="history-stat-box">
+                    <span class="history-stat-val" id="hist-avg-latency">0 ms</span>
+                    <span class="history-stat-lbl">Average Inference Latency</span>
+                </div>
+            </div>
+
+            <!-- Toolbar & Filter Controls -->
+            <div class="history-toolbar">
+                <input type="text" class="history-search-input" id="history-search-input" placeholder="🔍 Filter by keyword, review text, topic, or error message..." oninput="handleHistoryFilterChange()">
+                <select class="history-filter-select" id="history-action-filter" onchange="handleHistoryFilterChange()">
+                    <option value="">All Action Types</option>
+                    <option value="review_analysis">Customer Review Analysis</option>
+                    <option value="topic_classification">Topic Classification</option>
+                    <option value="custom_decision">Custom Decision</option>
+                    <option value="benchmark_ttft">Benchmark TTFT</option>
+                </select>
+                <select class="history-filter-select" id="history-status-filter" onchange="handleHistoryFilterChange()">
+                    <option value="">All Statuses</option>
+                    <option value="success">Success Only</option>
+                    <option value="error">Error Only</option>
+                </select>
+                <button class="history-btn" onclick="loadHistoryData()" title="Refresh local history from database">
+                    🔄 Refresh
+                </button>
+                <button class="history-btn history-btn-danger" onclick="confirmClearHistory()" title="Purge local history database">
+                    🗑️ Clear History
+                </button>
+            </div>
+
+            <!-- Request History Table Container -->
+            <div class="history-table-container">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">#ID</th>
+                            <th style="width: 170px;">Timestamp</th>
+                            <th>Action Type</th>
+                            <th>Provider / Model</th>
+                            <th style="width: 110px;">TTFT</th>
+                            <th style="width: 120px;">Latency</th>
+                            <th style="width: 90px;">Mode</th>
+                            <th style="width: 100px;">Status</th>
+                            <th style="text-align: right; width: 140px;">Payloads</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-table-body">
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+                <div id="history-empty-message" style="display: none; padding: 3rem 1rem; text-align: center; color: var(--text-muted);">
+                    <div style="font-size: 2.2rem; margin-bottom: 0.8rem;">📜</div>
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;">No Requests Recorded in Database</div>
+                    <div style="font-size: 0.88rem; max-width: 480px; margin: 0 auto; line-height: 1.5;">Run customer review evaluations, topic classifications, custom playground queries, or TTFT benchmarks to automatically track them on your personal device.</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2011,6 +2377,61 @@
         </div>
     </div>
 
+    <!-- Request & Response Payload Inspector Modal Dialog -->
+    <div class="modal-overlay" id="payload-modal-overlay">
+        <div class="payload-dialog-box">
+            <div class="panel-header" style="margin-bottom: 0; padding-bottom: 0.6rem;">
+                <div class="panel-title">
+                    <span>🔬</span> <span id="payload-modal-title">Request &amp; Response Audit Inspector</span>
+                </div>
+                <button class="btn-close" onclick="closePayloadModal()" title="Close (Esc)">&times;</button>
+            </div>
+
+            <!-- Metadata Pills Bar -->
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; background: rgba(5,5,15,0.7); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid var(--card-border); font-size: 0.82rem;">
+                <span class="status-pill">ID: <strong id="pm-id">#1</strong></span>
+                <span class="status-pill">Time: <strong id="pm-time">--</strong></span>
+                <span class="status-pill">Action: <strong id="pm-action">--</strong></span>
+                <span class="status-pill">Provider: <strong id="pm-provider">--</strong></span>
+                <span class="status-pill">Model: <strong id="pm-model">--</strong></span>
+                <span class="status-pill">TTFT: <strong id="pm-ttft">--</strong></span>
+                <span class="status-pill">Latency: <strong id="pm-latency">--</strong></span>
+                <span class="status-pill" id="pm-status-pill">Status: <strong>--</strong></span>
+                <span class="status-pill">Client: <strong id="pm-client">--</strong></span>
+            </div>
+
+            <div id="pm-error-banner" style="display: none; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; border-radius: 8px; padding: 0.75rem 1rem; color: #fca5a5; font-size: 0.88rem;">
+                <strong>Error Encountered:</strong> <span id="pm-error-msg"></span>
+            </div>
+
+            <div class="payload-grid">
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span class="modal-section-title" style="margin-bottom: 0; font-size: 0.95rem;">📤 Sent Request Payload</span>
+                        <button class="btn-copy" style="position: static;" onclick="copyCode('pm-req-code')">Copy Request JSON</button>
+                    </div>
+                    <div class="code-block" style="max-height: 420px; overflow-y: auto;">
+                        <pre id="pm-req-code" style="color: #7dd3fc; margin: 0;"></pre>
+                    </div>
+                </div>
+
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span class="modal-section-title" style="margin-bottom: 0; font-size: 0.95rem;">📥 Received Response Payload</span>
+                        <button class="btn-copy" style="position: static;" onclick="copyCode('pm-resp-code')">Copy Response JSON</button>
+                    </div>
+                    <div class="code-block" style="max-height: 420px; overflow-y: auto;">
+                        <pre id="pm-resp-code" style="color: #c084fc; margin: 0;"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dialog-actions" style="margin-top: 0.5rem;">
+                <button class="btn-secondary" onclick="closePayloadModal()">Close Inspector</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Benchmarks Master Data
         const reviewPresets = [
@@ -2065,7 +2486,7 @@
                 statusClass: "badge-status-active",
                 modularity: "100.00%",
                 tech: ["Python 3", "OpenRouter", "RLCD Training"],
-                desc: "TypeSafe's System One model delivering typed decisions (Choice, Score, Noul) and calibrated probabilities in ~100ms. Code retains full control flow while Jev fills atomic semantic judgment slots.",
+                desc: "TypeSafe's System One model delivering typed decisions (Choice, Score, Noul) and calibrated probabilities in 287ms tested latency (TTFT: 287ms). Code retains full control flow while Jev fills atomic semantic judgment slots.",
                 runCmd: "py D:\\programming\\jevtools\\jev_demo.py --mock",
                 testCmd: "py -c \"import jev_demo; print(jev_demo.mask_key('sk-or-v1-test1234'))\"",
                 webServices: [
@@ -2073,7 +2494,7 @@
                 ],
                 features: [
                     "RLCD-calibrated probabilities that represent true uncertainty rather than model overconfidence.",
-                    "Consolidated parallel evaluation: all questions in a request evaluate against shared state in ~100ms.",
+                    "Consolidated parallel evaluation: all questions in a request evaluate against shared state with 287ms tested latency.",
                     "Strict typing contract with zero unstructured free-form conversational text to parse."
                 ]
             },
@@ -2217,6 +2638,7 @@
             populateHubCards(hubModules);
             populateHubDropdowns();
             fetchServerStatus();
+            loadHistoryData();
         });
 
         // Tab Switching
@@ -2229,6 +2651,10 @@
 
             const targetContent = document.getElementById(`tab-${tabId}`);
             if (targetContent) targetContent.classList.add('active');
+
+            if (tabId === 'history') {
+                loadHistoryData();
+            }
         }
 
         // Fetch Server Status
@@ -2252,6 +2678,15 @@
                     modeBadge.textContent = 'LIVE API ACTIVE';
                     modeBadge.style.color = 'var(--success)';
                     toggleBtn.textContent = '🛡️ Switch to Mock';
+                }
+
+                if (data.tested_inference_latency_str) {
+                    const statValEl = document.getElementById('stat-latency-val');
+                    if (statValEl) statValEl.textContent = data.tested_inference_latency_str;
+                }
+                if (data.tested_ttft_str) {
+                    const statLblEl = document.getElementById('stat-latency-lbl');
+                    if (statLblEl) statLblEl.textContent = `Inference Latency (TTFT: ${data.tested_ttft_str})`;
                 }
             } catch (e) {
                 console.warn('Status fetch warning:', e);
@@ -2326,6 +2761,7 @@
                 if (data.error) throw new Error(data.error);
 
                 renderReviewResults(data);
+                loadHistoryData();
             } catch (err) {
                 alert('Evaluation Error: ' + err.message);
             } finally {
@@ -2400,6 +2836,16 @@
                 `;
             }
 
+            // TTFT and Latency Badges
+            if (res.ttft_ms) {
+                const el = document.getElementById('review-ttft-badge');
+                if (el) el.textContent = `TTFT: ${Math.round(res.ttft_ms)} ms`;
+            }
+            if (res.elapsed_ms) {
+                const el = document.getElementById('review-elapsed-badge');
+                if (el) el.textContent = `${Math.round(res.elapsed_ms)} ms`;
+            }
+
             // Raw JSON
             document.getElementById('review-raw-json').textContent = JSON.stringify(res.raw_answers || res, null, 2);
         }
@@ -2428,6 +2874,7 @@
                 if (data.error) throw new Error(data.error);
 
                 renderTopicResults(data);
+                loadHistoryData();
             } catch (err) {
                 alert('Classification Error: ' + err.message);
             } finally {
@@ -2504,6 +2951,16 @@
             document.getElementById('topic-depth-val').textContent = `${res.technical_depth.toFixed(2)} (Raw: ${res.technical_depth_raw}/2)`;
             document.getElementById('topic-depth-bar').style.width = `${res.technical_depth * 100}%`;
 
+            // TTFT and Latency Badges
+            if (res.ttft_ms) {
+                const el = document.getElementById('topic-ttft-badge');
+                if (el) el.textContent = `TTFT: ${Math.round(res.ttft_ms)} ms`;
+            }
+            if (res.elapsed_ms) {
+                const el = document.getElementById('topic-elapsed-badge');
+                if (el) el.textContent = `${Math.round(res.elapsed_ms)} ms`;
+            }
+
             // Raw JSON
             document.getElementById('topic-raw-json').textContent = JSON.stringify(res.raw_answers || res, null, 2);
         }
@@ -2547,9 +3004,13 @@
                 if (data.error) throw new Error(data.error);
 
                 document.getElementById('custom-output-pre').textContent = JSON.stringify(data, null, 2);
-                if (data.metadata?.elapsed_ms) {
-                    document.getElementById('custom-elapsed-badge').textContent = `${data.metadata.elapsed_ms} ms`;
+                if (data.metadata?.ttft_ms) {
+                    document.getElementById('custom-ttft-badge').textContent = `TTFT: ${Math.round(data.metadata.ttft_ms)} ms`;
                 }
+                if (data.metadata?.elapsed_ms) {
+                    document.getElementById('custom-elapsed-badge').textContent = `${Math.round(data.metadata.elapsed_ms)} ms`;
+                }
+                loadHistoryData();
             } catch (err) {
                 alert('Custom Evaluation Error: ' + err.message);
             } finally {
@@ -2774,6 +3235,7 @@
             } else if (e.key === 'Escape') {
                 closeModal();
                 closeConfigModal();
+                closePayloadModal();
             } else if (modalOverlay.classList.contains('active')) {
                 if (e.key === 'ArrowLeft' || e.key === 'p') {
                     openModalByIndex(currentModalIndex - 1);
@@ -3038,6 +3500,199 @@
             for (let i = 0; i < signalPackets.length; i++) {
                 signalPackets[i].update();
                 signalPackets[i].draw();
+            }
+        }
+
+        // ====================================================================
+        // Request History & Local Storage Database Logic
+        // ====================================================================
+        let historyItems = [];
+        let historyFilterTimeout = null;
+
+        async function loadHistoryData() {
+            const search = document.getElementById('history-search-input')?.value.trim() || '';
+            const actionType = document.getElementById('history-action-filter')?.value || '';
+            const status = document.getElementById('history-status-filter')?.value || '';
+
+            let url = `/api/history?limit=100`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (actionType) url += `&action_type=${encodeURIComponent(actionType)}`;
+            if (status) url += `&status=${encodeURIComponent(status)}`;
+
+            try {
+                const res = await fetch(url);
+                if (!res.ok) return;
+                const data = await res.json();
+                historyItems = data.items || [];
+                renderHistoryUI(data);
+            } catch (err) {
+                console.warn('Failed to load request history:', err);
+            }
+        }
+
+        function renderHistoryUI(data) {
+            const items = data.items || [];
+            const stats = data.stats || {};
+
+            // Update stats cards
+            const totalEl = document.getElementById('hist-total-count');
+            if (totalEl) totalEl.textContent = stats.total_requests || 0;
+
+            const okCount = stats.success_count || 0;
+            const errCount = stats.error_count || 0;
+            const total = stats.total_requests || 0;
+            const rate = total > 0 ? Math.round((okCount / total) * 100) : 100;
+
+            const rateEl = document.getElementById('hist-success-rate');
+            if (rateEl) rateEl.textContent = `${rate}%`;
+
+            const okErrEl = document.getElementById('hist-ok-err-counts');
+            if (okErrEl) okErrEl.textContent = `${okCount} ok / ${errCount} err`;
+
+            const ttftEl = document.getElementById('hist-avg-ttft');
+            if (ttftEl) ttftEl.textContent = `${Math.round(stats.avg_ttft_ms || 0)} ms`;
+
+            const latEl = document.getElementById('hist-avg-latency');
+            if (latEl) latEl.textContent = `${Math.round(stats.avg_latency_ms || 0)} ms`;
+
+            const fileBadge = document.getElementById('hist-db-file-badge');
+            if (fileBadge && stats.db_filename) fileBadge.textContent = stats.db_filename;
+
+            const sizeBadge = document.getElementById('hist-db-size-badge');
+            if (sizeBadge && stats.db_size_kb !== undefined) sizeBadge.textContent = `${stats.db_size_kb} KB`;
+
+            // Render table
+            const tbody = document.getElementById('history-table-body');
+            const emptyMsg = document.getElementById('history-empty-message');
+            if (!tbody) return;
+
+            if (items.length === 0) {
+                tbody.innerHTML = '';
+                if (emptyMsg) emptyMsg.style.display = 'block';
+                return;
+            }
+
+            if (emptyMsg) emptyMsg.style.display = 'none';
+
+            tbody.innerHTML = items.map(item => {
+                const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString() : '--';
+                let actionBadgeClass = 'badge-action-custom';
+                let actionLabel = item.action_type;
+                if (item.action_type === 'review_analysis') {
+                    actionBadgeClass = 'badge-action-review';
+                    actionLabel = 'Review Analysis';
+                } else if (item.action_type === 'topic_classification') {
+                    actionBadgeClass = 'badge-action-topic';
+                    actionLabel = 'Topic Classify';
+                } else if (item.action_type === 'custom_decision') {
+                    actionBadgeClass = 'badge-action-custom';
+                    actionLabel = 'Custom Decision';
+                } else if (item.action_type === 'benchmark_ttft') {
+                    actionBadgeClass = 'badge-action-benchmark';
+                    actionLabel = 'TTFT Benchmark';
+                }
+
+                const modeTag = item.is_mock
+                    ? `<span style="color: var(--accent); font-weight: 700; font-size: 0.78rem;">MOCK</span>`
+                    : `<span style="color: #34d399; font-weight: 700; font-size: 0.78rem;">LIVE</span>`;
+
+                const statusTag = item.status === 'success'
+                    ? `<span class="badge-status-ok">● OK</span>`
+                    : `<span class="badge-status-err">● ERR</span>`;
+
+                const ttftStr = item.ttft_ms ? `${Math.round(item.ttft_ms)} ms` : '--';
+                const latStr = item.elapsed_ms ? `${Math.round(item.elapsed_ms)} ms` : '--';
+                const providerModel = `${item.provider || 'openrouter'} / ${item.model || 'default'}`;
+
+                return `
+                    <tr>
+                        <td style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">#${item.id}</td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">${dateStr}</td>
+                        <td><span class="badge-action ${actionBadgeClass}">${actionLabel}</span></td>
+                        <td style="font-size: 0.82rem; color: #cbd5e1; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${providerModel}">${providerModel}</td>
+                        <td style="font-family: var(--font-mono);">${ttftStr}</td>
+                        <td style="font-family: var(--font-mono);">${latStr}</td>
+                        <td>${modeTag}</td>
+                        <td>${statusTag}</td>
+                        <td style="text-align: right;">
+                            <button class="btn-inspect" onclick="inspectPayload(${item.id})">🔍 Inspect</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function handleHistoryFilterChange() {
+            clearTimeout(historyFilterTimeout);
+            historyFilterTimeout = setTimeout(loadHistoryData, 250);
+        }
+
+        async function inspectPayload(id) {
+            const item = historyItems.find(it => it.id === id);
+            if (!item) {
+                try {
+                    const res = await fetch(`/api/history?id=${id}`);
+                    if (res.ok) {
+                        const fetched = await res.json();
+                        displayPayloadModal(fetched);
+                        return;
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+                return;
+            }
+            displayPayloadModal(item);
+        }
+
+        function displayPayloadModal(item) {
+            document.getElementById('pm-id').textContent = `#${item.id}`;
+            document.getElementById('pm-time').textContent = item.timestamp ? new Date(item.timestamp).toLocaleString() : '--';
+            document.getElementById('pm-action').textContent = item.action_type;
+            document.getElementById('pm-provider').textContent = item.provider || 'openrouter';
+            document.getElementById('pm-model').textContent = item.model || 'default';
+            document.getElementById('pm-ttft').textContent = item.ttft_ms ? `${Math.round(item.ttft_ms)} ms` : '--';
+            document.getElementById('pm-latency').textContent = item.elapsed_ms ? `${Math.round(item.elapsed_ms)} ms` : '--';
+            document.getElementById('pm-client').textContent = item.client_info || 'unknown';
+
+            const statusPill = document.getElementById('pm-status-pill');
+            if (statusPill) {
+                statusPill.innerHTML = item.status === 'success'
+                    ? `Status: <strong style="color: #34d399;">SUCCESS</strong>`
+                    : `Status: <strong style="color: #f87171;">ERROR</strong>`;
+            }
+
+            const errBanner = document.getElementById('pm-error-banner');
+            const errMsg = document.getElementById('pm-error-msg');
+            if (item.error_message) {
+                errBanner.style.display = 'block';
+                errMsg.textContent = item.error_message;
+            } else {
+                errBanner.style.display = 'none';
+            }
+
+            document.getElementById('pm-req-code').textContent = JSON.stringify(item.request_payload, null, 2);
+            document.getElementById('pm-resp-code').textContent = JSON.stringify(item.response_payload, null, 2);
+
+            const overlay = document.getElementById('payload-modal-overlay');
+            if (overlay) overlay.classList.add('active');
+        }
+
+        function closePayloadModal() {
+            const overlay = document.getElementById('payload-modal-overlay');
+            if (overlay) overlay.classList.remove('active');
+        }
+
+        async function confirmClearHistory() {
+            if (!confirm('Are you sure you want to clear all request and response history from your local SQLite database?')) {
+                return;
+            }
+            try {
+                const res = await fetch('/api/history', { method: 'DELETE' });
+                const data = await res.json();
+                loadHistoryData();
+            } catch (err) {
+                alert('Failed to clear database: ' + err);
             }
         }
 

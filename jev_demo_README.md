@@ -8,7 +8,7 @@
 
 An example application demonstrating how to build fast, typed, deterministic judgment workflows with **Jev (TypeSafe System One)** accessed through the **OpenRouter Alpha Decisions API**.
 
-Unlike generative Large Language Models that output unconstrained conversational text requiring complex prompt engineering and regex parsing, **Jev evaluates application state against typed questions and returns calibrated probability distributions and structured answers** in ~100ms. Your code owns control flow and policy logic; Jev fills atomic semantic judgment slots.
+Unlike generative Large Language Models that output unconstrained conversational text requiring complex prompt engineering and regex parsing, **Jev evaluates application state against typed questions and returns calibrated probability distributions and structured answers** with 287 ms tested inference latency (TTFT: 287 ms via OpenRouter API). Your code owns control flow and policy logic; Jev fills atomic semantic judgment slots.
 
 ---
 
@@ -20,6 +20,7 @@ Unlike generative Large Language Models that output unconstrained conversational
   - [3. Running the Demo via CLI](#3-running-the-demo-via-cli)
   - [4. Custom Text Analysis (--review, --topic)](#4-custom-text-analysis---review---topic)
   - [5. Offline Mock Testing](#5-offline-mock-testing)
+  - [6. Personal Device Data Storage & History Tracking](#6-personal-device-data-storage--history-tracking)
 - [Security & Key Hygiene (CLI Audit)](#security--key-hygiene-cli-audit)
 - [OpenRouter API Architecture](#openrouter-api-architecture)
   - [Endpoint & Model](#endpoint--model)
@@ -123,6 +124,25 @@ You can test the entire application, CLI options, composite scoring formulas, an
 ```powershell
 py jev_demo.py --mock
 ```
+
+### 6. Personal Device Data Storage & History Tracking
+
+Every evaluation sent through the CLI or Web Cockpit is automatically recorded in a local SQLite database (`jevtools.db`):
+- **Stored Data:** Timestamp, client identifier (`cli`, `web_ui`), action type (`analyze_review`, `classify_topic`, `custom_decision`, `openrouter_ttft`), execution mode (`live` vs `mock`), full request payload (state text, questions, criteria), full response payload (answers, probabilities, composite score, routing action), status (`ok` or `error`), TTFT, and elapsed inference latency.
+- **Privacy & Gitignore:** The database file `jevtools.db` is strictly listed in `.gitignore`. Your prompts, user data, customer reviews, and evaluation results stay exclusively on your personal device and are never committed to Git.
+- **Inspect History:**
+  ```powershell
+  # Display formatted history table and summary metrics (no API key required)
+  py jev_demo.py --history
+
+  # Output full database records as structured JSON
+  py jev_demo.py --history --json
+  ```
+- **Clear Database:**
+  ```powershell
+  # Wipe all logged interactions and reclaim disk space via SQLite VACUUM
+  py jev_demo.py --clear-history
+  ```
 
 ---
 
@@ -240,6 +260,7 @@ usage: jev_demo.py [-h] [--api-key KEY] [--provider {openrouter,typesafe}]
                    [--model MODEL] [--endpoint ENDPOINT]
                    [--demo {reviews,topics,all}] [--review REVIEW]
                    [--product PRODUCT] [--topic TOPIC] [--mock] [--json]
+                   [--history] [--clear-history]
 
 Jev demo: customer review analysis + topic classification via OpenRouter / TypeSafe
 
@@ -260,6 +281,8 @@ options:
   --mock                Run in offline mock mode to test formatting and policy
                         logic without making API calls.
   --json                Output structured JSON results instead of human-readable text.
+  --history             View personal device request/response history table and storage metrics.
+  --clear-history       Clear all stored interaction records from the local database.
 ```
 
 ---

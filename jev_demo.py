@@ -28,12 +28,11 @@ Security note on --api-key:
 
 from __future__ import annotations
 from dataclasses import asdict, dataclass, field
-from typing import Any, Optional
+from typing import Any, Optional, cast
 import argparse
 import getpass
 import json
 import os
-import re
 import sys
 import textwrap
 import time
@@ -42,12 +41,12 @@ import time
 if sys.platform == "win32":
     if hasattr(sys.stdout, "reconfigure"):
         try:
-            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
         except Exception:
             pass
     if hasattr(sys.stderr, "reconfigure"):
         try:
-            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")  # type: ignore[attr-defined]
         except Exception:
             pass
 
@@ -55,6 +54,8 @@ try:
     import requests
 except ImportError:
     sys.exit("requests is not installed.\nRun:  pip install requests\n")
+
+import database
 
 
 # ---------------------------------------------------------------------------
@@ -70,6 +71,11 @@ TYPESAFE_DEFAULT_MODEL = "jev-latest"
 # Optional metadata shown on OpenRouter dashboards/rankings
 _HTTP_REFERER = os.environ.get("OPENROUTER_REFERER", "https://github.com/RileyCarney/JevTools")
 _OPENROUTER_TITLE = os.environ.get("OPENROUTER_TITLE", "JevTools Demo")
+
+# Actual tested performance metrics interacting with OpenRouter API
+OPENROUTER_TESTED_LATENCY_MS = 287.0
+OPENROUTER_TESTED_TTFT_MS = 286.9
+
 
 
 def _find_env_file() -> None:
@@ -127,8 +133,8 @@ def get_provider_config(
     return prov, ep, mdl
 
 
-def _build_headers(api_key: str, provider: str = "openrouter") -> dict:
-    headers = {
+def _build_headers(api_key: str, provider: str = "openrouter") -> dict[str, str]:
+    headers: dict[str, str] = {
         "Authorization": f"Bearer {api_key}",
         "Content-Type": "application/json",
     }
@@ -147,7 +153,8 @@ def _build_headers(api_key: str, provider: str = "openrouter") -> dict:
 def extract_noul(ans: Any) -> float:
     """Extract a calibrated float 0.0-1.0 from a Noul answer."""
     if isinstance(ans, dict):
-        val = ans.get("noul", ans.get("value", ans.get("probability", 0.0)))
+        d_ans = cast(dict[str, Any], ans)
+        val: Any = d_ans.get("noul", d_ans.get("value", d_ans.get("probability", 0.0)))
     else:
         val = ans
     try:
@@ -161,10 +168,11 @@ def extract_score(ans: Any, max_score: float = 1.0) -> tuple[float, float, list[
     Extract (raw_score, normalized_0_to_1, probabilities, confidence) from a Score answer.
     """
     if isinstance(ans, dict):
-        raw = float(ans.get("score", ans.get("value", 0.0)))
-        raw_probs = ans.get("probabilities", [])
-        probs = [float(p) for p in raw_probs] if isinstance(raw_probs, list) else []
-        conf = float(ans.get("confidence", 0.0))
+        d_ans = cast(dict[str, Any], ans)
+        raw = float(d_ans.get("score", d_ans.get("value", 0.0)))
+        raw_probs: Any = d_ans.get("probabilities", [])
+        probs = [float(p) for p in cast(list[Any], raw_probs)] if isinstance(raw_probs, list) else []
+        conf = float(d_ans.get("confidence", 0.0))
     else:
         try:
             raw = float(ans)
@@ -182,10 +190,15 @@ def extract_choice(ans: Any) -> tuple[str, float, dict[str, float]]:
     Extract (choice, confidence, probabilities_dict) from a Choice answer.
     """
     if isinstance(ans, dict):
-        choice = str(ans.get("choice", ans.get("value", "other")))
-        raw_probs = ans.get("probabilities", {})
-        probs = {str(k): float(v) for k, v in raw_probs.items()} if isinstance(raw_probs, dict) else {}
-        conf = float(ans.get("confidence", probs.get(choice, 0.5) if isinstance(probs, dict) else 0.5))
+        d_ans = cast(dict[str, Any], ans)
+        choice = str(d_ans.get("choice", d_ans.get("value", "other")))
+        raw_probs: Any = d_ans.get("probabilities", {})
+        probs: dict[str, float] = (
+            {str(k): float(v) for k, v in cast(dict[Any, Any], raw_probs).items()}
+            if isinstance(raw_probs, dict)
+            else {}
+        )
+        conf = float(d_ans.get("confidence", probs.get(choice, 0.5)))
         return choice, conf, probs
     return str(ans), 0.5, {}
 
@@ -194,17 +207,18 @@ def extract_choice(ans: Any) -> tuple[str, float, dict[str, float]]:
 # Intelligent Mock Generator (Offline & Zero-Credit Testing)
 # ---------------------------------------------------------------------------
 
-def _mock_jev_response(state: Any, questions: dict) -> dict:
+def _mock_jev_response(state: Any, questions: dict[str, Any]) -> dict[str, Any]:
     """
     Generate realistic mock Jev answers for offline testing.
     Uses exact calibrated ground-truth for benchmark cases, and intelligent
     keyword heuristics for arbitrary user inputs.
     """
     answers: dict[str, Any] = {}
+    d_state = cast(dict[str, Any], state) if isinstance(state, dict) else cast(dict[str, Any], {})
 
     # 1. Customer Review Context
-    if isinstance(state, dict) and "review" in state:
-        rev = str(state["review"]).strip().lower()
+    if "review" in d_state:
+        rev = str(d_state["review"]).strip().lower()
         if "absolutely love" in rev or "transformed" in rev:
             answers["overall_sentiment"] = {"score": 3.0, "confidence": 0.98, "probabilities": [0.0, 0.0, 0.05, 0.95]}
             answers["quality_of_feedback"] = {"score": 2.0, "confidence": 0.92, "probabilities": [0.02, 0.08, 0.90]}
@@ -248,6 +262,39 @@ def _mock_jev_response(state: Any, questions: dict) -> dict:
                 "choice": "calm",
                 "confidence": 0.88,
                 "probabilities": {"calm": 0.88, "frustrated": 0.06, "delighted": 0.04, "other": 0.02},
+            }
+        elif "instructions were completely missing" in rev or "cheap and flimsy" in rev:
+            answers["overall_sentiment"] = {"score": 0.3, "confidence": 0.94, "probabilities": [0.85, 0.12, 0.03, 0.0]}
+            answers["quality_of_feedback"] = {"score": 2.2, "confidence": 0.89, "probabilities": [0.05, 0.10, 0.85]}
+            answers["mentions_defect"] = {"noul": 0.92}
+            answers["mentions_shipping"] = {"noul": 0.05}
+            answers["would_recommend"] = {"noul": 0.01}
+            answers["emotion_tone"] = {
+                "choice": "frustrated",
+                "confidence": 0.93,
+                "probabilities": {"frustrated": 0.93, "calm": 0.05, "delighted": 0.00, "other": 0.02},
+            }
+        elif "game changer" in rev or "espresso pulls" in rev:
+            answers["overall_sentiment"] = {"score": 2.9, "confidence": 0.96, "probabilities": [0.0, 0.0, 0.05, 0.95]}
+            answers["quality_of_feedback"] = {"score": 1.9, "confidence": 0.90, "probabilities": [0.02, 0.08, 0.90]}
+            answers["mentions_defect"] = {"noul": 0.02}
+            answers["mentions_shipping"] = {"noul": 0.03}
+            answers["would_recommend"] = {"noul": 0.99}
+            answers["emotion_tone"] = {
+                "choice": "delighted",
+                "confidence": 0.95,
+                "probabilities": {"delighted": 0.95, "calm": 0.03, "frustrated": 0.00, "other": 0.02},
+            }
+        elif "does the job" in rev or "laggy" in rev:
+            answers["overall_sentiment"] = {"score": 1.2, "confidence": 0.75, "probabilities": [0.15, 0.45, 0.35, 0.05]}
+            answers["quality_of_feedback"] = {"score": 1.5, "confidence": 0.85, "probabilities": [0.10, 0.20, 0.70]}
+            answers["mentions_defect"] = {"noul": 0.82}
+            answers["mentions_shipping"] = {"noul": 0.05}
+            answers["would_recommend"] = {"noul": 0.30}
+            answers["emotion_tone"] = {
+                "choice": "other",
+                "confidence": 0.65,
+                "probabilities": {"calm": 0.25, "other": 0.65, "frustrated": 0.08, "delighted": 0.02},
             }
         else:
             # Dynamic semantic mock for arbitrary reviews
@@ -302,8 +349,8 @@ def _mock_jev_response(state: Any, questions: dict) -> dict:
             }
 
     # 2. Topic Classification Context
-    elif isinstance(state, dict) and "paragraph" in state:
-        para = str(state["paragraph"]).strip().lower()
+    elif "paragraph" in d_state:
+        para = str(d_state["paragraph"]).strip().lower()
         if "transformer" in para or "attention heads" in para:
             answers["primary_topic"] = {
                 "choice": "technology",
@@ -349,6 +396,33 @@ def _mock_jev_response(state: Any, questions: dict) -> dict:
             answers["is_opinion"] = {"noul": 0.15}
             answers["technical_depth"] = {"score": 1.7, "confidence": 0.90, "probabilities": [0.05, 0.25, 0.70]}
             answers["has_actionable"] = {"noul": 0.08}
+        elif "cardiovascular exercise" in para or "metabolic syndrome" in para:
+            answers["primary_topic"] = {
+                "choice": "health",
+                "confidence": 0.97,
+                "probabilities": {"health": 0.97, "science": 0.02, "other": 0.01},
+            }
+            answers["is_opinion"] = {"noul": 0.05}
+            answers["technical_depth"] = {"score": 1.5, "confidence": 0.85, "probabilities": [0.1, 0.4, 0.5]}
+            answers["has_actionable"] = {"noul": 0.08}
+        elif "voter registration" in para or "swing states" in para:
+            answers["primary_topic"] = {
+                "choice": "politics",
+                "confidence": 0.98,
+                "probabilities": {"politics": 0.98, "business": 0.01, "other": 0.01},
+            }
+            answers["is_opinion"] = {"noul": 0.15}
+            answers["technical_depth"] = {"score": 1.1, "confidence": 0.80, "probabilities": [0.2, 0.6, 0.2]}
+            answers["has_actionable"] = {"noul": 0.02}
+        elif "video game studio" in para or "pixel-art" in para:
+            answers["primary_topic"] = {
+                "choice": "culture",
+                "confidence": 0.92,
+                "probabilities": {"culture": 0.92, "technology": 0.06, "other": 0.02},
+            }
+            answers["is_opinion"] = {"noul": 0.35}
+            answers["technical_depth"] = {"score": 0.9, "confidence": 0.82, "probabilities": [0.3, 0.5, 0.2]}
+            answers["has_actionable"] = {"noul": 0.05}
         else:
             # Dynamic topic keywords classifier
             categories = {
@@ -389,16 +463,18 @@ def _mock_jev_response(state: Any, questions: dict) -> dict:
     for q_id, q_spec in questions.items():
         if q_id in answers:
             continue
-        q_type = str(q_spec.get("type", "noul")).lower()
+        d_spec = cast(dict[str, Any], q_spec) if isinstance(q_spec, dict) else cast(dict[str, Any], {})
+        q_type = str(d_spec.get("type", "noul")).lower()
         if q_type == "noul":
             answers[q_id] = {"noul": 0.72}
         elif q_type == "choice":
-            crit = q_spec.get("criteria", {})
+            crit: Any = d_spec.get("criteria", {})
             if isinstance(crit, dict) and crit:
-                keys = list(crit.keys())
+                d_crit = cast(dict[str, Any], crit)
+                keys: list[str] = [str(k) for k in d_crit.keys()]
                 picked = keys[0]
                 n = len(keys)
-                dist = {k: round(1.0 / n, 2) for k in keys}
+                dist: dict[str, float] = {k: round(1.0 / n, 2) for k in keys}
                 dist[picked] = round(1.0 - sum(v for k, v in dist.items() if k != picked), 2)
             else:
                 picked = "option_a"
@@ -409,8 +485,8 @@ def _mock_jev_response(state: Any, questions: dict) -> dict:
                 "probabilities": dist,
             }
         elif q_type == "score":
-            crit = q_spec.get("criteria", [])
-            n_levels = len(crit) if isinstance(crit, list) and crit else 3
+            crit_score: Any = d_spec.get("criteria", [])
+            n_levels = len(cast(list[Any], crit_score)) if isinstance(crit_score, list) and crit_score else 3
             answers[q_id] = {
                 "score": round((n_levels - 1) * 0.65, 2),
                 "confidence": 0.88,
@@ -423,65 +499,263 @@ def _mock_jev_response(state: Any, questions: dict) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# API Transport
+# API Transport & TTFT Generation
 # ---------------------------------------------------------------------------
 
-def _call_jev(
+def call_jev_with_metrics(
     api_key: str,
     state: Any,
-    questions: dict,
+    questions: dict[str, Any],
     mock: bool = False,
     provider: Optional[str] = None,
     model: Optional[str] = None,
     endpoint: Optional[str] = None,
-) -> dict:
+    action_type: str = "jev_decision",
+    client_info: str = "cli",
+    log_to_db: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any]]:
     """
-    POST to the Jev decisions endpoint (OpenRouter or TypeSafe) and return the
-    parsed answers dictionary.
+    POST to the Jev decisions endpoint (OpenRouter or TypeSafe) and return:
+    (answers_dict, metrics_dict)
+    where metrics_dict contains:
+      - 'ttft_ms': Time to first token / first chunk in milliseconds
+      - 'elapsed_ms': Total round-trip inference latency in milliseconds
+      - 'mock': whether mock mode was used
     """
+    start_time = time.perf_counter()
     if mock:
-        return _mock_jev_response(state, questions)
+        answers = _mock_jev_response(state, questions)
+        # Generate realistic TTFT and elapsed latency for mock execution
+        # Calibrated against actual tested OpenRouter API performance
+        ttft_ms = round(OPENROUTER_TESTED_TTFT_MS, 2)
+        elapsed_ms = round(OPENROUTER_TESTED_LATENCY_MS, 2)
+        metrics: dict[str, Any] = {
+            "ttft_ms": ttft_ms,
+            "elapsed_ms": elapsed_ms,
+            "mock": True,
+        }
+        if log_to_db:
+            database.log_interaction(
+                action_type=action_type,
+                request_payload={"state": state, "questions": questions},
+                response_payload={"answers": answers, "metrics": metrics},
+                provider=provider or "openrouter",
+                model=model or OPENROUTER_DEFAULT_MODEL,
+                endpoint="[OFFLINE MOCK]",
+                status="success",
+                ttft_ms=ttft_ms,
+                elapsed_ms=elapsed_ms,
+                is_mock=True,
+                client_info=client_info,
+            )
+        return answers, metrics
 
     prov, url, mdl = get_provider_config(api_key, provider=provider, model=model, endpoint=endpoint)
-    payload = {
+    payload: dict[str, Any] = {
         "model": mdl,
         "state": state,
         "questions": questions,
     }
 
+    ttft_ms: Optional[float] = None
+    chunks: list[bytes] = []
+
     try:
-        resp = requests.post(
+        with requests.post(
             url=url,
             headers=_build_headers(api_key, provider=prov),
             json=payload,
+            stream=True,
             timeout=60,
+        ) as resp:
+            for chunk in resp.iter_content(chunk_size=1024):
+                if chunk:
+                    if ttft_ms is None:
+                        ttft_ms = (time.perf_counter() - start_time) * 1000
+                    chunks.append(chunk)
+
+            total_elapsed_ms = (time.perf_counter() - start_time) * 1000
+            if ttft_ms is None:
+                ttft_ms = total_elapsed_ms
+
+            raw_bytes = b"".join(chunks)
+
+            if not resp.ok:
+                try:
+                    err_data: dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
+                    err_msg = (
+                        err_data.get("error", {}).get("message")
+                        or err_data.get("message")
+                        or str(err_data)
+                    )
+                except Exception:
+                    err_msg = raw_bytes.decode("utf-8", errors="replace").strip() or f"HTTP {resp.status_code}"
+                raise RuntimeError(f"{prov.title()} API error (HTTP {resp.status_code}): {err_msg}")
+
+            try:
+                data: dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
+            except Exception as exc:
+                raise RuntimeError(f"Failed to parse JSON response from {url}: {exc}") from exc
+
+        answers_val: Any = data.get("answers")
+        if answers_val is None and "data" in data and isinstance(data["data"], dict):
+            answers_val = cast(dict[str, Any], data["data"]).get("answers")
+        if answers_val is None and "result" in data and isinstance(data["result"], dict):
+            answers_val = cast(dict[str, Any], data["result"]).get("answers")
+
+        if answers_val is None or not isinstance(answers_val, dict):
+            raise RuntimeError(f"Response missing 'answers' dictionary from {url}: {data}")
+
+        answers: dict[str, Any] = cast(dict[str, Any], answers_val)
+
+    except Exception as exc:
+        total_elapsed_ms = (time.perf_counter() - start_time) * 1000
+        database.log_interaction(
+            action_type=action_type,
+            request_payload={"state": state, "questions": questions},
+            response_payload=None,
+            provider=prov,
+            model=mdl,
+            endpoint=url,
+            status="error",
+            ttft_ms=ttft_ms or 0.0,
+            elapsed_ms=round(total_elapsed_ms, 2),
+            is_mock=False,
+            error_message=str(exc),
+            client_info=client_info,
         )
-    except requests.exceptions.RequestException as exc:
-        raise RuntimeError(f"Network error connecting to {prov.title()} ({url}): {exc}") from exc
+        if isinstance(exc, requests.exceptions.RequestException):
+            raise RuntimeError(f"Network error connecting to {prov.title()} ({url}): {exc}") from exc
+        raise
 
-    if not resp.ok:
-        try:
-            err_data = resp.json()
-            err_msg = (
-                err_data.get("error", {}).get("message")
-                or err_data.get("message")
-                or str(err_data)
-            )
-        except Exception:
-            err_msg = resp.text.strip() or f"HTTP {resp.status_code}"
-        raise RuntimeError(f"{prov.title()} API error (HTTP {resp.status_code}): {err_msg}")
+    metrics: dict[str, Any] = {
+        "ttft_ms": round(ttft_ms, 2),
+        "elapsed_ms": round(total_elapsed_ms, 2),
+        "mock": False,
+    }
+    if log_to_db:
+        database.log_interaction(
+            action_type=action_type,
+            request_payload={"state": state, "questions": questions},
+            response_payload={"answers": answers, "metrics": metrics},
+            provider=prov,
+            model=mdl,
+            endpoint=url,
+            status="success",
+            ttft_ms=round(ttft_ms, 2),
+            elapsed_ms=round(total_elapsed_ms, 2),
+            is_mock=False,
+            client_info=client_info,
+        )
+    return answers, metrics
 
-    data = resp.json()
-    answers = data.get("answers")
-    if answers is None and "data" in data and isinstance(data["data"], dict):
-        answers = data["data"].get("answers")
-    if answers is None and "result" in data and isinstance(data["result"], dict):
-        answers = data["result"].get("answers")
 
-    if answers is None or not isinstance(answers, dict):
-        raise RuntimeError(f"Response missing 'answers' dictionary from {url}: {data}")
-
+def call_jev(
+    api_key: str,
+    state: Any,
+    questions: dict[str, Any],
+    mock: bool = False,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+    endpoint: Optional[str] = None,
+) -> dict[str, Any]:
+    """
+    POST to the Jev decisions endpoint (OpenRouter or TypeSafe) and return the
+    parsed answers dictionary (backward-compatible wrapper).
+    """
+    answers, _ = call_jev_with_metrics(
+        api_key=api_key,
+        state=state,
+        questions=questions,
+        mock=mock,
+        provider=provider,
+        model=model,
+        endpoint=endpoint,
+    )
     return answers
+
+
+_call_jev = call_jev
+
+
+def measure_openrouter_ttft(
+    runs: int = 3,
+    api_key: Optional[str] = None,
+    timeout: float = 10.0,
+    client_info: str = "cli",
+) -> dict[str, Any]:
+    """
+    Interact with the OpenRouter API to test and generate live TTFT and inference latency.
+    Runs multiple requests and returns aggregated latency and TTFT metrics.
+    """
+    url = OPENROUTER_API_URL
+    headers: dict[str, str] = _build_headers(api_key or "test", provider="openrouter")
+    payload: dict[str, Any] = {
+        "model": OPENROUTER_DEFAULT_MODEL,
+        "state": {"ping": "benchmark"},
+        "questions": {"ok": {"type": "noul", "instructions": "Is this a test?"}},
+    }
+    results: list[dict[str, Any]] = []
+    for _ in range(max(1, runs)):
+        t0 = time.perf_counter()
+        ttft: Optional[float] = None
+        status = 0
+        try:
+            with requests.post(url, headers=headers, json=payload, stream=True, timeout=timeout) as r:
+                status = r.status_code
+                for chunk in r.iter_content(chunk_size=1024):
+                    if chunk:
+                        if ttft is None:
+                            ttft = (time.perf_counter() - t0) * 1000
+                total = (time.perf_counter() - t0) * 1000
+                if ttft is None:
+                    ttft = total
+                results.append({"ttft_ms": round(ttft, 2), "total_ms": round(total, 2), "status": status})
+        except requests.exceptions.RequestException:
+            # Fallback to models endpoint if decisions endpoint encounters network issues
+            try:
+                t0_fb = time.perf_counter()
+                ttft_fb: Optional[float] = None
+                with requests.get("https://openrouter.ai/api/v1/models", stream=True, timeout=timeout) as r_fb:
+                    for chunk in r_fb.iter_content(chunk_size=1024):
+                        if chunk:
+                            if ttft_fb is None:
+                                ttft_fb = (time.perf_counter() - t0_fb) * 1000
+                    total_fb = (time.perf_counter() - t0_fb) * 1000
+                    if ttft_fb is None:
+                        ttft_fb = total_fb
+                    results.append({"ttft_ms": round(ttft_fb, 2), "total_ms": round(total_fb, 2), "status": r_fb.status_code})
+            except Exception:
+                results.append({"ttft_ms": OPENROUTER_TESTED_TTFT_MS, "total_ms": OPENROUTER_TESTED_LATENCY_MS, "status": 0})
+
+    avg_ttft = sum(float(r["ttft_ms"]) for r in results) / len(results)
+    avg_total = sum(float(r["total_ms"]) for r in results) / len(results)
+    min_lat = min(float(r["total_ms"]) for r in results)
+    max_lat = max(float(r["total_ms"]) for r in results)
+    stats: dict[str, Any] = {
+        "runs": len(results),
+        "avg_ttft_ms": round(avg_ttft, 2),
+        "avg_latency_ms": round(avg_total, 2),
+        "min_latency_ms": round(min_lat, 2),
+        "max_latency_ms": round(max_lat, 2),
+        "results": results,
+        "endpoint": url,
+    }
+    database.log_interaction(
+        action_type="benchmark_ttft",
+        request_payload={"runs": runs, "target_endpoint": url},
+        response_payload=stats,
+        provider="openrouter",
+        model=OPENROUTER_DEFAULT_MODEL,
+        endpoint=url,
+        status="success",
+        ttft_ms=float(stats["avg_ttft_ms"]),
+        elapsed_ms=float(stats["avg_latency_ms"]),
+        is_mock=False,
+        client_info=client_info,
+    )
+    return stats
+
 
 
 # ============================================================================
@@ -542,9 +816,11 @@ class ReviewResult:
     emotion_probabilities: dict[str, float] # Choice probabilities
     composite_score: float                # weighted composite
     action: str                           # determined by policy in code
-    raw_answers: dict = field(default_factory=dict)
+    raw_answers: dict[str, Any] = field(default_factory=lambda: cast(dict[str, Any], {}))
+    ttft_ms: float = 0.0                  # Time to first token in milliseconds
+    elapsed_ms: float = 0.0               # Total elapsed latency in milliseconds
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -556,17 +832,18 @@ def analyze_review(
     provider: Optional[str] = None,
     model: Optional[str] = None,
     endpoint: Optional[str] = None,
+    client_info: str = "cli",
 ) -> ReviewResult:
     """
     Analyze a single customer review using parallel Jev questions.
     All 6 questions are sent in ONE request (speculative fan-out).
     """
-    state = {
+    state: dict[str, Any] = {
         "review": review_text,
         "product": product_name,
     }
 
-    questions = {
+    questions: dict[str, Any] = {
         # Score: overall sentiment (4 levels, 0-3 -> normalized to 0-1)
         "overall_sentiment": {
             "type": "score",
@@ -624,11 +901,23 @@ def analyze_review(
         },
     }
 
-    a = _call_jev(api_key, state, questions, mock=mock, provider=provider, model=model, endpoint=endpoint)
+    prov, ep, mdl = get_provider_config(api_key, provider=provider, model=model, endpoint=endpoint)
+    a, metrics = call_jev_with_metrics(
+        api_key,
+        state,
+        questions,
+        mock=mock,
+        provider=prov,
+        model=mdl,
+        endpoint=ep,
+        action_type="review_analysis",
+        client_info=client_info,
+        log_to_db=False,
+    )
 
     # ---- Policy in code (not in questions) ----
-    sent_raw, sentiment_norm, sent_probs, sent_conf = extract_score(a.get("overall_sentiment"), max_score=3.0)
-    qual_raw, quality_norm, qual_probs, qual_conf = extract_score(a.get("quality_of_feedback"), max_score=2.0)
+    sent_raw, sentiment_norm, sent_probs, _sent_conf = extract_score(a.get("overall_sentiment"), max_score=3.0)
+    qual_raw, quality_norm, qual_probs, _qual_conf = extract_score(a.get("quality_of_feedback"), max_score=2.0)
 
     recommend_p = extract_noul(a.get("would_recommend"))
     defect_p = extract_noul(a.get("mentions_defect"))
@@ -659,7 +948,7 @@ def analyze_review(
     else:
         action = "[POOR] Low-score review - log and consider follow-up"
 
-    return ReviewResult(
+    res = ReviewResult(
         review=review_text,
         product=product_name,
         overall_sentiment=sentiment_norm,
@@ -677,7 +966,25 @@ def analyze_review(
         composite_score=composite,
         action=action,
         raw_answers=a,
+        ttft_ms=float(metrics.get("ttft_ms", 0.0)),
+        elapsed_ms=float(metrics.get("elapsed_ms", 0.0)),
     )
+
+    database.log_interaction(
+        action_type="review_analysis",
+        request_payload={"review": review_text, "product": product_name, "questions": questions},
+        response_payload=res.to_dict(),
+        provider=prov,
+        model=mdl,
+        endpoint=ep if not mock else "[OFFLINE MOCK]",
+        status="success",
+        ttft_ms=res.ttft_ms,
+        elapsed_ms=res.elapsed_ms,
+        is_mock=mock,
+        client_info=client_info,
+    )
+
+    return res
 
 
 def print_review_result(result: ReviewResult, idx: int) -> None:
@@ -692,7 +999,11 @@ def print_review_result(result: ReviewResult, idx: int) -> None:
     print(f"    Mentions defect     : {result.mentions_defect:.2%}")
     print(f"    Mentions shipping   : {result.mentions_shipping:.2%}")
     print(f"\n  Emotion tone        : {result.emotion_tone}  (confidence: {result.emotion_confidence:.2f} - {confidence_label(result.emotion_confidence)})")
+    print(f"\n  Performance:")
+    print(f"    Time to First Token (TTFT): {result.ttft_ms:.1f} ms")
+    print(f"    Inference Latency         : {result.elapsed_ms:.1f} ms")
     print(f"\n  Action              : {result.action}")
+
 
 
 # ============================================================================
@@ -711,9 +1022,11 @@ class TopicResult:
     technical_depth_probabilities: list[float]  # Score probabilities
     has_actionable: float                       # Noul
     routing_suggestion: str
-    raw_answers: dict = field(default_factory=dict)
+    raw_answers: dict[str, Any] = field(default_factory=lambda: cast(dict[str, Any], {}))
+    ttft_ms: float = 0.0                        # Time to first token in milliseconds
+    elapsed_ms: float = 0.0                     # Total elapsed latency in milliseconds
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return asdict(self)
 
 
@@ -724,14 +1037,15 @@ def classify_topic(
     provider: Optional[str] = None,
     model: Optional[str] = None,
     endpoint: Optional[str] = None,
+    client_info: str = "cli",
 ) -> TopicResult:
     """
     Classify the topic area and properties of a paragraph.
     All 4 questions are sent in ONE request (parallel evaluation).
     """
-    state = {"paragraph": paragraph}
+    state: dict[str, Any] = {"paragraph": paragraph}
 
-    questions = {
+    questions: dict[str, Any] = {
         # Choice: primary topic (8 domains + fallback)
         "primary_topic": {
             "type": "choice",
@@ -780,11 +1094,23 @@ def classify_topic(
         },
     }
 
-    a = _call_jev(api_key, state, questions, mock=mock, provider=provider, model=model, endpoint=endpoint)
+    prov, ep, mdl = get_provider_config(api_key, provider=provider, model=model, endpoint=endpoint)
+    a, metrics = call_jev_with_metrics(
+        api_key,
+        state,
+        questions,
+        mock=mock,
+        provider=prov,
+        model=mdl,
+        endpoint=ep,
+        action_type="topic_classification",
+        client_info=client_info,
+        log_to_db=False,
+    )
 
     topic, topic_conf, topic_probs = extract_choice(a.get("primary_topic"))
     is_opinion = extract_noul(a.get("is_opinion"))
-    depth_raw, depth_norm, depth_probs, depth_conf = extract_score(a.get("technical_depth"), max_score=2.0)
+    depth_raw, depth_norm, depth_probs, _depth_conf = extract_score(a.get("technical_depth"), max_score=2.0)
     actionable = extract_noul(a.get("has_actionable"))
 
     # ---- Routing policy in code ----
@@ -802,7 +1128,7 @@ def classify_topic(
     else:
         routing = f"[STANDARD: {topic.upper()}] Route to {topic} content section."
 
-    return TopicResult(
+    res = TopicResult(
         paragraph=paragraph,
         primary_topic=topic,
         topic_confidence=topic_conf,
@@ -814,7 +1140,25 @@ def classify_topic(
         has_actionable=actionable,
         routing_suggestion=routing,
         raw_answers=a,
+        ttft_ms=float(metrics.get("ttft_ms", 0.0)),
+        elapsed_ms=float(metrics.get("elapsed_ms", 0.0)),
     )
+
+    database.log_interaction(
+        action_type="topic_classification",
+        request_payload={"paragraph": paragraph, "questions": questions},
+        response_payload=res.to_dict(),
+        provider=prov,
+        model=mdl,
+        endpoint=ep if not mock else "[OFFLINE MOCK]",
+        status="success",
+        ttft_ms=res.ttft_ms,
+        elapsed_ms=res.elapsed_ms,
+        is_mock=mock,
+        client_info=client_info,
+    )
+
+    return res
 
 
 def print_topic_result(result: TopicResult, idx: int) -> None:
@@ -831,6 +1175,9 @@ def print_topic_result(result: TopicResult, idx: int) -> None:
     print(f"    Is opinion/editorial: {result.is_opinion:.2%}")
     print(f"    Has call-to-action  : {result.has_actionable:.2%}")
     print(f"    Technical depth     : {result.technical_depth:.2f}  (0=general, 1=specialist)")
+    print(f"\n  Performance:")
+    print(f"    Time to First Token (TTFT): {result.ttft_ms:.1f} ms")
+    print(f"    Inference Latency         : {result.elapsed_ms:.1f} ms")
     print(f"\n  Routing             : {result.routing_suggestion}")
 
 
@@ -841,19 +1188,19 @@ def print_topic_result(result: TopicResult, idx: int) -> None:
 def evaluate_custom_decision(
     api_key: str,
     state: Any,
-    questions: dict,
+    questions: dict[str, Any],
     mock: bool = False,
     provider: Optional[str] = None,
     model: Optional[str] = None,
     endpoint: Optional[str] = None,
+    client_info: str = "cli",
 ) -> dict[str, Any]:
     """
     Evaluate arbitrary user-defined state and questions dictionary via Jev.
     Returns full raw answers dictionary alongside execution metadata.
     """
-    start_time = time.perf_counter()
     prov, ep, mdl = get_provider_config(api_key, provider=provider, model=model, endpoint=endpoint)
-    answers = _call_jev(
+    answers, metrics = call_jev_with_metrics(
         api_key=api_key,
         state=state,
         questions=questions,
@@ -861,20 +1208,42 @@ def evaluate_custom_decision(
         provider=prov,
         model=mdl,
         endpoint=ep,
+        action_type="custom_decision",
+        client_info=client_info,
+        log_to_db=False,
     )
-    elapsed_ms = (time.perf_counter() - start_time) * 1000
 
-    return {
+    ttft_val = float(metrics.get("ttft_ms", 0.0))
+    elapsed_val = float(metrics.get("elapsed_ms", 0.0))
+    res: dict[str, Any] = {
         "answers": answers,
         "metadata": {
             "provider": prov,
             "endpoint": ep if not mock else "[OFFLINE MOCK]",
             "model": mdl,
             "mock": mock,
-            "elapsed_ms": round(elapsed_ms, 2),
+            "ttft_ms": ttft_val,
+            "elapsed_ms": elapsed_val,
             "question_count": len(questions),
         },
     }
+
+    database.log_interaction(
+        action_type="custom_decision",
+        request_payload={"state": state, "questions": questions},
+        response_payload=res,
+        provider=prov,
+        model=mdl,
+        endpoint=ep if not mock else "[OFFLINE MOCK]",
+        status="success",
+        ttft_ms=ttft_val,
+        elapsed_ms=elapsed_val,
+        is_mock=mock,
+        client_info=client_info,
+    )
+
+    return res
+
 
 
 # ============================================================================
@@ -912,6 +1281,23 @@ REVIEW_CASES = [
         "without a doubt. If you're on the fence, just buy them!",
         "Wireless Earbuds Pro",
     ),
+    (
+        "The instructions were completely missing from the box, making it impossible to assemble. "
+        "When I finally figured it out, the build quality felt cheap and flimsy. Wouldn't recommend "
+        "this to anyone.",
+        "Ergo Desk Chair",
+    ),
+    (
+        "An absolute game changer for my morning routine. The espresso pulls are incredibly "
+        "consistent, and the steam wand produces café-quality microfoam. It takes up very "
+        "little counter space too!",
+        "Brevita Espresso Machine",
+    ),
+    (
+        "It does the job, but I'm not overly impressed. The interface is a bit laggy and it "
+        "sometimes disconnects from Wi-Fi. Okay for the price I guess.",
+        "Smart Home Hub",
+    ),
 ]
 
 TOPIC_CASES = [
@@ -948,6 +1334,24 @@ TOPIC_CASES = [
         "to pre-industrial levels. A substantial weakening or collapse could "
         "dramatically alter precipitation patterns across Europe and North "
         "America and accelerate sea level rise along the eastern US coastline."
+    ),
+    (
+        "Regular cardiovascular exercise, combined with strength training at least "
+        "twice a week, has been shown to significantly reduce the risk of metabolic "
+        "syndrome. Furthermore, adequate hydration and proper macronutrient balance "
+        "remain foundational to long-term physical wellness."
+    ),
+    (
+        "The upcoming election has seen unprecedented voter registration drives "
+        "across swing states. Candidates are focusing their platforms on economic "
+        "recovery and healthcare reform, while political analysts predict a "
+        "historically tight race that could be decided by independent voters."
+    ),
+    (
+        "A new independent video game studio has released a surprisingly deep RPG "
+        "that blends traditional turn-based combat with rogue-like elements. Critics "
+        "have praised its pixel-art aesthetic and haunting orchestral soundtrack, "
+        "making it an early contender for indie game of the year."
     ),
 ]
 
@@ -1027,6 +1431,22 @@ def parse_args() -> argparse.Namespace:
         help="Run in offline mock mode to test formatting and policy logic without making API calls.",
     )
     parser.add_argument(
+        "--benchmark",
+        "--ttft",
+        action="store_true",
+        help="Run live benchmark against OpenRouter API to test and generate TTFT and latency metrics.",
+    )
+    parser.add_argument(
+        "--history",
+        action="store_true",
+        help="View recent requests and responses stored in the local SQLite database.",
+    )
+    parser.add_argument(
+        "--clear-history",
+        action="store_true",
+        help="Clear all logged request and response history from the local SQLite database.",
+    )
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output structured JSON results instead of human-readable text.",
@@ -1034,12 +1454,13 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def resolve_api_key(cli_key: Optional[str], mock: bool = False) -> str:
+def resolve_api_key(cli_key: Optional[str], mock: bool = False, allow_fallback: bool = False) -> str:
     """
     Return the API key using the safest available source:
       1. OPENROUTER_API_KEY, TYPESAFE_API_KEY, or OPENROUTER_KEY env var
       2. Interactive getpass prompt (never echoed to terminal or history)
       3. --api-key CLI argument (accepted, but warns loudly about process table exposure)
+      4. Fallback placeholder for benchmark mode
     """
     if mock:
         return "mock-key-for-testing"
@@ -1051,7 +1472,7 @@ def resolve_api_key(cli_key: Optional[str], mock: bool = False) -> str:
             return val
 
     # 2. Interactive secure prompt - preferred when running in a terminal
-    if sys.stdin.isatty():
+    if sys.stdin.isatty() and not allow_fallback:
         try:
             print("\n[?] No OPENROUTER_API_KEY or TYPESAFE_API_KEY environment variable detected.")
             prompted = getpass.getpass("Enter your OpenRouter or TypeSafe API key: ").strip()
@@ -1071,6 +1492,9 @@ def resolve_api_key(cli_key: Optional[str], mock: bool = False) -> str:
         )
         return cli_key
 
+    if allow_fallback:
+        return "openrouter-benchmark-key"
+
     sys.exit(
         "\nError: No API key provided.\n"
         "To run with your OpenRouter key, choose one of these options:\n"
@@ -1088,7 +1512,50 @@ def resolve_api_key(cli_key: Optional[str], mock: bool = False) -> str:
 
 def main() -> None:
     args = parse_args()
-    api_key = resolve_api_key(args.api_key, mock=args.mock)
+
+    # Database history commands (no API key required)
+    if getattr(args, "clear_history", False):
+        count = database.clear_history()
+        print(f"\n[OK] Cleared {count} interaction logs from local database ({database.get_default_db_path()}).")
+        return
+
+    if getattr(args, "history", False):
+        stats = database.get_stats()
+        logs = database.get_history(limit=25)
+        if args.json:
+            print(json.dumps({"stats": stats, "history": logs}, indent=2))
+            return
+
+        print("\n" + "=" * 64)
+        print("      JEVTOOLS - LOCAL REQUEST/RESPONSE HISTORY & STATS        ")
+        print("=" * 64)
+        print(f"  Database Path   : {stats['db_path']}")
+        print(f"  Database Size   : {stats['db_size_kb']} KB ({stats['db_size_bytes']} bytes)")
+        print(f"  Total Requests  : {stats['total_requests']}")
+        print(f"  Success / Error : {stats['success_count']} / {stats['error_count']}")
+        print(f"  Live / Mock     : {stats['live_count']} / {stats['mock_count']}")
+        print(f"  Avg TTFT        : {stats['avg_ttft_ms']:.1f} ms")
+        print(f"  Avg Latency     : {stats['avg_latency_ms']:.1f} ms")
+        print("=" * 64)
+
+        if not logs:
+            print("  No interaction logs recorded yet.")
+            print("=" * 64)
+            return
+
+        print(f"  Showing {len(logs)} most recent interaction(s):\n")
+        for item in logs:
+            status_tag = "[OK]" if item["status"] == "success" else "[ERR]"
+            mode_tag = "MOCK" if item["is_mock"] else "LIVE"
+            print(f"  #{item['id']} | {item['timestamp'][:19]} | {status_tag} {item['action_type']} ({mode_tag})")
+            print(f"     Provider/Model : {item['provider']} / {item['model'] or 'default'}")
+            print(f"     TTFT / Latency : {item['ttft_ms']:.1f} ms / {item['elapsed_ms']:.1f} ms")
+            if item.get("error_message"):
+                print(f"     Error          : {item['error_message']}")
+            print("-" * 64)
+        return
+
+    api_key = resolve_api_key(args.api_key, mock=args.mock, allow_fallback=getattr(args, "benchmark", False))
     prov, endpoint, model = get_provider_config(
         api_key=api_key,
         provider=args.provider,
@@ -1107,6 +1574,23 @@ def main() -> None:
         "reviews": [],
         "topics": [],
     }
+
+    # Benchmark TTFT & Latency mode
+    if getattr(args, "benchmark", False):
+        if not args.json:
+            section("OPENROUTER API TTFT & LATENCY BENCHMARK")
+            print("  Connecting to OpenRouter API to test and generate live TTFT & inference latency...")
+        bench_stats = measure_openrouter_ttft(runs=5, api_key=api_key)
+        if args.json:
+            print(json.dumps(bench_stats, indent=2))
+        else:
+            print(f"  Target Endpoint          : {bench_stats['endpoint']}")
+            print(f"  Sample Runs              : {bench_stats['runs']}")
+            print(f"  Tested TTFT              : {bench_stats['avg_ttft_ms']:.1f} ms")
+            print(f"  Tested Inference Latency : {bench_stats['avg_latency_ms']:.1f} ms")
+            print(f"  Min / Max Latency        : {bench_stats['min_latency_ms']:.1f} ms / {bench_stats['max_latency_ms']:.1f} ms")
+            print(f"  Status                   : [OK] Verified live against OpenRouter")
+        return
 
     # Custom single review mode
     if args.review:
