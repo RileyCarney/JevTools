@@ -1,0 +1,4 @@
+# JevTools core has zero external runtime dependencies (Python standard library only).
+# The dependencies below are for development, testing, and linting.
+pytest>=8.0.0
+ruff>=0.3.0
