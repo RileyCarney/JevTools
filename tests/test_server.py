@@ -15,6 +15,7 @@ import time
 import urllib.error
 import urllib.request
 import unittest
+from typing import Any
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
@@ -36,6 +37,7 @@ class TestIndexHtmlPayloads(unittest.TestCase):
         pattern = r'<textarea[^>]+id=["\']custom-state["\'][^>]*>(.*?)</textarea>'
         match = re.search(pattern, self.html, re.DOTALL)
         self.assertIsNotNone(match, "custom-state textarea must be present in index.html")
+        assert match is not None
         val = match.group(1).strip()
         parsed = json.loads(val)
         self.assertIsInstance(parsed, dict)
@@ -45,6 +47,7 @@ class TestIndexHtmlPayloads(unittest.TestCase):
         pattern = r'<textarea[^>]+id=["\']custom-questions["\'][^>]*>(.*?)</textarea>'
         match = re.search(pattern, self.html, re.DOTALL)
         self.assertIsNotNone(match, "custom-questions textarea must be present in index.html")
+        assert match is not None
         val = match.group(1).strip()
         parsed = json.loads(val)
         self.assertIsInstance(parsed, dict)
@@ -67,7 +70,7 @@ class TestServerEndpoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        server._init_server_state(force_mock=True)
+        server.init_server_state(force_mock=True)
 
         handler = server.JevDashboardRequestHandler
         cls.httpd = server.socketserver.TCPServer(("127.0.0.1", cls.port), handler)
@@ -81,7 +84,7 @@ class TestServerEndpoints(unittest.TestCase):
             cls.httpd.shutdown()
             cls.httpd.server_close()
 
-    def _post(self, path: str, payload: dict) -> tuple[int, dict]:
+    def _post(self, path: str, payload: dict[str, Any]) -> tuple[int, dict[str, Any]]:
         url = f"http://127.0.0.1:{self.port}{path}"
         data = json.dumps(payload).encode("utf-8")
         req = urllib.request.Request(
@@ -99,7 +102,7 @@ class TestServerEndpoints(unittest.TestCase):
             body = json.loads(err.read().decode("utf-8"))
             return err.code, body
 
-    def _delete(self, path: str) -> tuple[int, dict]:
+    def _delete(self, path: str) -> tuple[int, dict[str, Any]]:
         url = f"http://127.0.0.1:{self.port}{path}"
         req = urllib.request.Request(url, method="DELETE")
         try:
@@ -111,7 +114,7 @@ class TestServerEndpoints(unittest.TestCase):
             body = json.loads(err.read().decode("utf-8"))
             return err.code, body
 
-    def _get(self, path: str) -> tuple[int, dict | str | bytes]:
+    def _get(self, path: str) -> tuple[int, Any]:
         url = f"http://127.0.0.1:{self.port}{path}"
         req = urllib.request.Request(url, method="GET")
         try:

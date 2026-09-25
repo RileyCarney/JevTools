@@ -10,6 +10,7 @@ import json
 import os
 import subprocess
 import sys
+from typing import Any
 import unittest
 
 # Ensure parent directory is in path
@@ -69,10 +70,12 @@ class TestJevDemoProviderConfig(unittest.TestCase):
         prov1, ep1, mdl1 = jev_demo.get_provider_config("sk-or-v1-testkey")
         self.assertEqual(prov1, "openrouter")
         self.assertIn("openrouter.ai", ep1)
+        self.assertIn("jev", mdl1.lower())
 
         prov2, ep2, mdl2 = jev_demo.get_provider_config("ts-testkey")
         self.assertEqual(prov2, "typesafe")
         self.assertIn("typesafe.ai", ep2)
+        self.assertIn("jev", mdl2.lower())
 
 
 class TestJevDemoReviewPipeline(unittest.TestCase):
@@ -127,9 +130,9 @@ class TestJevDemoCustomPlayground(unittest.TestCase):
 
     def test_custom_decision(self):
         state = {"user": "Alice", "query": "Cancel my order"}
-        questions = {
+        questions: dict[str, Any] = {
             "wants_cancel": {"type": "noul", "instructions": "Does query request order cancellation?"},
-            "category": {"type": "choice", "criteria": {"cancel": "Cancel", "help": "Help"}}
+            "category": {"type": "choice", "criteria": {"cancel": "Cancel", "help": "Help"}},
         }
         res = jev_demo.evaluate_custom_decision("mock", state, questions, mock=True)
         self.assertIn("answers", res)
@@ -190,7 +193,7 @@ class TestJevDemoTTFT(unittest.TestCase):
 
     def test_custom_decision_generates_ttft(self):
         state = {"test": 123}
-        questions = {"is_valid": {"type": "noul", "instructions": "Is this valid?"}}
+        questions: dict[str, Any] = {"is_valid": {"type": "noul", "instructions": "Is this valid?"}}
         res = jev_demo.evaluate_custom_decision("mock", state, questions, mock=True)
         self.assertIn("metadata", res)
         self.assertIn("ttft_ms", res["metadata"])

@@ -1,0 +1,30 @@
+{
+    "version": "1.1.414",
+    "time": "1790379914551",
+    "generalDiagnostics": [
+        {
+            "file": "d:\\Programming\\JevTools\\jev_demo.py",
+            "severity": "warning",
+            "message": "Import \"requests\" could not be resolved from source",
+            "range": {
+                "start": {
+                    "line": 53,
+                    "character": 11
+                },
+                "end": {
+                    "line": 53,
+                    "character": 19
+                }
+            },
+            "rule": "reportMissingModuleSource"
+        }
+    ],
+    "summary": {
+        "filesAnalyzed": 6,
+        "errorCount": 0,
+        "warningCount": 1,
+        "informationCount": 0,
+        "timeInSec": 4.447
+    }
+}
+

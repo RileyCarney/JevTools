@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from typing import Any
 import unittest
 
 # Ensure root directory is on path
@@ -54,12 +55,12 @@ class TestDatabaseModule(unittest.TestCase):
 
     def test_log_interaction_success(self) -> None:
         """Verify logging of a successful interaction with full metadata."""
-        req_payload = {
+        req_payload: dict[str, Any] = {
             "review": "Excellent build quality!",
             "product": "Earbuds Pro",
             "questions": {"sentiment": {"type": "score"}}
         }
-        resp_payload = {
+        resp_payload: dict[str, Any] = {
             "overall_sentiment": 0.95,
             "action": "[POSITIVE] Testimonial",
             "raw_answers": {"sentiment": {"score": 2.9}}
@@ -80,10 +81,12 @@ class TestDatabaseModule(unittest.TestCase):
             db_path=self.test_db_path,
         )
         self.assertIsNotNone(row_id)
+        assert row_id is not None
         self.assertGreater(row_id, 0)
 
         record = database.get_request(row_id, db_path=self.test_db_path)
         self.assertIsNotNone(record)
+        assert record is not None
         self.assertEqual(record["id"], row_id)
         self.assertEqual(record["action_type"], "review_analysis")
         self.assertEqual(record["provider"], "openrouter")
@@ -117,9 +120,11 @@ class TestDatabaseModule(unittest.TestCase):
             db_path=self.test_db_path,
         )
         self.assertIsNotNone(row_id)
+        assert row_id is not None
 
         record = database.get_request(row_id, db_path=self.test_db_path)
         self.assertIsNotNone(record)
+        assert record is not None
         self.assertEqual(record["status"], "error")
         self.assertIn("HTTP 401 Unauthorized", record["error_message"])
         self.assertIsNone(record["response_payload"])

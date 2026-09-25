@@ -43,7 +43,7 @@ RUNTIME_STATE = {
 
 
 
-def _init_server_state(cli_key: str | None = None, force_mock: bool = False) -> None:
+def init_server_state(cli_key: str | None = None, force_mock: bool = False) -> None:
     """Initialize active API key, mock status, and provider."""
     # Try resolving key from environment or CLI
     resolved_key = ""
@@ -67,6 +67,9 @@ def _init_server_state(cli_key: str | None = None, force_mock: bool = False) -> 
     RUNTIME_STATE["provider"] = prov
     RUNTIME_STATE["endpoint"] = ep
     RUNTIME_STATE["model"] = mdl
+ 
+ 
+_init_server_state = init_server_state
 
 
 class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
@@ -373,7 +376,7 @@ def main() -> None:
     parser.add_argument("--api-key", default=None, help="OpenRouter or TypeSafe API key")
     args = parser.parse_args()
 
-    _init_server_state(cli_key=args.api_key, force_mock=args.mock)
+    init_server_state(cli_key=args.api_key, force_mock=args.mock)
 
     os.chdir(CURRENT_DIR)
 
