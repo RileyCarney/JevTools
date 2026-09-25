@@ -11,36 +11,48 @@ provides REST API endpoints connecting directly to jev_demo.py, and opens the br
 from __future__ import annotations
 
 import argparse
+import http.server
 import json
 import os
+import socket
 import socketserver
 import sys
 import urllib.parse
 import webbrowser
 from http import HTTPStatus
-import http.server
+from typing import Any, Optional, TypedDict, cast
 
 # Ensure this directory is in sys.path so jev_demo can be imported cleanly
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 if CURRENT_DIR not in sys.path:
     sys.path.insert(0, CURRENT_DIR)
 
-import jev_demo
 import database
+import jev_demo
 
 DEFAULT_PORT = 8089
 
+
+class RuntimeState(TypedDict):
+    api_key: str
+    mock: bool
+    provider: str
+    model: str
+    endpoint: str
+    tested_latency_ms: float
+    tested_ttft_ms: float
+
+
 # Server runtime state
-RUNTIME_STATE = {
+RUNTIME_STATE: RuntimeState = {
     "api_key": "",
     "mock": True,
     "provider": "openrouter",
     "model": jev_demo.OPENROUTER_DEFAULT_MODEL,
     "endpoint": jev_demo.OPENROUTER_API_URL,
-    "tested_latency_ms": jev_demo.OPENROUTER_TESTED_LATENCY_MS,
-    "tested_ttft_ms": jev_demo.OPENROUTER_TESTED_TTFT_MS,
+    "tested_latency_ms": float(jev_demo.OPENROUTER_TESTED_LATENCY_MS),
+    "tested_ttft_ms": float(jev_demo.OPENROUTER_TESTED_TTFT_MS),
 }
-
 
 
 def init_server_state(cli_key: str | None = None, force_mock: bool = False) -> None:
@@ -67,16 +79,22 @@ def init_server_state(cli_key: str | None = None, force_mock: bool = False) -> N
     RUNTIME_STATE["provider"] = prov
     RUNTIME_STATE["endpoint"] = ep
     RUNTIME_STATE["model"] = mdl
- 
- 
+
+
 _init_server_state = init_server_state
 
 
 class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
     """HTTP request handler supporting both static dashboard assets and Jev REST APIs."""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=CURRENT_DIR, **kwargs)
+    def __init__(
+        self,
+        request: socket.socket | tuple[bytes, socket.socket],
+        client_address: tuple[str, int] | str,
+        server: socketserver.BaseServer,
+        directory: str | None = None,
+    ) -> None:
+        super().__init__(request, client_address, server, directory=CURRENT_DIR)
 
     def end_headers(self) -> None:
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -89,7 +107,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(HTTPStatus.OK)
         self.end_headers()
 
-    def _send_json_response(self, data: dict, status: int = 200) -> None:
+    def _send_json_response(self, data: dict[str, Any], status: int = 200) -> None:
         payload = json.dumps(data, indent=2).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -100,13 +118,16 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
     def _send_json_error(self, message: str, status: int = 400) -> None:
         self._send_json_response({"error": message, "status": status}, status=status)
 
-    def _parse_json_body(self) -> dict:
+    def _parse_json_body(self) -> dict[str, Any]:
         content_length = int(self.headers.get("Content-Length", 0))
         if content_length <= 0:
             return {}
         body = self.rfile.read(content_length).decode("utf-8")
         try:
-            return json.loads(body)
+            parsed: Any = json.loads(body)
+            if not isinstance(parsed, dict):
+                raise ValueError("JSON payload must be an object")
+            return cast(dict[str, Any], parsed)
         except json.JSONDecodeError as err:
             raise ValueError(f"Invalid JSON payload: {err}") from err
 
@@ -121,7 +142,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 model=RUNTIME_STATE["model"],
                 endpoint=RUNTIME_STATE["endpoint"],
             )
-            data = {
+            data: dict[str, Any] = {
                 "status": "online",
                 "mock": RUNTIME_STATE["mock"],
                 "provider": prov,
@@ -145,9 +166,9 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             runs = 3
             stats = jev_demo.measure_openrouter_ttft(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
             if stats.get("avg_latency_ms"):
-                RUNTIME_STATE["tested_latency_ms"] = stats["avg_latency_ms"]
+                RUNTIME_STATE["tested_latency_ms"] = float(stats["avg_latency_ms"])
             if stats.get("avg_ttft_ms"):
-                RUNTIME_STATE["tested_ttft_ms"] = stats["avg_ttft_ms"]
+                RUNTIME_STATE["tested_ttft_ms"] = float(stats["avg_ttft_ms"])
             self._send_json_response(stats)
             return
 
@@ -165,11 +186,20 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     self._send_json_error("Invalid ID format", status=400)
                 return
 
-            limit = int(query_params.get("limit", [50])[0])
-            offset = int(query_params.get("offset", [0])[0])
-            action_type = query_params.get("action_type", [None])[0]
-            status_filter = query_params.get("status", [None])[0]
-            search = query_params.get("search", [None])[0]
+            limit_list = query_params.get("limit")
+            limit = int(limit_list[0]) if limit_list and limit_list[0].isdigit() else 50
+
+            offset_list = query_params.get("offset")
+            offset = int(offset_list[0]) if offset_list and offset_list[0].isdigit() else 0
+
+            action_type_list = query_params.get("action_type")
+            action_type = action_type_list[0] if action_type_list else None
+
+            status_list = query_params.get("status")
+            status_filter = status_list[0] if status_list else None
+
+            search_list = query_params.get("search")
+            search = search_list[0] if search_list else None
 
             items = database.get_history(
                 limit=limit,
@@ -191,7 +221,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         if path == "/api/history/stats":
             self._send_json_response(database.get_stats())
             return
-
 
         # Block access to hidden files, databases, credentials, and source files
         clean_path = urllib.parse.unquote(path).strip()
@@ -264,9 +293,10 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/analyze-review":
             review_text = str(body.get("review", "")).strip()
-            product_name = str(body.get("product", "Wireless Earbuds Pro")).strip() or "Wireless Earbuds Pro"
+            product_val = body.get("product")
+            product_name = str(product_val).strip() if product_val is not None and str(product_val).strip() else "Wireless Earbuds Pro"
             override_mock = body.get("mock")
-            use_mock = RUNTIME_STATE["mock"] if override_mock is None else bool(override_mock)
+            use_mock: bool = RUNTIME_STATE["mock"] if override_mock is None else bool(override_mock)
 
             if not review_text:
                 self._send_json_error("Missing required field 'review'", status=400)
@@ -291,7 +321,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         if path == "/api/classify-topic":
             paragraph = str(body.get("paragraph", "")).strip()
             override_mock = body.get("mock")
-            use_mock = RUNTIME_STATE["mock"] if override_mock is None else bool(override_mock)
+            use_mock: bool = RUNTIME_STATE["mock"] if override_mock is None else bool(override_mock)
 
             if not paragraph:
                 self._send_json_error("Missing required field 'paragraph'", status=400)
@@ -316,7 +346,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             state = body.get("state")
             questions = body.get("questions")
             override_mock = body.get("mock")
-            use_mock = RUNTIME_STATE["mock"] if override_mock is None else bool(override_mock)
+            use_mock: bool = RUNTIME_STATE["mock"] if override_mock is None else bool(override_mock)
 
             if state is None:
                 self._send_json_error("Missing required field 'state'", status=400)
@@ -325,11 +355,13 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error("Field 'questions' must be a non-empty dictionary", status=400)
                 return
 
+            typed_questions = cast(dict[str, Any], questions)
+
             try:
                 res = jev_demo.evaluate_custom_decision(
                     api_key=RUNTIME_STATE["api_key"],
                     state=state,
-                    questions=questions,
+                    questions=typed_questions,
                     mock=use_mock,
                     provider=RUNTIME_STATE["provider"],
                     model=RUNTIME_STATE["model"],
@@ -342,12 +374,13 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if path == "/api/benchmark-ttft":
-            runs = int(body.get("runs", 3)) if isinstance(body, dict) else 3
+            raw_runs = body.get("runs")
+            runs = int(raw_runs) if isinstance(raw_runs, (int, str, float)) else 3
             stats = jev_demo.measure_openrouter_ttft(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
             if stats.get("avg_latency_ms"):
-                RUNTIME_STATE["tested_latency_ms"] = stats["avg_latency_ms"]
+                RUNTIME_STATE["tested_latency_ms"] = float(stats["avg_latency_ms"])
             if stats.get("avg_ttft_ms"):
-                RUNTIME_STATE["tested_ttft_ms"] = stats["avg_ttft_ms"]
+                RUNTIME_STATE["tested_ttft_ms"] = float(stats["avg_ttft_ms"])
             self._send_json_response(stats)
             return
 
@@ -376,14 +409,16 @@ def main() -> None:
     parser.add_argument("--api-key", default=None, help="OpenRouter or TypeSafe API key")
     args = parser.parse_args()
 
-    init_server_state(cli_key=args.api_key, force_mock=args.mock)
+    cli_key = cast(Optional[str], getattr(args, "api_key", None))
+    force_mock = bool(getattr(args, "mock", False))
+    init_server_state(cli_key=cli_key, force_mock=force_mock)
 
     os.chdir(CURRENT_DIR)
 
-    port = args.port
+    port = int(getattr(args, "port", DEFAULT_PORT))
     handler = JevDashboardRequestHandler
 
-    while port < args.port + 25:
+    while port < int(getattr(args, "port", DEFAULT_PORT)) + 25:
         try:
             with socketserver.TCPServer(("", port), handler) as httpd:
                 url = f"http://localhost:{port}/index.html"
@@ -399,7 +434,7 @@ def main() -> None:
                 print(" Press Ctrl+C to stop the dashboard server.")
                 print("=" * 64)
 
-                if not args.no_browser:
+                if not bool(getattr(args, "no_browser", False)):
                     webbrowser.open(url)
 
                 httpd.serve_forever()
