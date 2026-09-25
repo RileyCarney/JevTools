@@ -190,6 +190,17 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
 
+        # Block access to hidden files, databases, credentials, and source files
+        clean_path = urllib.parse.unquote(path).strip()
+        lower_path = clean_path.lower()
+        if (
+            lower_path.startswith("/.")
+            or "/." in lower_path
+            or any(lower_path.endswith(ext) for ext in (".db", ".db-journal", ".sqlite", ".sqlite3", ".env", ".pem", ".key", ".py"))
+        ):
+            self._send_json_error("Forbidden: access to protected file or directory is restricted", status=403)
+            return
+
         # Serve index.html for root path, and assets/favicon.ico for favicon requests
         if path in ("", "/"):
             self.path = "/index.html"

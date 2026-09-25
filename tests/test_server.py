@@ -114,15 +114,23 @@ class TestServerEndpoints(unittest.TestCase):
     def _get(self, path: str) -> tuple[int, dict | str | bytes]:
         url = f"http://127.0.0.1:{self.port}{path}"
         req = urllib.request.Request(url, method="GET")
-        with urllib.request.urlopen(req) as resp:
-            status = resp.getcode()
-            content_type = resp.headers.get("Content-Type", "")
-            raw = resp.read()
-            if "application/json" in content_type:
-                return status, json.loads(raw.decode("utf-8"))
-            if "text/" in content_type or "svg" in content_type or "xml" in content_type:
-                return status, raw.decode("utf-8")
-            return status, raw
+        try:
+            with urllib.request.urlopen(req) as resp:
+                status = resp.getcode()
+                content_type = resp.headers.get("Content-Type", "")
+                raw = resp.read()
+                if "application/json" in content_type:
+                    return status, json.loads(raw.decode("utf-8"))
+                if "text/" in content_type or "svg" in content_type or "xml" in content_type:
+                    return status, raw.decode("utf-8")
+                return status, raw
+        except urllib.error.HTTPError as err:
+            raw = err.read()
+            try:
+                body = json.loads(raw.decode("utf-8"))
+                return err.code, body
+            except Exception:
+                return err.code, raw
 
     def test_status_endpoint(self):
         status, body = self._get("/api/status")
@@ -326,6 +334,14 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertEqual(status_d, 200)
         self.assertIn("cleared", body_d)
         self.assertGreater(body_d["cleared"], 0)
+
+    def test_sensitive_files_blocked(self):
+        """Verify that server blocks access to sensitive files like .env, .git, .db, and python sources."""
+        for path in ("/jevtools.db", "/.env", "/.git/config", "/server.py", "/database.py"):
+            status, body = self._get(path)
+            self.assertEqual(status, 403, f"Path {path} must be rejected with 403 Forbidden")
+            self.assertIsInstance(body, dict)
+            self.assertIn("error", body)
 
 
 if __name__ == "__main__":
