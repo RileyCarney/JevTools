@@ -1,6 +1,6 @@
 # Mathematical Foundations of Jev: A Micro-Architectural Framework for Structured Semantic Decision Problems
 
-**Author:** Riley Carney and the TypeSafe AI Research Group  
+**Author:** Riley Carney and the website documentation at TypeSafe AI Research Group  
 **Repository:** [RileyCarney/JevTools](https://github.com/RileyCarney/JevTools)  
 **Date:** September 2026  
 <<<<<<< HEAD
