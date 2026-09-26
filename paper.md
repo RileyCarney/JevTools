@@ -3,14 +3,14 @@
 **Author:** Riley Carney and the TypeSafe AI Research Group  
 **Repository:** [RileyCarney/JevTools](https://github.com/RileyCarney/JevTools)  
 **Date:** September 2026  
-**Version:** 2.1 — Comprehensive Formal Mathematical Framework & Reference Implementation Edition  
-**Status:** Working Paper (Prepared for Top-Tier Publication)
+**Version:** 2.1 — Comprehensive Formal Mathematical Framework & Reference Implementation Edition     
+**Status:** Working Paper
 
 ---
 
 ## Abstract
 
-This paper establishes a formal mathematical framework for Jev — TypeSafe AI's *System One* decision model — and proves that its micro-architectural structure is provably sufficient to solve well-defined subsets of semantic decision problems. We formalize the three core primitives (Noul, Choice, Score) as typed projection operators over the probability simplex, establish a measure-theoretic and Bayesian interpretation of their calibrated outputs under Reinforcement Learning from Calibrated Decisions (RLCD), and prove completeness and composability theorems for their integration. 
+This paper establishes a formal mathematical framework for Jev, TypeSafe AI's *System One* decision model, and aims prove that its micro-architectural structure is provably sufficient to solve well-defined subsets of semantic decision problems. We formalize the three core primitives (Noul, Choice, Score) as typed projection operators over the probability simplex, establish a measure-theoretic and Bayesian interpretation of their calibrated outputs under Reinforcement Learning from Calibrated Decisions (RLCD), and prove completeness and composability theorems for their integration. 
 
 We demonstrate that the Speculative Fan-Out pattern achieves sub-linear cost growth relative to serial execution under a empirically validated two-component cost model ($r \approx 0.0055$, yielding a $12.2\times$ cost reduction at $n = 13$ batch size with an asymptotic speedup ceiling of $\sim 183\times$), that Confidence-Gated Routing induces a risk-monotone total preorder on action spaces with universal, cardinality-independent regret bounds ($\mathbb{E}[\mathrm{Regret}] \le \frac{1 - \tau_{\mathrm{low}}}{4}$), and that Composite Scoring constructs a convex, post-hoc tunable priority functional whose approximation error to arbitrary smooth objective functionals is quadratically bounded by a second-order Taylor remainder governed by the Hessian spectral norm. We further formalize information-theoretic conditions under which question decomposition is strictly lossless and non-redundant via multi-information and total correlation, bound calibration error propagation in linear aggregations under the Wasserstein-1 metric, and characterize inter-rater self-consistency via output variance and Cohen's $\kappa$. 
 
