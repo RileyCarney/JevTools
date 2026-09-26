@@ -1349,20 +1349,6 @@
             color: #ffffff;
         }
 
-        .kbd-hint {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-align: center;
-            margin-top: 2rem;
-        }
-
-        kbd {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
-            font-family: var(--font-mono);
-            color: var(--primary);
-        }
 
         /* Key Config Modal */
         .config-dialog-box {
@@ -3660,7 +3646,6 @@
                 <!-- Rendered dynamically -->
             </main>
 
-            <p class="kbd-hint">Keyboard Maneuvering: <kbd>←</kbd> Previous Item | <kbd>→</kbd> Next Item | <kbd>Esc</kbd> Close View | <kbd>/</kbd> Search</p>
         </div>
 
         <!-- ================= TAB 5: REQUEST HISTORY & LOCAL STORAGE ================= -->
@@ -4089,9 +4074,9 @@
                     </div>
                 </div>
                 <div class="nav-controls">
-                    <button class="btn-nav" id="btn-prev-card" title="Previous Item (←)">◄ Prev</button>
+                    <button class="btn-nav" id="btn-prev-card" title="Previous Item">◄ Prev</button>
                     <select class="modal-jump-select" id="modal-jump-select"></select>
-                    <button class="btn-nav" id="btn-next-card" title="Next Item (→)">Next ►</button>
+                    <button class="btn-nav" id="btn-next-card" title="Next Item">Next ►</button>
                     <button class="btn-close" id="btn-close-modal" title="Close (Esc)">&times;</button>
                 </div>
             </div>
@@ -5612,12 +5597,6 @@
                 closeModal();
                 closeConfigModal();
                 closePayloadModal();
-            } else if (modalOverlay.classList.contains('active')) {
-                if (e.key === 'ArrowLeft' || e.key === 'p') {
-                    openModalByIndex(currentModalIndex - 1);
-                } else if (e.key === 'ArrowRight' || e.key === 'n') {
-                    openModalByIndex(currentModalIndex + 1);
-                }
             }
         });
 
