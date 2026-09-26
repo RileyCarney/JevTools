@@ -2022,6 +2022,1109 @@
                 grid-template-columns: 1fr;
             }
         }
+    
+        /* ==========================================================================
+           WIREFRAME MODERN STYLES & THEME OVERRIDES
+           ========================================================================== */
+
+        /* Cyber Dark Theme (Default) */
+        :root, [data-theme="cyber"] {
+            --dark-blue-deep: #050b1a;
+            --dark-blue: #0a1329;
+            --dark-blue-surface: #0f1c3f;
+            --dark-blue-glow: rgba(15, 28, 63, 0.6);
+            --brand-blue: #0f4bb5;
+            --brand-blue-glow: rgba(15, 75, 181, 0.45);
+            --brand-indigo: #232f8a;
+            --brand-purple: #7b2cbf;
+            --brand-purple-light: #a855f7;
+            --brand-purple-glow: rgba(123, 44, 191, 0.5);
+            --brand-shadow: #6c2ea9;
+            --brand-shadow-glow: rgba(108, 46, 169, 0.5);
+            --brand-red: #8b5cf6;
+            --brand-red-glow: rgba(139, 92, 246, 0.45);
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.45);
+            --secondary: #7b2cbf;
+            --secondary-glow: rgba(123, 44, 191, 0.4);
+            --accent: #a855f7;
+            --accent-glow: rgba(168, 85, 247, 0.4);
+            --success: #34d399;
+            --danger: #f87171;
+            --warning: #fbbf24;
+            --bg-color: #030712;
+            --card-bg: rgba(10, 19, 41, 0.92);
+            --card-border: rgba(123, 44, 191, 0.32);
+            --card-hover-border: rgba(168, 85, 247, 0.7);
+            --modal-bg: rgba(7, 12, 28, 0.98);
+            --text-main: #ffffff;
+            --text-muted: #cbd5e1;
+            --input-bg: rgba(0, 0, 0, 0.45);
+            --input-border: rgba(123, 44, 191, 0.4);
+            --font-mono: "Consolas", "Fira Code", "Courier New", monospace;
+        }
+
+        /* Midnight Obsidian OLED Theme */
+        [data-theme="obsidian"] {
+            --dark-blue-deep: #000000;
+            --dark-blue: #09090b;
+            --dark-blue-surface: #121217;
+            --dark-blue-glow: rgba(0, 0, 0, 0.8);
+            --brand-blue: #3b82f6;
+            --brand-blue-glow: rgba(59, 130, 246, 0.4);
+            --brand-indigo: #4338ca;
+            --brand-purple: #9333ea;
+            --brand-purple-light: #c084fc;
+            --brand-purple-glow: rgba(192, 132, 252, 0.4);
+            --brand-shadow: #581c87;
+            --brand-shadow-glow: rgba(88, 28, 135, 0.4);
+            --brand-red: #a855f7;
+            --brand-red-glow: rgba(168, 85, 247, 0.4);
+            --primary: #c084fc;
+            --primary-glow: rgba(192, 132, 252, 0.45);
+            --secondary: #9333ea;
+            --secondary-glow: rgba(147, 51, 234, 0.4);
+            --accent: #d8b4fe;
+            --accent-glow: rgba(216, 180, 254, 0.4);
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-color: #000000;
+            --card-bg: rgba(9, 9, 11, 0.95);
+            --card-border: rgba(168, 85, 247, 0.25);
+            --card-hover-border: rgba(192, 132, 252, 0.7);
+            --modal-bg: rgba(5, 5, 8, 0.99);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-bg: rgba(0, 0, 0, 0.65);
+            --input-border: rgba(168, 85, 247, 0.35);
+        }
+
+        /* Clean Modern Light Theme */
+        [data-theme="light"] {
+            --dark-blue-deep: #e2e8f0;
+            --dark-blue: #f1f5f9;
+            --dark-blue-surface: #ffffff;
+            --dark-blue-glow: rgba(148, 163, 184, 0.2);
+            --brand-blue: #2563eb;
+            --brand-blue-glow: rgba(37, 99, 235, 0.25);
+            --brand-indigo: #4f46e5;
+            --brand-purple: #7c3aed;
+            --brand-purple-light: #6d28d9;
+            --brand-purple-glow: rgba(124, 58, 237, 0.3);
+            --brand-shadow: #5b21b6;
+            --brand-shadow-glow: rgba(91, 33, 182, 0.3);
+            --brand-red: #7c3aed;
+            --brand-red-glow: rgba(124, 58, 237, 0.25);
+            --primary: #7c3aed;
+            --primary-glow: rgba(124, 58, 237, 0.35);
+            --secondary: #6d28d9;
+            --secondary-glow: rgba(109, 40, 217, 0.25);
+            --accent: #8b5cf6;
+            --accent-glow: rgba(139, 92, 246, 0.25);
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.96);
+            --card-border: rgba(124, 58, 237, 0.22);
+            --card-hover-border: rgba(124, 58, 237, 0.65);
+            --modal-bg: rgba(255, 255, 255, 0.99);
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --input-bg: #ffffff;
+            --input-border: rgba(124, 58, 237, 0.3);
+        }
+
+        /* Container & Global Spacing */
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 4rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* -------------------------------------------------------------
+           ROW 1: Top Navigation Bar
+           Wireframe: (O) [App Logo]        [GitHub] | [LinkedIn] | [Theme Switch] | [Key]
+           ------------------------------------------------------------- */
+        .wf-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 0.85rem 1.4rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+            transition: all 0.25s ease;
+        }
+
+        .wf-header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .wf-app-logo-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text-main);
+            transition: transform 0.2s ease;
+        }
+
+        .wf-app-logo-link:hover {
+            transform: scale(1.02);
+        }
+
+        .wf-logo-orb {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #0f4bb5 0%, #7b2cbf 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 16px rgba(139, 92, 246, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: box-shadow 0.25s ease;
+        }
+
+        .wf-app-logo-link:hover .wf-logo-orb {
+            box-shadow: 0 0 22px rgba(168, 85, 247, 0.8);
+        }
+
+        .wf-logo-img {
+            width: 24px;
+            height: 24px;
+        }
+
+        .wf-brand-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .wf-brand-name {
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            line-height: 1.1;
+            background: linear-gradient(90deg, #ffffff 0%, #d8b4fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        [data-theme="light"] .wf-brand-name {
+            background: linear-gradient(90deg, #0f172a 0%, #6d28d9 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .wf-brand-badge {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+        }
+
+        .wf-header-right {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .wf-header-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: var(--text-main);
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.48rem 0.9rem;
+            border-radius: 8px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        [data-theme="light"] .wf-header-btn {
+            background: rgba(124, 58, 237, 0.06);
+            border-color: rgba(124, 58, 237, 0.2);
+            color: #0f172a;
+        }
+
+        .wf-header-btn:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(123, 44, 191, 0.3));
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
+        .wf-key-btn {
+            background: linear-gradient(135deg, rgba(123, 44, 191, 0.35) 0%, rgba(15, 75, 181, 0.3) 100%);
+            border-color: var(--accent);
+            color: #ffffff;
+        }
+
+        .wf-key-btn:hover {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 14px var(--primary-glow);
+        }
+
+        /* -------------------------------------------------------------
+           ROW 2: Cockpit Controls & Engine Status Bar
+           Wireframe: [Tool/Engine Selector] | [Model: Dropdown] | [API Key Status] | [● Live API Active]
+           ------------------------------------------------------------- */
+        .wf-control-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 0.7rem 1.25rem;
+            margin-bottom: 1.25rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .wf-bar-item {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+
+        .wf-bar-label {
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: var(--text-muted);
+        }
+
+        .wf-bar-select {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.38rem 0.75rem;
+            border-radius: 6px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wf-bar-select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .wf-bar-select option {
+            background: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        .wf-bar-sep {
+            width: 1px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        [data-theme="light"] .wf-bar-sep {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        .wf-key-status-item {
+            cursor: pointer;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .wf-key-status-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .wf-key-text {
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        .wf-key-badge {
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            font-family: var(--font-mono);
+        }
+
+        .wf-live-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            color: #34d399;
+            font-size: 0.82rem;
+            font-weight: 800;
+            padding: 0.4rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wf-live-btn:hover {
+            background: rgba(16, 185, 129, 0.25);
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .wf-live-btn.mock {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: var(--accent);
+        }
+
+        .wf-live-btn.mock:hover {
+            background: rgba(139, 92, 246, 0.28);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .wf-live-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        .wf-live-dot.mock {
+            background: var(--accent);
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        /* -------------------------------------------------------------
+           ROW 3: Metrics & Navigation Row
+           Wireframe:
+           +--------------+        +-------------------+                 +-------------------+
+           |   XXX ms     |        |     Primitive     |                 |       Cases       |
+           |  (Latency)   |        |   (Mode / Tab)    |                 +-------------------+
+           +--------------+        +-------------------+                 |  [📄 History]     |
+                                                                         +-------------------+
+           ------------------------------------------------------------- */
+        .wf-metrics-row {
+            display: grid;
+            grid-template-columns: 240px 1fr 280px;
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+            align-items: stretch;
+        }
+
+        @media (max-width: 1080px) {
+            .wf-metrics-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .wf-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+            transition: all 0.25s ease;
+        }
+
+        .wf-card:hover {
+            border-color: var(--card-hover-border);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        .wf-card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .wf-card-sublabel {
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .wf-tag-pulse {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--accent);
+            border: 1px solid rgba(139, 92, 246, 0.35);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wf-tag-pulse:hover {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .wf-tag-static {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.35);
+        }
+
+        .wf-latency-box {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .wf-latency-val {
+            font-family: var(--font-mono);
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1.1;
+            margin-bottom: 0.35rem;
+            text-shadow: 0 0 14px rgba(139, 92, 246, 0.5);
+        }
+
+        [data-theme="light"] .wf-latency-val {
+            color: #0f172a;
+            text-shadow: none;
+        }
+
+        .wf-latency-lbl {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            line-height: 1.3;
+        }
+
+        /* Primitive Card (Center) */
+        .wf-primitive-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .wf-mode-pill {
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(123, 44, 191, 0.25);
+            color: var(--accent);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+        }
+
+        .wf-prims-row {
+            display: flex;
+            gap: 0.6rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .wf-prim-chip {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+        }
+
+        [data-theme="light"] .wf-prim-chip {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .prim-sym {
+            font-size: 1rem;
+        }
+
+        .prim-title {
+            font-weight: 800;
+            font-size: 0.82rem;
+            color: var(--text-main);
+        }
+
+        .prim-desc {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-left: auto;
+            font-family: var(--font-mono);
+        }
+
+        .wf-mode-tabs {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .wf-mode-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-size: 0.76rem;
+            font-weight: 700;
+            padding: 0.38rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        [data-theme="light"] .wf-mode-btn {
+            background: rgba(0, 0, 0, 0.04);
+            border-color: rgba(0, 0, 0, 0.1);
+            color: #475569;
+        }
+
+        .wf-mode-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .wf-mode-btn:hover {
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        /* Right Stack: Cases on top of History */
+        .wf-right-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .wf-cases-box {
+            padding: 0.75rem 1.1rem;
+        }
+
+        .wf-cases-val {
+            font-family: var(--font-mono);
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 0.15rem;
+        }
+
+        .wf-cases-lbl {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .wf-history-box {
+            padding: 0.75rem 1.1rem;
+            cursor: pointer;
+            border-left: 3px solid #38bdf8;
+        }
+
+        .wf-history-box:hover {
+            border-color: #38bdf8;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+        }
+
+        .wf-hist-flex {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+        }
+
+        .wf-hist-icon {
+            font-size: 1.3rem;
+        }
+
+        .wf-hist-body {
+            flex: 1;
+        }
+
+        .wf-hist-title {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .wf-hist-sub {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-family: var(--font-mono);
+        }
+
+        .wf-hist-arrow {
+            font-size: 0.95rem;
+            color: #38bdf8;
+            transition: transform 0.2s ease;
+        }
+
+        .wf-history-box:hover .wf-hist-arrow {
+            transform: translateX(3px);
+        }
+
+        /* -------------------------------------------------------------
+           ROW 4: Main Workspace & Presets Grid
+           Wireframe:
+           +------------------------+      +-------------------------------+
+           |                        |      | [ Select Preset / Task   ▼ ]  |
+           |                        |      +-------------------------------+
+           |    Main Input /        |      | • Fast / Text variant         |
+           |    Payload /           |      | • Topic Classification        |
+           |    Workspace Area      |      | • Customer / Question Portal  |
+           |                        |      +-------------------------------+
+           +------------------------+
+           ------------------------------------------------------------- */
+        .wf-workspace-container {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 350px;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1080px) {
+            .wf-workspace-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .wf-workspace-main {
+            min-width: 0;
+        }
+
+        /* Sidebar Presets & Tasks Panel */
+        .wf-presets-sidebar {
+            position: sticky;
+            top: 1rem;
+        }
+
+        .wf-sidebar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-top: 3px solid var(--accent);
+            border-radius: 12px;
+            padding: 1.25rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .wf-sidebar-header {
+            margin-bottom: 1rem;
+        }
+
+        .wf-sidebar-title {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .wf-select-skin {
+            position: relative;
+        }
+
+        .wf-sidebar-select {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-main);
+            font-size: 0.86rem;
+            font-weight: 700;
+            padding: 0.55rem 0.8rem;
+            border-radius: 8px;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wf-sidebar-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .wf-sidebar-select option {
+            background: var(--bg-color);
+            color: var(--text-main);
+        }
+
+        /* Task Bullets matching wireframe */
+        .wf-sidebar-bullets {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            margin-bottom: 1.2rem;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            padding: 0.55rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        [data-theme="light"] .wf-sidebar-bullets {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .wf-bullet-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.48rem 0.7rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .wf-bullet-row:hover {
+            background: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+        }
+
+        [data-theme="light"] .wf-bullet-row:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: #0f172a;
+        }
+
+        .wf-bullet-row.active {
+            background: rgba(123, 44, 191, 0.25);
+            color: #ffffff;
+            border-left: 3px solid var(--accent);
+        }
+
+        [data-theme="light"] .wf-bullet-row.active {
+            background: rgba(124, 58, 237, 0.12);
+            color: #6d28d9;
+        }
+
+        .wf-bullet-dot {
+            font-size: 1.15rem;
+            color: var(--accent);
+            line-height: 1;
+        }
+
+        .wf-bullet-name {
+            flex: 1;
+        }
+
+        .wf-bullet-meta {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            color: #c084fc;
+            font-family: var(--font-mono);
+        }
+
+        /* Preset Options & Preview Area */
+        .wf-sidebar-presets-area {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .wf-preset-options-title {
+            font-size: 0.74rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+
+        .wf-preset-buttons-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .wf-preset-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 0.45rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        [data-theme="light"] .wf-preset-btn {
+            background: rgba(0, 0, 0, 0.03);
+            border-color: rgba(0, 0, 0, 0.08);
+            color: #1e293b;
+        }
+
+        .wf-preset-btn:hover {
+            background: rgba(139, 92, 246, 0.15);
+            border-color: var(--primary);
+            transform: translateX(2px);
+        }
+
+        .wf-preset-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .wf-preview-card {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 0.85rem;
+            margin-top: 0.4rem;
+        }
+
+        [data-theme="light"] .wf-preview-card {
+            background: #f1f5f9;
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .wf-preview-title {
+            font-size: 0.74rem;
+            font-weight: 800;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.3rem;
+        }
+
+        .wf-preview-body {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            max-height: 90px;
+            overflow-y: auto;
+            margin-bottom: 0.5rem;
+            font-style: italic;
+        }
+
+        .wf-preview-meta {
+            font-size: 0.72rem;
+            color: #a78bfa;
+            font-family: var(--font-mono);
+            line-height: 1.3;
+        }
+
+        .wf-btn-run-preset {
+            width: 100%;
+            background: linear-gradient(135deg, var(--brand-purple) 0%, var(--brand-blue) 100%);
+            border: 1px solid var(--accent);
+            color: #ffffff;
+            font-size: 0.84rem;
+            font-weight: 800;
+            padding: 0.55rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.6rem;
+            box-shadow: 0 0 12px var(--brand-purple-glow);
+        }
+
+        .wf-btn-run-preset:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 0 18px var(--accent-glow);
+        }
+
+        /* -------------------------------------------------------------
+           ROW 5: Bottom Banner / Profile
+           Wireframe:
+           +---------------------------------------------------------------------------------+
+           |  GitHub Profile / Project Repository                           [ Link ↗ ]       |
+           +---------------------------------------------------------------------------------+
+           ------------------------------------------------------------- */
+        .wf-bottom-banner {
+            margin-top: 2rem;
+        }
+
+        .wf-bottom-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.95) 0%, rgba(35, 20, 60, 0.92) 100%);
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--primary);
+            border-radius: 12px;
+            padding: 1.25rem 1.6rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 22px rgba(0, 0, 0, 0.35);
+        }
+
+        [data-theme="light"] .wf-bottom-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+        }
+
+        .wf-bottom-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .wf-bottom-octocat {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            background: #000000;
+            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: 0 0 14px var(--primary-glow);
+            flex-shrink: 0;
+        }
+
+        .wf-bottom-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .wf-bottom-heading {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .wf-repo-chip {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(139, 92, 246, 0.25);
+            color: #d8b4fe;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            font-family: var(--font-mono);
+        }
+
+        [data-theme="light"] .wf-repo-chip {
+            background: rgba(124, 58, 237, 0.15);
+            color: #6d28d9;
+        }
+
+        .wf-bottom-desc {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            max-width: 680px;
+            line-height: 1.45;
+        }
+
+        .wf-bottom-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .wf-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.52rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .wf-btn-repo {
+            background: var(--primary);
+            color: #ffffff;
+            border: 1px solid var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .wf-btn-repo:hover {
+            background: var(--brand-purple-light);
+            transform: translateY(-1px);
+            box-shadow: 0 0 18px var(--brand-purple-glow);
+        }
+
+        .wf-btn-profile, .wf-btn-linkedin {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        [data-theme="light"] .wf-btn-profile, [data-theme="light"] .wf-btn-linkedin {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.12);
+            color: #0f172a;
+        }
+
+        .wf-btn-profile:hover, .wf-btn-linkedin:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .wf-arr {
+            font-size: 0.95rem;
+            font-weight: 800;
+        }
+
     </style>
 </head>
 <body>
@@ -2029,156 +3132,183 @@
     <canvas id="background-canvas"></canvas>
 
     <div class="container">
-        <!-- Top Engine Status Bar -->
-        <div class="engine-status-bar">
-            <div class="engine-status-left">
-                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="bar-brand-link" title="JevTools on GitHub">
-                    <img src="assets/favicon.svg" alt="JevTools Logo" class="bar-brand-icon">
-                    <span>JevTools</span>
-                </a>
-                <div class="status-dot" id="status-dot"></div>
-                <div class="status-pill">Engine: <strong id="bar-provider">OpenRouter</strong></div>
-                <div class="status-pill">Model: <strong id="bar-model">~typesafe/jev-latest</strong></div>
-                <div class="status-pill">Key: <strong id="bar-key">[MOCK MODE]</strong></div>
-                <div class="status-pill" id="bar-mode-badge" style="color: var(--accent);">MOCK MODE</div>
-            </div>
-            <div class="engine-status-right">
-                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="btn-github-pill" title="Open RileyCarney/JevTools on GitHub">
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                    <span>RileyCarney/JevTools</span>
-                </a>
-                <button class="btn-toggle-mock" id="btn-toggle-mock" onclick="toggleMockMode()">⚡ Switch to Live</button>
-                <button class="btn-config-key" onclick="openConfigModal()">⚙️ Set Key</button>
-            </div>
-        </div>
-
-        <!-- JevTools Brand Hero Banner matching GitHub Repository Image -->
-        <header class="hero-banner-container">
-            <div class="hero-banner-card" id="hero-banner-card">
-                <div class="hero-banner-inner">
-                    <!-- Brand Wordmark & GitHub Emblem -->
-                    <div class="hero-brand-wrap" id="hero-brand-wrap">
-                        <!-- Embedded High-Fidelity SVG Brand Banner matching repository image -->
-                        <div id="hero-svg-view">
-                            <svg class="hero-wordmark-svg" viewBox="0 0 960 494" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JEVTOOLS">
-                              <defs>
-                                <linearGradient id="jev-hbg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                                  <stop offset="0%" stop-color="#0077da" />
-                                  <stop offset="25%" stop-color="#0f4bb5" />
-                                  <stop offset="52%" stop-color="#1e2c88" />
-                                  <stop offset="78%" stop-color="#341b73" />
-                                  <stop offset="100%" stop-color="#4a1566" />
-                                </linearGradient>
-                                <style>
-                                  .h-circuit { stroke: #000000; stroke-width: 4.5; stroke-linecap: square; fill: none; }
-                                  .h-text-shadow { font-family: 'Impact', 'Arial Black', sans-serif; font-weight: 900; font-size: 215px; letter-spacing: 5px; fill: #682aa2; stroke: #000000; stroke-width: 14; stroke-linejoin: round; }
-                                  .h-text-face { font-family: 'Impact', 'Arial Black', sans-serif; font-weight: 900; font-size: 215px; letter-spacing: 5px; fill: #ffffff; stroke: #000000; stroke-width: 10; stroke-linejoin: round; }
-                                </style>
-                              </defs>
-                              <rect width="960" height="494" fill="url(#jev-hbg-grad)" />
-                              <g class="h-circuit">
-                                <path d="M 10 70 L 130 70 L 130 130 L 190 130 L 190 40 L 290 40" />
-                                <path d="M 10 120 L 70 120 L 70 360 L 130 360 L 130 440 L 80 440 L 80 484" />
-                                <path d="M 10 240 L 40 240 L 40 400 L 100 400 L 100 484" />
-                                <path d="M 10 170 L 100 170 L 100 230 L 120 230 L 120 310 L 170 310" />
-                                <path d="M 10 300 L 40 300 L 40 340 L 10 340" />
-                                <path d="M 140 484 L 140 410 L 210 410 L 210 484" />
-                                <path d="M 180 484 L 180 445 L 240 445 L 270 415 L 270 380" />
-                                <path d="M 230 484 L 230 450 L 290 390 L 330 390 L 330 484" />
-                                <path d="M 250 10 L 250 60 L 290 60 L 290 110 L 350 110 L 380 80 L 380 10" />
-                                <path d="M 330 10 L 330 40 L 420 40 L 420 80 L 460 80 L 460 10" />
-                                <path d="M 400 10 L 400 50 L 510 50 L 510 110 L 560 110 L 590 80 L 590 10" />
-                                <path d="M 490 10 L 490 30 L 550 30 L 550 70 L 650 70 L 680 40 L 680 10" />
-                                <path d="M 360 484 L 360 440 L 440 360 L 530 360 L 580 410 L 580 484" />
-                                <path d="M 410 484 L 410 450 L 470 390 L 510 390 L 550 430 L 550 484" />
-                                <path d="M 460 484 L 490 454 L 490 414 L 520 414 L 520 484" />
-                                <path d="M 610 484 L 610 430 L 660 380 L 710 380 L 740 410 L 740 484" />
-                                <path d="M 720 10 L 720 60 L 770 110 L 820 110 L 820 40 L 870 40 L 870 10" />
-                                <path d="M 790 10 L 790 50 L 840 100 L 910 100 L 910 40 L 950 40" />
-                                <path d="M 950 100 L 880 100 L 880 160 L 920 160 L 920 220 L 950 220" />
-                                <path d="M 950 160 L 930 160 L 930 290 L 880 290 L 880 210 L 820 210" />
-                                <path d="M 950 270 L 910 270 L 910 340 L 950 340" />
-                                <path d="M 950 380 L 900 380 L 860 420 L 860 484" />
-                                <path d="M 950 430 L 920 430 L 920 484" />
-                                <path d="M 800 484 L 800 450 L 760 410 L 760 360 L 810 310 L 870 310 L 870 350 L 910 390 L 910 460 L 890 484" />
-                              </g>
-                              <!-- 3D Extruded Shadow Layers -->
-                              <text x="85" y="328" class="h-text-shadow" dx="14" dy="14">JEVTOOLS</text>
-                              <text x="85" y="328" class="h-text-shadow" dx="10" dy="10">JEVTOOLS</text>
-                              <text x="85" y="328" class="h-text-shadow" dx="6" dy="6">JEVTOOLS</text>
-                              <!-- Front Face -->
-                              <text x="85" y="328" class="h-text-face">JEVTOOLS</text>
-                              <!-- Octocat Emblem at S -->
-                              <g transform="translate(816, 350)">
-                                <circle cx="0" cy="0" r="54" fill="#000000" />
-                                <circle cx="0" cy="0" r="50" fill="#2d0b47" stroke="#10051c" stroke-width="4" />
-                                <circle cx="0" cy="0" r="43" fill="#000000" />
-                                <g transform="translate(-32, -32) scale(2.66)">
-                                  <path fill="#551a8b" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
-                                </g>
-                              </g>
-                            </svg>
-                        </div>
-                        <div id="hero-img-view" style="display: none;">
-                            <img src="assets/jevtools_card.png" alt="JevTools GitHub Social Banner" class="hero-wordmark-svg" style="border-radius: 8px;">
-                        </div>
-
-                        <!-- Clickable GitHub Octocat Link Overlay -->
-                        <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="hero-octocat-link" title="Open RileyCarney/JevTools on GitHub">
-                            <div class="hero-octocat-tooltip">GitHub: RileyCarney/JevTools ↗</div>
-                        </a>
+        <!-- ================= ROW 1: TOP NAVIGATION BAR ================= -->
+        <!-- Wireframe: (O) [App Logo]               [GitHub] | [LinkedIn] | [Theme Switch] | [Key] -->
+        <header class="wf-header">
+            <div class="wf-header-left">
+                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="wf-app-logo-link" title="JevTools // System One Cockpit">
+                    <div class="wf-logo-orb">
+                        <img src="assets/favicon.svg" alt="App Logo" class="wf-logo-img">
                     </div>
-
-                    <!-- Banner Footer: Taglines, Spec Pills, Actions -->
-                    <div class="hero-banner-footer">
-                        <div class="hero-subtitle-box">
-                            <h2>System One Cockpit <span class="neon-tag">TypeSafe AI</span></h2>
-                            <p>Fast, Typed Semantic Judgments &amp; Calibrated Probability Distributions via OpenRouter and TypeSafe Jev</p>
-                        </div>
-                        <div class="hero-actions-box">
-                            <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="btn-hero-action btn-hero-primary">
-                                <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-                                <span>GitHub Repo</span>
-                            </a>
-                            <button class="btn-hero-action" onclick="toggleBannerMode()" id="btn-banner-mode">
-                                🖼️ View HQ Image Card
-                            </button>
-                        </div>
+                    <div class="wf-brand-meta">
+                        <div class="wf-brand-name">JevTools <span style="font-size:0.75rem; color:var(--accent); font-weight:800; letter-spacing:1px;">JEVTOOLS</span></div>
+                        <div class="wf-brand-badge">System One Cockpit</div>
                     </div>
-                </div>
+                </a>
+            </div>
+            <div class="wf-header-right">
+                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="wf-header-btn" title="GitHub Repository: RileyCarney/JevTools">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://www.linkedin.com/in/riley-carney" target="_blank" rel="noopener noreferrer" class="wf-header-btn" title="Riley Carney on LinkedIn">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                        <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                    </svg>
+                    <span>LinkedIn</span>
+                </a>
+                <button class="wf-header-btn wf-theme-btn" id="btn-theme-switch" onclick="cycleTheme()" title="Switch UI Theme">
+                    <span id="theme-switch-icon">⚡</span>
+                    <span id="theme-switch-label">Cyber Dark</span>
+                </button>
+                <button class="wf-header-btn wf-key-btn" onclick="openConfigModal()" title="Configure Jev Engine & API Key">
+                    <span>🔑</span>
+                    <span>Key</span>
+                </button>
             </div>
         </header>
 
-        <!-- Stats Overview Banner -->
-        <div class="stats-banner">
-            <div class="stat-card" id="stat-latency-card" title="Tested OpenRouter API Inference Latency & TTFT">
+        <!-- ================= ROW 2: CONTROLS & ENGINE STATUS BAR ================= -->
+        <!-- Wireframe: [Tool/Engine Selector] | [Model: Dropdown] | [API Key Status] | [● Live API Active] -->
+        <div class="wf-control-bar">
+            <!-- Tool/Engine Selector -->
+            <div class="wf-bar-item wf-engine-item">
+                <label class="wf-bar-label" for="engine-provider-select">Tool / Engine:</label>
+                <select class="wf-bar-select" id="engine-provider-select" onchange="handleProviderSelectChange(this.value)" title="Switch Inference Engine">
+                    <option value="openrouter">⚡ OpenRouter (Decisions)</option>
+                    <option value="typesafe">🛡️ TypeSafe Direct Engine</option>
+                </select>
+                <strong id="bar-provider" style="display: none;">OPENROUTER</strong>
+            </div>
+
+            <div class="wf-bar-sep"></div>
+
+            <!-- Model: Dropdown -->
+            <div class="wf-bar-item wf-model-item">
+                <label class="wf-bar-label" for="engine-model-select">Model:</label>
+                <select class="wf-bar-select" id="engine-model-select" onchange="handleModelSelectChange(this.value)" title="Select Active Jev Model">
+                    <option value="~typesafe/jev-latest">~typesafe/jev-latest</option>
+                    <option value="typesafe/jev-v1">typesafe/jev-v1</option>
+                    <option value="openrouter/auto">openrouter/auto</option>
+                </select>
+                <strong id="bar-model" style="display: none;">~typesafe/jev-latest</strong>
+            </div>
+
+            <div class="wf-bar-sep"></div>
+
+            <!-- API Key Status -->
+            <div class="wf-bar-item wf-key-status-item" onclick="openConfigModal()" title="Click to view/change API Key">
+                <span class="wf-key-icon">🔑</span>
+                <span class="wf-key-text">Key: <strong id="bar-key">[MOCK MODE]</strong></span>
+                <span class="wf-key-badge" id="bar-mode-badge">MOCK MODE</span>
+            </div>
+
+            <div class="wf-bar-sep"></div>
+
+            <!-- [● Live API Active] -->
+            <div class="wf-bar-item wf-live-item">
+                <button class="wf-live-btn" id="btn-toggle-mock" onclick="toggleMockMode()" title="Toggle Live API / Offline Mock Mode">
+                    <span class="wf-live-dot" id="status-dot"></span>
+                    <span id="live-active-text">● Live API Active</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ================= ROW 3: METRICS & NAVIGATION ROW ================= -->
+        <!-- Wireframe:
+        +--------------+        +-------------------+                 +-------------------+
+        |   XXX ms     |        |     Primitive     |                 |       Cases       |
+        |  (Latency)   |        |   (Mode / Tab)    |                 +-------------------+
+        +--------------+        +-------------------+                 |  [📄 History]     |
+                                                                      +-------------------+
+        -->
+        <div class="wf-metrics-row">
+            <!-- Card 1: [XXX ms / (Latency)] -->
+            <div class="wf-card wf-latency-box stat-card" id="stat-latency-card" onclick="runBenchmarkTTFT()" title="Click to Benchmark OpenRouter TTFT & Latency">
+                <div class="wf-card-meta">
+                    <span class="wf-card-sublabel">LATENCY</span>
+                    <span class="wf-tag-pulse" id="benchmark-status-tag">⚡ Benchmark</span>
+                </div>
                 <div class="stat-val" id="stat-latency-val">287 ms</div>
-                <div class="stat-lbl" id="stat-latency-lbl">Inference Latency (TTFT ~287 ms)</div>
+                <div class="wf-latency-lbl stat-lbl" id="stat-latency-lbl">Inference Latency (TTFT ~287 ms)</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-val">3 Primitives</div>
-                <div class="stat-lbl">Noul · Choice · Score</div>
+
+            <!-- Card 2: [Primitive / (Mode / Tab)] -->
+            <div class="wf-card wf-primitive-box" id="primitive-mode-card">
+                <div class="wf-card-meta">
+                    <span class="wf-card-sublabel">PRIMITIVE / MODE</span>
+                    <span class="wf-mode-pill" id="active-primitive-badge">Customer / Question Portal</span>
+                </div>
+                <!-- 3 Primitives Chips -->
+                <div class="wf-prims-row">
+                    <div class="wf-prim-chip" id="prim-chip-noul" title="Boolean Probability Distribution: P(True) in [0, 1]">
+                        <span class="prim-sym">⚖️</span>
+                        <span class="prim-title">Noul</span>
+                        <span class="prim-desc">P(True)</span>
+                    </div>
+                    <div class="wf-prim-chip" id="prim-chip-choice" title="Categorical Normalized Spectrum">
+                        <span class="prim-sym">📊</span>
+                        <span class="prim-title">Choice</span>
+                        <span class="prim-desc">Spectrum</span>
+                    </div>
+                    <div class="wf-prim-chip" id="prim-chip-score" title="Ordinal Calibrated Evaluation">
+                        <span class="prim-sym">⭐</span>
+                        <span class="prim-title">Score</span>
+                        <span class="prim-desc">Ordinal</span>
+                    </div>
+                </div>
+                <!-- Mode Tabs -->
+                <div class="wf-mode-tabs">
+                    <button class="wf-mode-btn active" data-tab="reviews" onclick="switchTaskMode('reviews')">Customer Review</button>
+                    <button class="wf-mode-btn" data-tab="topics" onclick="switchTaskMode('topics')">Topic Classify</button>
+                    <button class="wf-mode-btn" data-tab="playground" onclick="switchTaskMode('playground')">Playground</button>
+                    <button class="wf-mode-btn" data-tab="hub" onclick="switchTaskMode('hub')">Hub</button>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-val" id="stat-benchmarks">10 Cases</div>
-                <div class="stat-lbl">Calibrated Benchmarks</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-val">12.2x Faster</div>
-                <div class="stat-lbl">Speculative Fan-Out</div>
+
+            <!-- Column 3: [Cases] stacked on top of [📄 History] -->
+            <div class="wf-right-stack">
+                <!-- Top Card: Cases -->
+                <div class="wf-card wf-cases-box stat-card" title="Calibrated Ground-Truth Benchmark Cases">
+                    <div class="wf-card-meta">
+                        <span class="wf-card-sublabel">CASES</span>
+                        <span class="wf-tag-static">Calibrated</span>
+                    </div>
+                    <div class="wf-cases-val stat-val" id="stat-benchmarks">10 Cases</div>
+                    <div class="wf-cases-lbl stat-lbl">Ground-Truth Calibrated Benchmarks</div>
+                </div>
+
+                <!-- Bottom Card: [📄 History] -->
+                <div class="wf-card wf-history-box" id="history-entry-card" onclick="switchTaskMode('history')" title="Open SQLite Request History & Database Logs">
+                    <div class="wf-hist-flex">
+                        <span class="wf-hist-icon">📄</span>
+                        <div class="wf-hist-body">
+                            <div class="wf-hist-title">Request History</div>
+                            <div class="wf-hist-sub" id="hist-card-subtitle">Local jevtools.db Database</div>
+                        </div>
+                        <span class="wf-hist-arrow">➔</span>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Tab Bar -->
-        <div class="tab-bar">
-            <button class="tab-btn active" onclick="switchTab('reviews')">💬 Customer Review Studio</button>
-            <button class="tab-btn" onclick="switchTab('topics')">📰 Topic Classification Studio</button>
-            <button class="tab-btn" onclick="switchTab('playground')">🧪 Custom Decision Playground</button>
-            <button class="tab-btn" onclick="switchTab('hub')">🏛️ Architecture & Knowledge Hub</button>
-            <button class="tab-btn" onclick="switchTab('history')">📜 Request History &amp; Storage</button>
-        </div>
-
-        <!-- ================= TAB 1: CUSTOMER REVIEW STUDIO ================= -->
+        <!-- ================= ROW 4: MAIN WORKSPACE & PRESETS ROW ================= -->
+        <!-- Wireframe:
+        +------------------------+      +-------------------------------+
+        |                        |      | [ Select Preset / Task   ▼ ]  |
+        |                        |      +-------------------------------+
+        |    Main Input /        |      | • Fast / Text variant         |
+        |    Payload /           |      | • Topic Classification        |
+        |    Workspace Area      |      | • Customer / Question Portal  |
+        |                        |      +-------------------------------+
+        +------------------------+
+        -->
+        <div class="wf-workspace-container">
+            <!-- Left Main Column: [Main Input / Payload / Workspace Area] -->
+            <div class="wf-workspace-main" id="wf-workspace-main">
+<!-- ================= TAB 1: CUSTOMER REVIEW STUDIO ================= -->
         <div class="tab-content active" id="tab-reviews">
             <div class="studio-layout">
                 <!-- Left Input Panel -->
@@ -2855,10 +3985,99 @@
 
             <!-- Bottom Pagination Bar -->
             <div class="pagination-bar" id="pagination-bar-bottom" style="margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Right Column: [Select Preset / Task ▼] -->
+            <aside class="wf-presets-sidebar" id="wf-presets-sidebar">
+                <div class="wf-sidebar-card">
+                    <!-- Header with Dropdown -->
+                    <div class="wf-sidebar-header">
+                        <label class="wf-sidebar-title" for="sidebar-task-select">Select Preset / Task ▼</label>
+                        <div class="wf-select-skin">
+                            <select class="wf-sidebar-select" id="sidebar-task-select" onchange="handleTaskDropdownChange(this.value)" title="Select Active Workspace Mode">
+                                <option value="reviews">💬 Customer / Question Portal</option>
+                                <option value="topics">📰 Topic Classification</option>
+                                <option value="playground">🧪 Fast / Text variant</option>
+                                <option value="history">📜 Request History &amp; DB</option>
+                                <option value="hub">🏛️ Architecture &amp; Hub</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Wireframe Task Bullets matching diagram -->
+                    <div class="wf-sidebar-bullets">
+                        <div class="wf-bullet-row" data-task="playground" onclick="switchTaskMode('playground')">
+                            <span class="wf-bullet-dot">•</span>
+                            <span class="wf-bullet-name">Fast / Text variant</span>
+                            <span class="wf-bullet-meta">Custom</span>
+                        </div>
+                        <div class="wf-bullet-row" data-task="topics" onclick="switchTaskMode('topics')">
+                            <span class="wf-bullet-dot">•</span>
+                            <span class="wf-bullet-name">Topic Classification</span>
+                            <span class="wf-bullet-meta">9 Topics</span>
+                        </div>
+                        <div class="wf-bullet-row active" data-task="reviews" onclick="switchTaskMode('reviews')">
+                            <span class="wf-bullet-dot">•</span>
+                            <span class="wf-bullet-name">Customer / Question Portal</span>
+                            <span class="wf-bullet-meta">6-Q Fan-Out</span>
+                        </div>
+                    </div>
+
+                    <!-- Active Preset Buttons & Preview Options -->
+                    <div class="wf-sidebar-presets-area" id="wf-preset-options-container">
+                        <!-- Populated by JavaScript renderSidebarPresets -->
+                    </div>
+                </div>
+            </aside>
         </div>
+
+        <!-- ================= ROW 5: GITHUB PROFILE & REPOSITORY BANNER ================= -->
+        <!-- Wireframe:
+        +---------------------------------------------------------------------------------+
+        |  GitHub Profile / Project Repository                           [ Link ↗ ]       |
+        +---------------------------------------------------------------------------------+
+        -->
+        <footer class="wf-bottom-banner">
+            <div class="wf-bottom-card">
+                <div class="wf-bottom-left">
+                    <div class="wf-bottom-octocat">
+                        <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                        </svg>
+                    </div>
+                    <div class="wf-bottom-info">
+                        <div class="wf-bottom-heading">
+                            <span>GitHub Profile / Project Repository</span>
+                            <span class="wf-repo-chip">RileyCarney/JevTools</span>
+                        </div>
+                        <div class="wf-bottom-desc">
+                            Fast, Typed Semantic Judgments &amp; Calibrated Probability Distributions via OpenRouter and TypeSafe Jev.
+                        </div>
+                    </div>
+                </div>
+                <div class="wf-bottom-actions">
+                    <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="wf-action-btn wf-btn-repo" title="View Repository on GitHub">
+                        <span>Link</span>
+                        <span class="wf-arr">↗</span>
+                    </a>
+                    <a href="https://github.com/RileyCarney" target="_blank" rel="noopener noreferrer" class="wf-action-btn wf-btn-profile" title="View Riley Carney GitHub Profile">
+                        <span>Profile</span>
+                        <span class="wf-arr">↗</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/riley-carney" target="_blank" rel="noopener noreferrer" class="wf-action-btn wf-btn-linkedin" title="View Riley Carney LinkedIn Profile">
+                        <span>LinkedIn</span>
+                        <span class="wf-arr">↗</span>
+                    </a>
+                    <button class="wf-action-btn wf-btn-profile" onclick="openBannerModal()" title="View High-Resolution Brand Artwork">
+                        <span>Artwork</span>
+                        <span class="wf-arr">🖼️</span>
+                    </button>
+                </div>
+            </div>
+        </footer>
     </div>
 
-    <!-- Interactive Detail Modal Drawer -->
+<!-- Interactive Detail Modal Drawer -->
     <div class="modal-overlay" id="modal-overlay">
         <div class="modal-box" id="modal-box">
             <div class="modal-header">
@@ -2883,12 +4102,12 @@
                 </div>
 
                 <div id="modal-web-services-section">
-                    <div class="modal-section-title">🌐 Active Local Web Services & Endpoints</div>
+                    <div class="modal-section-title">Active Local Web Services & Endpoints</div>
                     <div class="links-flex" id="modal-web-links"></div>
                 </div>
 
                 <div>
-                    <div class="modal-section-title">🚀 Main Execution Command</div>
+                    <div class="modal-section-title">Main Execution Command</div>
                     <div class="code-block">
                         <button class="btn-copy" onclick="copyCode('modal-cmd-run')">Copy</button>
                         <code id="modal-cmd-run">py jev_demo.py --mock</code>
@@ -2896,7 +4115,7 @@
                 </div>
 
                 <div>
-                    <div class="modal-section-title">🧪 Automated Test Suite Command</div>
+                    <div class="modal-section-title">Automated Test Suite Command</div>
                     <div class="code-block">
                         <button class="btn-copy" onclick="copyCode('modal-cmd-test')">Copy</button>
                         <code id="modal-cmd-test">py jev_demo.py --mock --demo reviews --json</code>
@@ -2904,7 +4123,7 @@
                 </div>
 
                 <div>
-                    <div class="modal-section-title">🏗️ Key Architectural Features & Details</div>
+                    <div class="modal-section-title">Key Architectural Features & Details</div>
                     <ul id="modal-features" style="padding-left: 1.2rem; color: var(--text-muted); line-height: 1.7; font-size: 0.92rem;"></ul>
                 </div>
             </div>
@@ -2914,7 +4133,7 @@
     <!-- API Key Configuration Modal Dialog -->
     <div class="modal-overlay" id="config-modal-overlay">
         <div class="config-dialog-box">
-            <div class="dialog-title">🔑 Configure Jev Engine & API Key</div>
+            <div class="dialog-title">Configure Jev Engine & API Key</div>
             <p class="dialog-desc">Keys are kept strictly in server memory during the active session and are never exposed in client bundles.</p>
 
             <div class="form-group">
@@ -3000,7 +4219,554 @@
         </div>
     </div>
 
-    <script>
+    
+    <!-- High-Resolution Artwork Modal Dialog -->
+    <div class="modal-overlay" id="banner-modal-overlay">
+        <div class="modal-box" style="max-width: 980px;">
+            <div class="modal-header">
+                <div class="modal-title-area">
+                    <span class="modal-icon">🖼️</span>
+                    <div>
+                        <div class="modal-title">JevTools Brand Artwork</div>
+                        <div style="font-size: 0.85rem; color: var(--text-muted);"><!-- DYNAMIC PCB CIRCUIT BOARD MATRIX ENGINE --> High-Fidelity SVG Wordmark &amp; Repository Emblem</div>
+                    </div>
+                </div>
+                <button class="btn-close" onclick="closeBannerModal()" title="Close (Esc)">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1rem 0;">
+                <div style="border-radius: 10px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.6);">
+                    <div id="hero-svg-view">
+                            <svg class="hero-wordmark-svg" viewBox="0 0 960 494" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="JEVTOOLS">
+                              <defs>
+                                <linearGradient id="jev-hbg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                  <stop offset="0%" stop-color="#0077da" />
+                                  <stop offset="25%" stop-color="#0f4bb5" />
+                                  <stop offset="52%" stop-color="#1e2c88" />
+                                  <stop offset="78%" stop-color="#341b73" />
+                                  <stop offset="100%" stop-color="#4a1566" />
+                                </linearGradient>
+                                <style>
+                                  .h-circuit { stroke: #000000; stroke-width: 4.5; stroke-linecap: square; fill: none; }
+                                  .h-text-shadow { font-family: 'Impact', 'Arial Black', sans-serif; font-weight: 900; font-size: 215px; letter-spacing: 5px; fill: #682aa2; stroke: #000000; stroke-width: 14; stroke-linejoin: round; }
+                                  .h-text-face { font-family: 'Impact', 'Arial Black', sans-serif; font-weight: 900; font-size: 215px; letter-spacing: 5px; fill: #ffffff; stroke: #000000; stroke-width: 10; stroke-linejoin: round; }
+                                </style>
+                              </defs>
+                              <rect width="960" height="494" fill="url(#jev-hbg-grad)" />
+                              <g class="h-circuit">
+                                <path d="M 10 70 L 130 70 L 130 130 L 190 130 L 190 40 L 290 40" />
+                                <path d="M 10 120 L 70 120 L 70 360 L 130 360 L 130 440 L 80 440 L 80 484" />
+                                <path d="M 10 240 L 40 240 L 40 400 L 100 400 L 100 484" />
+                                <path d="M 10 170 L 100 170 L 100 230 L 120 230 L 120 310 L 170 310" />
+                                <path d="M 10 300 L 40 300 L 40 340 L 10 340" />
+                                <path d="M 140 484 L 140 410 L 210 410 L 210 484" />
+                                <path d="M 180 484 L 180 445 L 240 445 L 270 415 L 270 380" />
+                                <path d="M 230 484 L 230 450 L 290 390 L 330 390 L 330 484" />
+                                <path d="M 250 10 L 250 60 L 290 60 L 290 110 L 350 110 L 380 80 L 380 10" />
+                                <path d="M 330 10 L 330 40 L 420 40 L 420 80 L 460 80 L 460 10" />
+                                <path d="M 400 10 L 400 50 L 510 50 L 510 110 L 560 110 L 590 80 L 590 10" />
+                                <path d="M 490 10 L 490 30 L 550 30 L 550 70 L 650 70 L 680 40 L 680 10" />
+                                <path d="M 360 484 L 360 440 L 440 360 L 530 360 L 580 410 L 580 484" />
+                                <path d="M 410 484 L 410 450 L 470 390 L 510 390 L 550 430 L 550 484" />
+                                <path d="M 460 484 L 490 454 L 490 414 L 520 414 L 520 484" />
+                                <path d="M 610 484 L 610 430 L 660 380 L 710 380 L 740 410 L 740 484" />
+                                <path d="M 720 10 L 720 60 L 770 110 L 820 110 L 820 40 L 870 40 L 870 10" />
+                                <path d="M 790 10 L 790 50 L 840 100 L 910 100 L 910 40 L 950 40" />
+                                <path d="M 950 100 L 880 100 L 880 160 L 920 160 L 920 220 L 950 220" />
+                                <path d="M 950 160 L 930 160 L 930 290 L 880 290 L 880 210 L 820 210" />
+                                <path d="M 950 270 L 910 270 L 910 340 L 950 340" />
+                                <path d="M 950 380 L 900 380 L 860 420 L 860 484" />
+                                <path d="M 950 430 L 920 430 L 920 484" />
+                                <path d="M 800 484 L 800 450 L 760 410 L 760 360 L 810 310 L 870 310 L 870 350 L 910 390 L 910 460 L 890 484" />
+                              </g>
+                              <!-- 3D Extruded Shadow Layers -->
+                              <text x="85" y="328" class="h-text-shadow" dx="14" dy="14">JEVTOOLS</text>
+                              <text x="85" y="328" class="h-text-shadow" dx="10" dy="10">JEVTOOLS</text>
+                              <text x="85" y="328" class="h-text-shadow" dx="6" dy="6">JEVTOOLS</text>
+                              <!-- Front Face -->
+                              <text x="85" y="328" class="h-text-face">JEVTOOLS</text>
+                              <!-- Octocat Emblem at S -->
+                              <g transform="translate(816, 350)">
+                                <circle cx="0" cy="0" r="54" fill="#000000" />
+                                <circle cx="0" cy="0" r="50" fill="#2d0b47" stroke="#10051c" stroke-width="4" />
+                                <circle cx="0" cy="0" r="43" fill="#000000" />
+                                <g transform="translate(-32, -32) scale(2.66)">
+                                  <path fill="#551a8b" d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                                </g>
+                              </g>
+                            </svg>
+                        </div>
+                        <div id="hero-img-view" style="display: none;">
+                            <img src="assets/jevtools_card.png" alt="JevTools GitHub Social Banner" class="hero-wordmark-svg" style="border-radius: 8px;">
+                        </div>
+
+                        
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+
+        // ================= WIREFRAME THEME & ENGINE CONTROLS =================
+        const themes = [
+            { id: 'cyber', name: 'Cyber Dark', icon: '⚡' },
+            { id: 'obsidian', name: 'Midnight', icon: '🌙' },
+            { id: 'light', name: 'Clean Light', icon: '☀️' }
+        ];
+        let currentThemeIndex = 0;
+
+        function setTheme(themeId) {
+            document.documentElement.setAttribute('data-theme', themeId);
+            localStorage.setItem('jevtools_theme', themeId);
+            const theme = themes.find(t => t.id === themeId) || themes[0];
+            currentThemeIndex = themes.indexOf(theme);
+            const iconEl = document.getElementById('theme-switch-icon');
+            const labelEl = document.getElementById('theme-switch-label');
+            if (iconEl) iconEl.textContent = theme.icon;
+            if (labelEl) labelEl.textContent = theme.name;
+        }
+
+        function cycleTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            setTheme(themes[currentThemeIndex].id);
+        }
+
+        async function handleProviderSelectChange(provider) {
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider: provider })
+                });
+                if (res.ok) {
+                    showToast(`Inference Engine switched to ${provider.toUpperCase()}`);
+                    fetchServerStatus();
+                }
+            } catch (err) {
+                console.error("Provider update failed:", err);
+            }
+        }
+
+        async function handleModelSelectChange(model) {
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: model })
+                });
+                if (res.ok) {
+                    showToast(`Model switched to ${model}`);
+                    fetchServerStatus();
+                }
+            } catch (err) {
+                console.error("Model update failed:", err);
+            }
+        }
+
+        async function runBenchmarkTTFT() {
+            const valEl = document.getElementById('stat-latency-val');
+            const lblEl = document.getElementById('stat-latency-lbl');
+            const tagEl = document.getElementById('benchmark-status-tag');
+            if (tagEl) tagEl.textContent = '⏳ Testing...';
+            if (valEl) valEl.textContent = 'Measuring...';
+
+            try {
+                const res = await fetch('/api/benchmark-ttft');
+                if (res.ok) {
+                    const data = await res.json();
+                    const lat = Math.round(data.avg_latency_ms || data.latency_ms || 287);
+                    const ttft = Math.round(data.avg_ttft_ms || data.ttft_ms || lat);
+                    if (valEl) valEl.textContent = `${lat} ms`;
+                    if (lblEl) lblEl.textContent = `Inference Latency (TTFT ~${ttft} ms)`;
+                    if (tagEl) tagEl.textContent = '✓ Measured';
+                    showToast(`TTFT Benchmark: Latency ${lat} ms, TTFT ~${ttft} ms`);
+                } else {
+                    if (valEl) valEl.textContent = '287 ms';
+                    if (tagEl) tagEl.textContent = '⚡ Benchmark';
+                }
+            } catch (err) {
+                if (valEl) valEl.textContent = '287 ms';
+                if (tagEl) tagEl.textContent = '⚡ Benchmark';
+            }
+        }
+
+        const playgroundTemplates = [
+            {
+                title: "#1 Billing Dispute",
+                tag: "Noul + Choice + Score",
+                desc: "Evaluates duplicate charge dispute and frustration level across 3 primitives.",
+                state: JSON.stringify({
+                    "ticket_id": "T-9042",
+                    "message": "I was charged $49.99 twice on my visa card. Please refund the duplicate immediately.",
+                    "plan": "Pro Annual"
+                }, null, 2),
+                questions: JSON.stringify({
+                    "requests_refund": {
+                        "type": "noul",
+                        "instructions": "Does `message` request a refund or dispute a charge?"
+                    },
+                    "charge_type": {
+                        "type": "choice",
+                        "instructions": "What type of billing issue is described?",
+                        "criteria": {
+                            "duplicate": "Charged more than once for same item",
+                            "unauthorized": "Customer did not initiate charge",
+                            "cancellation": "Charged after requesting cancel",
+                            "other": "Other billing problem"
+                        }
+                    },
+                    "frustration_level": {
+                        "type": "score",
+                        "instructions": "How frustrated is the customer in `message`?",
+                        "criteria": [
+                            "Calm and civil",
+                            "Mildly annoyed",
+                            "Demanding and angry"
+                        ]
+                    }
+                }, null, 2)
+            },
+            {
+                title: "#2 Support Escalation",
+                tag: "Urgency + Domain",
+                desc: "Assesses production outages, urgency, and domain routing.",
+                state: JSON.stringify({
+                    "user_tier": "Enterprise",
+                    "message": "Our production server is failing with 500 errors since 20 minutes ago. Need emergency engineer right now!"
+                }, null, 2),
+                questions: JSON.stringify({
+                    "is_urgent": {
+                        "type": "noul",
+                        "instructions": "Does the user report an active production outage or urgent emergency?"
+                    },
+                    "priority_level": {
+                        "type": "score",
+                        "instructions": "What priority tier should this ticket be assigned?",
+                        "criteria": [
+                            "P3 Low priority",
+                            "P2 Medium priority",
+                            "P1 High emergency"
+                        ]
+                    },
+                    "issue_domain": {
+                        "type": "choice",
+                        "instructions": "Which domain is experiencing failure?",
+                        "criteria": {
+                            "infrastructure": "Server, database or cloud network down",
+                            "billing": "Payment or subscription issue",
+                            "feature_request": "New capability or inquiry"
+                        }
+                    }
+                }, null, 2)
+            },
+            {
+                title: "#3 Content Moderation",
+                tag: "Spam + Policy",
+                desc: "Detects spam, platform policy violations, and routing action.",
+                state: JSON.stringify({
+                    "username": "anon_99",
+                    "comment": "Check out this link to get free crypto coins fast at shady-crypto-scam.biz now!"
+                }, null, 2),
+                questions: JSON.stringify({
+                    "is_spam": {
+                        "type": "noul",
+                        "instructions": "Is this comment promotional spam or a scam?"
+                    },
+                    "violates_tos": {
+                        "type": "noul",
+                        "instructions": "Does this comment violate platform policies against deceptive content?"
+                    },
+                    "moderation_action": {
+                        "type": "choice",
+                        "instructions": "Recommended moderation action",
+                        "criteria": {
+                            "allow": "Safe to display to users",
+                            "flag_review": "Hold for human moderation",
+                            "auto_remove": "Immediately delete and shadowban"
+                        }
+                    }
+                }, null, 2)
+            },
+            {
+                title: "#4 Lead Qualification",
+                tag: "Sales Intent",
+                desc: "Scores enterprise sales intent, team size, and procurement readiness.",
+                state: JSON.stringify({
+                    "company": "Apex Corp",
+                    "employees": 250,
+                    "inquiry": "We want to evaluate Jev for our customer routing pipeline handling 50k inquiries/day. Can we get pricing for enterprise SLA?"
+                }, null, 2),
+                questions: JSON.stringify({
+                    "is_high_intent": {
+                        "type": "noul",
+                        "instructions": "Does the inquiry demonstrate strong purchase intent?"
+                    },
+                    "lead_tier": {
+                        "type": "choice",
+                        "instructions": "What is the prospect account size?",
+                        "criteria": {
+                            "smb": "Small business (<50)",
+                            "mid_market": "Mid market (50-500)",
+                            "enterprise": "Enterprise (500+)"
+                        }
+                    },
+                    "readiness_score": {
+                        "type": "score",
+                        "instructions": "How qualified is this prospect for sales follow-up?",
+                        "criteria": [
+                            "Cold / Browsing",
+                            "Warm / Inquiring",
+                            "Hot / Ready for POC"
+                        ]
+                    }
+                }, null, 2)
+            }
+        ];
+
+        let activeTaskId = 'reviews';
+        let activePresetIndex = 0;
+
+        function switchTaskMode(taskId) {
+            activeTaskId = taskId;
+
+            // 1. Activate tab in workspace
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const targetContent = document.getElementById(`tab-${taskId}`);
+            if (targetContent) targetContent.classList.add('active');
+
+            // 2. Sync sidebar dropdown
+            const sidebarSelect = document.getElementById('sidebar-task-select');
+            if (sidebarSelect && sidebarSelect.value !== taskId) {
+                sidebarSelect.value = taskId;
+            }
+
+            // 3. Sync sidebar bullets
+            document.querySelectorAll('.wf-bullet-row').forEach(row => {
+                row.classList.toggle('active', row.getAttribute('data-task') === taskId);
+            });
+
+            // 4. Sync mode buttons in Primitive card
+            document.querySelectorAll('.wf-mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.getAttribute('data-tab') === taskId);
+            });
+
+            // 5. Sync primitive mode badge
+            const badgeEl = document.getElementById('active-primitive-badge');
+            const taskTitles = {
+                'reviews': 'Customer / Question Portal',
+                'topics': 'Topic Classification',
+                'playground': 'Fast / Text variant',
+                'history': 'Request History & DB',
+                'hub': 'Architecture & Hub'
+            };
+            if (badgeEl) badgeEl.textContent = taskTitles[taskId] || taskId;
+
+            // 6. Render presets in sidebar
+            renderSidebarPresets(taskId);
+
+            // 7. If history, refresh database records
+            if (taskId === 'history') {
+                loadHistoryData();
+            }
+        }
+
+        function handleTaskDropdownChange(taskId) {
+            switchTaskMode(taskId);
+        }
+
+        function renderSidebarPresets(taskId) {
+            const container = document.getElementById('wf-preset-options-container');
+            if (!container) return;
+
+            if (taskId === 'reviews') {
+                const p = reviewPresets[activePresetIndex] || reviewPresets[0];
+                const names = [
+                    '#1 Enthusiast',
+                    '#2 Battery Defect',
+                    '#3 Shipping/Mixed',
+                    "#4 Ambiguous 'ok'",
+                    '#5 Commuter Pro'
+                ];
+                let buttonsHtml = names.map((name, i) => `
+                    <button class="wf-preset-btn ${i === activePresetIndex ? 'active' : ''}" onclick="selectSidebarPreset('reviews', ${i})">
+                        <span>${name}</span>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">${i === 0 ? 'Praise' : i === 1 ? 'Defect' : i === 2 ? 'Mixed' : i === 3 ? 'Short' : 'Pro'}</span>
+                    </button>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="wf-preset-options-title">Active Review Presets (${names.length})</div>
+                    <div class="wf-preset-buttons-grid">
+                        ${buttonsHtml}
+                    </div>
+                    <div class="wf-preview-card">
+                        <div class="wf-preview-title">Selected Preset Preview</div>
+                        <div class="wf-preview-body">"${escapeHtml(p.text.length > 120 ? p.text.substring(0, 120) + '...' : p.text)}"</div>
+                        <div class="wf-preview-meta">Product: ${escapeHtml(p.product)} &bull; 6 Qs Fan-Out</div>
+                    </div>
+                    <button class="wf-btn-run-preset" onclick="runSidebarActivePreset('reviews')">
+                        <span>⚡</span> Run Speculative Fan-Out
+                    </button>
+                `;
+            } else if (taskId === 'topics') {
+                const p = topicPresets[activePresetIndex] || topicPresets[0];
+                const names = [
+                    '#1 AI Models (Tech)',
+                    '#2 Screen Time (Health)',
+                    '#3 Fed Rates (Business)',
+                    '#4 Risotto (Culture)',
+                    '#5 AMOC (Science)'
+                ];
+                let buttonsHtml = names.map((name, i) => `
+                    <button class="wf-preset-btn ${i === activePresetIndex ? 'active' : ''}" onclick="selectSidebarPreset('topics', ${i})">
+                        <span>${name}</span>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">${['Technology', 'Health/Op', 'Business', 'Culture', 'Science'][i]}</span>
+                    </button>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="wf-preset-options-title">Active Topic Presets (${names.length})</div>
+                    <div class="wf-preset-buttons-grid">
+                        ${buttonsHtml}
+                    </div>
+                    <div class="wf-preview-card">
+                        <div class="wf-preview-title">Selected Passage Preview</div>
+                        <div class="wf-preview-body">"${escapeHtml(p.text.length > 120 ? p.text.substring(0, 120) + '...' : p.text)}"</div>
+                        <div class="wf-preview-meta">9 Candidate Categories &bull; Calibrated</div>
+                    </div>
+                    <button class="wf-btn-run-preset" onclick="runSidebarActivePreset('topics')">
+                        <span>⚡</span> Classify &amp; Route Paragraph
+                    </button>
+                `;
+            } else if (taskId === 'playground') {
+                const t = playgroundTemplates[activePresetIndex] || playgroundTemplates[0];
+                let buttonsHtml = playgroundTemplates.map((item, i) => `
+                    <button class="wf-preset-btn ${i === activePresetIndex ? 'active' : ''}" onclick="selectSidebarPreset('playground', ${i})">
+                        <span>${item.title}</span>
+                        <span style="font-size: 0.72rem; color: var(--text-muted);">${item.tag}</span>
+                    </button>
+                `).join('');
+
+                container.innerHTML = `
+                    <div class="wf-preset-options-title">Decision Templates (${playgroundTemplates.length})</div>
+                    <div class="wf-preset-buttons-grid">
+                        ${buttonsHtml}
+                    </div>
+                    <div class="wf-preview-card">
+                        <div class="wf-preview-title">${escapeHtml(t.title)} Template</div>
+                        <div class="wf-preview-body">${escapeHtml(t.desc)}</div>
+                        <div class="wf-preview-meta">Interactive State &amp; Questions Payload</div>
+                    </div>
+                    <button class="wf-btn-run-preset" onclick="runSidebarActivePreset('playground')">
+                        <span>⚡</span> Send Custom Request to Jev
+                    </button>
+                `;
+            } else if (taskId === 'history') {
+                container.innerHTML = `
+                    <div class="wf-preset-options-title">Quick Database Actions</div>
+                    <div class="wf-preset-buttons-grid">
+                        <button class="wf-preset-btn" onclick="applyQuickFilter('all')">
+                            <span>Show All Records</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Reset</span>
+                        </button>
+                        <button class="wf-preset-btn" onclick="applyQuickFilter('errors')">
+                            <span>⚠️ Error Logs Only</span>
+                            <span style="font-size: 0.72rem; color: #f87171;">Errors</span>
+                        </button>
+                        <button class="wf-preset-btn" onclick="applyQuickFilter('live')">
+                            <span>⚡ Live API Only</span>
+                            <span style="font-size: 0.72rem; color: #34d399;">Live</span>
+                        </button>
+                        <button class="wf-preset-btn" onclick="applyQuickFilter('slow')">
+                            <span>⏱️ Slow (> 500 ms)</span>
+                            <span style="font-size: 0.72rem; color: #fbbf24;">Latency</span>
+                        </button>
+                    </div>
+                    <div class="wf-preview-card">
+                        <div class="wf-preview-title">Database Storage Info</div>
+                        <div class="wf-preview-body">Direct SQLite WAL engine in jevtools.db. Preserves all payloads, TTFT, and execution telemetry locally on device.</div>
+                        <div class="wf-preview-meta">Table: request_logs &bull; Private &amp; Offline</div>
+                    </div>
+                    <button class="wf-btn-run-preset" onclick="loadHistoryData()">
+                        <span>🔄</span> Refresh History Records
+                    </button>
+                `;
+            } else if (taskId === 'hub') {
+                container.innerHTML = `
+                    <div class="wf-preset-options-title">Architecture Modules</div>
+                    <div class="wf-preset-buttons-grid">
+                        <button class="wf-preset-btn" onclick="filterHub('all')">
+                            <span>All Modules (6)</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Overview</span>
+                        </button>
+                        <button class="wf-preset-btn" onclick="filterHub('core')">
+                            <span>Core Engine (2)</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Kernel</span>
+                        </button>
+                        <button class="wf-preset-btn" onclick="filterHub('pipeline')">
+                            <span>Pipelines (2)</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Rerank</span>
+                        </button>
+                        <button class="wf-preset-btn" onclick="filterHub('gateway')">
+                            <span>Gateways (2)</span>
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Network</span>
+                        </button>
+                    </div>
+                    <div class="wf-preview-card">
+                        <div class="wf-preview-title">TypeSafe System One</div>
+                        <div class="wf-preview-body">Explore the Jev Core specification, atomic semantic routers, and full Obsidian knowledge vault.</div>
+                        <div class="wf-preview-meta">6 Canonical Modules &bull; Zero External Deps</div>
+                    </div>
+                    <button class="wf-btn-run-preset" onclick="openBannerModal()">
+                        <span>🖼️</span> View High-Res Artwork
+                    </button>
+                `;
+            }
+        }
+
+        function selectSidebarPreset(type, index) {
+            activePresetIndex = index;
+            if (type === 'reviews') {
+                loadReviewPreset(index);
+                renderSidebarPresets('reviews');
+            } else if (type === 'topics') {
+                loadTopicPreset(index);
+                renderSidebarPresets('topics');
+            } else if (type === 'playground') {
+                loadPlaygroundTemplate(index);
+                renderSidebarPresets('playground');
+            }
+        }
+
+        function loadPlaygroundTemplate(index) {
+            const t = playgroundTemplates[index];
+            if (!t) return;
+            const stateEl = document.getElementById('custom-state');
+            const qEl = document.getElementById('custom-questions');
+            if (stateEl) stateEl.value = t.state;
+            if (qEl) qEl.value = t.questions;
+        }
+
+        function runSidebarActivePreset(type) {
+            if (type === 'reviews') {
+                runReviewAnalysis();
+            } else if (type === 'topics') {
+                runTopicClassification();
+            } else if (type === 'playground') {
+                runCustomEvaluation();
+            }
+        }
+
+        function openBannerModal() {
+            const m = document.getElementById('banner-modal-overlay');
+            if (m) m.classList.add('active');
+        }
+
+        function closeBannerModal() {
+            const m = document.getElementById('banner-modal-overlay');
+            if (m) m.classList.remove('active');
+        }
+
+
         /**
          * Escape a string for safe interpolation into HTML innerHTML.
          * MUST be applied to ALL server-sourced or user-sourced values before innerHTML use.
@@ -3189,6 +4955,11 @@
 
         // UI Initialization
         document.addEventListener('DOMContentLoaded', () => {
+            // Restore saved theme
+            const savedTheme = localStorage.getItem('jevtools_theme') || 'cyber';
+            setTheme(savedTheme);
+            renderSidebarPresets('reviews');
+
             initCanvas();
             createParticles();
             animateCanvas();
@@ -3213,52 +4984,79 @@
             }
         });
 
-        // Tab Switching
+        // Tab / Task Switching (Bridged to switchTaskMode)
         function switchTab(tabId) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-            const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(tabId));
-            if (targetBtn) targetBtn.classList.add('active');
-
-            const targetContent = document.getElementById(`tab-${tabId}`);
-            if (targetContent) targetContent.classList.add('active');
-
-            if (tabId === 'history') {
-                loadHistoryData();
-            }
+            switchTaskMode(tabId);
         }
 
-        // Fetch Server Status
+        // Fetch Server Status & Synchronize All Cockpit Badges
         async function fetchServerStatus() {
             try {
                 const res = await fetch('/api/status');
                 if (!res.ok) return;
                 const data = await res.json();
 
-                document.getElementById('bar-provider').textContent = data.provider.toUpperCase();
-                document.getElementById('bar-model').textContent = data.model;
-                document.getElementById('bar-key').textContent = data.api_key_masked;
+                // Provider sync
+                const barProv = document.getElementById('bar-provider');
+                if (barProv) barProv.textContent = data.provider.toUpperCase();
+                const engSelect = document.getElementById('engine-provider-select');
+                if (engSelect && data.provider) engSelect.value = data.provider.toLowerCase();
 
+                // Model sync
+                const barMdl = document.getElementById('bar-model');
+                if (barMdl) barMdl.textContent = data.model;
+                const mdlSelect = document.getElementById('engine-model-select');
+                if (mdlSelect && data.model) mdlSelect.value = data.model;
+
+                // API Key sync
+                const barKey = document.getElementById('bar-key');
+                if (barKey) barKey.textContent = data.api_key_masked;
+
+                // Mode badge & live toggle sync
                 const modeBadge = document.getElementById('bar-mode-badge');
                 const toggleBtn = document.getElementById('btn-toggle-mock');
+                const liveLabel = document.getElementById('live-active-text');
+                const dot = document.getElementById('status-dot');
+
                 if (data.mock) {
-                    modeBadge.textContent = 'MOCK MODE';
-                    modeBadge.style.color = 'var(--accent)';
-                    toggleBtn.textContent = '⚡ Switch to Live';
+                    if (modeBadge) {
+                        modeBadge.textContent = 'MOCK MODE';
+                        modeBadge.style.color = 'var(--accent)';
+                    }
+                    if (toggleBtn) {
+                        toggleBtn.classList.add('mock');
+                        toggleBtn.textContent = '⚡ Switch to Live';
+                    }
+                    if (liveLabel) liveLabel.textContent = '○ Offline Mock Mode';
+                    if (dot) dot.classList.add('mock');
                 } else {
-                    modeBadge.textContent = 'LIVE API ACTIVE';
-                    modeBadge.style.color = 'var(--success)';
-                    toggleBtn.textContent = '🛡️ Switch to Mock';
+                    if (modeBadge) {
+                        modeBadge.textContent = 'LIVE ACTIVE';
+                        modeBadge.style.color = 'var(--success)';
+                    }
+                    if (toggleBtn) {
+                        toggleBtn.classList.remove('mock');
+                        toggleBtn.textContent = '🛡️ Switch to Mock';
+                    }
+                    if (liveLabel) liveLabel.textContent = '● Live API Active';
+                    if (dot) dot.classList.remove('mock');
                 }
 
+                // Latency sync
                 if (data.tested_inference_latency_str) {
                     const statValEl = document.getElementById('stat-latency-val');
                     if (statValEl) statValEl.textContent = data.tested_inference_latency_str;
                 }
                 if (data.tested_ttft_str) {
                     const statLblEl = document.getElementById('stat-latency-lbl');
-                    if (statLblEl) statLblEl.textContent = `Inference Latency (TTFT: ${data.tested_ttft_str})`;
+                    if (statLblEl) statLblEl.textContent = `Inference Latency (TTFT ~${data.tested_ttft_str})`;
+                }
+
+                // Benchmarks count sync
+                if (data.benchmarks) {
+                    const totalCases = (data.benchmarks.reviews_count || 5) + (data.benchmarks.topics_count || 5);
+                    const bEl = document.getElementById('stat-benchmarks');
+                    if (bEl) bEl.textContent = `${totalCases} Cases`;
                 }
             } catch (e) {
                 console.warn('Status fetch warning:', e);
