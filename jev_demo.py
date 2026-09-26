@@ -36,6 +36,8 @@ import os
 import sys
 import textwrap
 import time
+import urllib.parse
+import warnings
 
 # Configure UTF-8 encoding on Windows to prevent charmap encoding errors
 if sys.platform == "win32":
@@ -102,6 +104,36 @@ def _find_env_file() -> None:
 _find_env_file()
 
 
+ALLOWED_API_HOSTS: frozenset[str] = frozenset({
+    "openrouter.ai",
+    "api.typesafe.ai",
+})
+_ALLOWED_API_HOSTS = ALLOWED_API_HOSTS
+
+
+def validate_endpoint(url: str, provider: str) -> str:
+    """Validate that an API endpoint URL points only to an approved host."""
+    default = TYPESAFE_API_URL if provider == "typesafe" else OPENROUTER_API_URL
+    try:
+        parsed = urllib.parse.urlparse(url)
+        if parsed.scheme not in ("https", "http"):
+            raise ValueError(f"Scheme must be https or http, got: {parsed.scheme!r}")
+        if parsed.hostname not in ALLOWED_API_HOSTS:
+            raise ValueError(
+                f"Host {parsed.hostname!r} is not in the allowlist {ALLOWED_API_HOSTS}"
+            )
+    except Exception as exc:
+        warnings.warn(
+            f"[SECURITY] Endpoint URL rejected ({exc}); using default: {default}",
+            stacklevel=3,
+        )
+        return default
+    return url
+
+
+_validate_endpoint = validate_endpoint
+
+
 def get_provider_config(
     api_key: str,
     provider: Optional[str] = None,
@@ -130,6 +162,7 @@ def get_provider_config(
         ep = endpoint or os.environ.get("JEV_API_URL", OPENROUTER_API_URL)
         mdl = model or os.environ.get("JEV_MODEL", OPENROUTER_DEFAULT_MODEL)
 
+    ep = validate_endpoint(ep, prov)
     return prov, ep, mdl
 
 
@@ -567,6 +600,8 @@ def call_jev_with_metrics(
             json=payload,
             stream=True,
             timeout=60,
+            verify=True,
+            allow_redirects=False,
         ) as resp:
             for chunk in resp.iter_content(chunk_size=1024):
                 if chunk:
@@ -701,7 +736,15 @@ def measure_openrouter_ttft(
         ttft: Optional[float] = None
         status = 0
         try:
-            with requests.post(url, headers=headers, json=payload, stream=True, timeout=timeout) as r:
+            with requests.post(
+                url,
+                headers=headers,
+                json=payload,
+                stream=True,
+                timeout=timeout,
+                verify=True,
+                allow_redirects=False,
+            ) as r:
                 status = r.status_code
                 for chunk in r.iter_content(chunk_size=1024):
                     if chunk:
@@ -716,7 +759,13 @@ def measure_openrouter_ttft(
             try:
                 t0_fb = time.perf_counter()
                 ttft_fb: Optional[float] = None
-                with requests.get("https://openrouter.ai/api/v1/models", stream=True, timeout=timeout) as r_fb:
+                with requests.get(
+                    "https://openrouter.ai/api/v1/models",
+                    stream=True,
+                    timeout=timeout,
+                    verify=True,
+                    allow_redirects=False,
+                ) as r_fb:
                     for chunk in r_fb.iter_content(chunk_size=1024):
                         if chunk:
                             if ttft_fb is None:

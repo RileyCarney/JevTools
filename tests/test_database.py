@@ -201,6 +201,24 @@ class TestDatabaseModule(unittest.TestCase):
         search_broken = database.get_history(search="broken", db_path=self.test_db_path)
         self.assertEqual(len(search_broken), 1)
 
+    def test_get_history_limits_and_search_truncation(self) -> None:
+        """Verify that get_history caps limit to MAX_QUERY_LIMIT and truncates search to MAX_SEARCH_LENGTH."""
+        # Log a record with a known long string
+        database.log_interaction(
+            action_type="review_analysis",
+            request_payload={"content": "A" * 250},
+            db_path=self.test_db_path,
+        )
+
+        # Search with >200 chars should be truncated to 200 chars without error
+        long_search = "A" * 250
+        res = database.get_history(search=long_search, db_path=self.test_db_path)
+        self.assertEqual(len(res), 1)
+
+        # Excessive limit should be safely capped to MAX_QUERY_LIMIT (500)
+        res_capped = database.get_history(limit=99999, db_path=self.test_db_path)
+        self.assertLessEqual(len(res_capped), database.MAX_QUERY_LIMIT)
+
     def test_clear_history(self) -> None:
         """Verify that clear_history removes all logs and vacuums the database."""
         for i in range(5):

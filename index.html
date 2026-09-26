@@ -2185,10 +2185,10 @@
                     <input type="text" id="search-input" placeholder="Search architecture, primitives, pipelines, or cookbooks... (Press '/' to focus)">
                 </div>
                 <div class="filter-buttons">
-                    <button class="filter-btn active" data-filter="all">All Modules (7)</button>
+                    <button class="filter-btn active" data-filter="all">All Modules (6)</button>
                     <button class="filter-btn" data-filter="core">Core Engine (2)</button>
                     <button class="filter-btn" data-filter="pipeline">Pipelines (2)</button>
-                    <button class="filter-btn" data-filter="gateway">Gateways (3)</button>
+                    <button class="filter-btn" data-filter="gateway">Gateways (2)</button>
                 </div>
                 <div class="quick-jump-container">
                     <select id="quick-jump">
@@ -2197,7 +2197,7 @@
                 </div>
             </div>
 
-            <!-- Grid of Cards matching Website Project Tracking Template -->
+            <!-- Grid of Cards -->
             <main class="projects-grid" id="hub-cards-container">
                 <!-- Rendered dynamically -->
             </main>
@@ -2290,7 +2290,7 @@
         </div>
     </div>
 
-    <!-- Interactive Detail Modal Drawer (from Website Project Tracking Template) -->
+    <!-- Interactive Detail Modal Drawer -->
     <div class="modal-overlay" id="modal-overlay">
         <div class="modal-box" id="modal-box">
             <div class="modal-header">
@@ -2433,6 +2433,20 @@
     </div>
 
     <script>
+        /**
+         * Escape a string for safe interpolation into HTML innerHTML.
+         * MUST be applied to ALL server-sourced or user-sourced values before innerHTML use.
+         */
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         // Benchmarks Master Data
         const reviewPresets = [
             {
@@ -2475,7 +2489,7 @@
             }
         ];
 
-        // Architecture Hub Master Data (Template Style)
+        // Architecture Hub Master Data
         const hubModules = [
             {
                 id: "jev_core",
@@ -2599,27 +2613,6 @@
                     "Jev MOC (Map of Content) linking all architectural guides.",
                     "Detailed decomposition rules: atomic judgments, criteria guidelines, and state design.",
                     "Complete cookbook reference index spanning citation checks, RAG reranking, and guardrails."
-                ]
-            },
-            {
-                id: "project_template_hub",
-                title: "Website Project Tracking Template",
-                icon: "🖥️",
-                category: "gateway",
-                status: "Host Hub",
-                statusClass: "badge-status-service",
-                modularity: "100.00%",
-                tech: ["HTML5 Canvas 2D", "Glassmorphism", "Python HTTP"],
-                desc: "Visual design language and architectural host template located at D:\\Programming\\Website Project Tracking Template. Provides particle mesh canvas and unified dashboard cockpit.",
-                runCmd: "py \"D:\\Programming\\Website Project Tracking Template\\server.py\"",
-                testCmd: "py \"D:\\programming\\jevtools\\server.py\" --help",
-                webServices: [
-                    { name: "Parent Hub (:8088)", url: "http://localhost:8088/index.html" }
-                ],
-                features: [
-                    "Dynamic mesh filament network with mouse proximity gravity attraction.",
-                    "Zero-build-step vanilla ES6+ and CSS glassmorphism implementation.",
-                    "Integrated with all monitored local projects across D:\\programming."
                 ]
             }
         ];
@@ -2825,13 +2818,14 @@
             distContainer.innerHTML = '';
             const probs = res.emotion_probabilities || {};
             for (const [tone, prob] of Object.entries(probs)) {
+                const safeProb = typeof prob === 'number' && !isNaN(prob) ? Math.max(0, Math.min(1, prob)) : 0;
                 distContainer.innerHTML += `
                     <div class="dist-item">
-                        <span class="dist-label">${tone}</span>
+                        <span class="dist-label">${escapeHtml(tone)}</span>
                         <div class="dist-bar-track">
-                            <div class="dist-bar-inner" style="width: ${prob * 100}%;"></div>
+                            <div class="dist-bar-inner" style="width: ${safeProb * 100}%;"></div>
                         </div>
-                        <span class="dist-val">${(prob * 100).toFixed(0)}%</span>
+                        <span class="dist-val">${(safeProb * 100).toFixed(0)}%</span>
                     </div>
                 `;
             }
@@ -2930,13 +2924,15 @@
             chart.innerHTML = '';
             const sortedProbs = Object.entries(res.topic_probabilities || {}).sort((a, b) => b[1] - a[1]);
             sortedProbs.forEach(([topic, prob]) => {
+                const safeProb = typeof prob === 'number' && !isNaN(prob) ? Math.max(0, Math.min(1, prob)) : 0;
+                const barBg = topic === res.primary_topic ? 'var(--primary)' : 'var(--secondary)';
                 chart.innerHTML += `
                     <div class="dist-item">
-                        <span class="dist-label">${topic}</span>
+                        <span class="dist-label">${escapeHtml(topic)}</span>
                         <div class="dist-bar-track">
-                            <div class="dist-bar-inner" style="width: ${prob * 100}%; background: ${topic === res.primary_topic ? 'var(--primary)' : 'var(--secondary)'};"></div>
+                            <div class="dist-bar-inner" style="width: ${safeProb * 100}%; background: ${barBg};"></div>
                         </div>
-                        <span class="dist-val">${(prob * 100).toFixed(1)}%</span>
+                        <span class="dist-val">${(safeProb * 100).toFixed(1)}%</span>
                     </div>
                 `;
             });
@@ -3019,7 +3015,7 @@
             }
         }
 
-        // Hub Cards Rendering (Website Project Tracking Template Pattern)
+        // Hub Cards Rendering
         function populateHubCards(data) {
             const container = document.getElementById('hub-cards-container');
             container.innerHTML = '';
@@ -3037,21 +3033,21 @@
                     openModalById(mod.id);
                 };
 
-                const pillsHtml = mod.tech.map(t => `<span class="pill">${t}</span>`).join('');
+                const pillsHtml = (mod.tech || []).map(t => `<span class="pill">${escapeHtml(t)}</span>`).join('');
 
                 card.innerHTML = `
                     <div class="card-top">
-                        <div class="icon-container">${mod.icon}</div>
+                        <div class="icon-container">${escapeHtml(mod.icon)}</div>
                         <div class="badge-group">
-                            <span class="badge ${mod.statusClass}">${mod.status}</span>
-                            <span class="pill" style="font-family: var(--font-mono); font-size: 0.72rem;">Modularity: ${mod.modularity}</span>
+                            <span class="badge ${escapeHtml(mod.statusClass)}">${escapeHtml(mod.status)}</span>
+                            <span class="pill" style="font-family: var(--font-mono); font-size: 0.72rem;">Modularity: ${escapeHtml(mod.modularity)}</span>
                         </div>
                     </div>
-                    <div class="project-title">${mod.title}</div>
+                    <div class="project-title">${escapeHtml(mod.title)}</div>
                     <div class="tech-stack-pills">${pillsHtml}</div>
-                    <p class="project-desc">${mod.desc}</p>
+                    <p class="project-desc">${escapeHtml(mod.desc)}</p>
                     <div class="card-actions">
-                        <button class="btn-inspect" onclick="openModalById('${mod.id}')">Inspect & Run ➔</button>
+                        <button class="btn-inspect" onclick="openModalById('${escapeHtml(mod.id)}')">Inspect & Run ➔</button>
                     </div>
                 `;
                 container.appendChild(card);
@@ -3135,13 +3131,16 @@
             document.getElementById('modal-cmd-test').textContent = mod.testCmd;
 
             const featUl = document.getElementById('modal-features');
-            featUl.innerHTML = mod.features.map(f => `<li>${f}</li>`).join('');
+            featUl.innerHTML = (mod.features || []).map(f => `<li>${escapeHtml(f)}</li>`).join('');
 
             const webSec = document.getElementById('modal-web-services-section');
             const webDiv = document.getElementById('modal-web-links');
-            if (mod.webServices.length > 0) {
+            if (mod.webServices && mod.webServices.length > 0) {
                 webSec.style.display = 'block';
-                webDiv.innerHTML = mod.webServices.map(w => `<a href="${w.url}" target="_blank" class="service-link-btn" style="background: linear-gradient(135deg, #0a1329 0%, #1e1b4b 50%, #7b2cbf 100%); border: 1px solid #8b5cf6; color: #ffffff; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; display: inline-block; margin-right: 0.5rem; box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);">🌐 Launch ${w.name}</a>`).join('');
+                webDiv.innerHTML = mod.webServices.map(w => {
+                    const safeUrl = (w.url && (w.url.startsWith('https://') || w.url.startsWith('http://'))) ? w.url : '#';
+                    return `<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" class="service-link-btn" style="background: linear-gradient(135deg, #0a1329 0%, #1e1b4b 50%, #7b2cbf 100%); border: 1px solid #8b5cf6; color: #ffffff; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; display: inline-block; margin-right: 0.5rem; box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);">🌐 Launch ${escapeHtml(w.name)}</a>`;
+                }).join('');
             } else {
                 webSec.style.display = 'none';
             }
@@ -3577,7 +3576,7 @@
             tbody.innerHTML = items.map(item => {
                 const dateStr = item.timestamp ? new Date(item.timestamp).toLocaleString() : '--';
                 let actionBadgeClass = 'badge-action-custom';
-                let actionLabel = item.action_type;
+                let actionLabel = item.action_type || 'Unknown';
                 if (item.action_type === 'review_analysis') {
                     actionBadgeClass = 'badge-action-review';
                     actionLabel = 'Review Analysis';
@@ -3602,20 +3601,21 @@
 
                 const ttftStr = item.ttft_ms ? `${Math.round(item.ttft_ms)} ms` : '--';
                 const latStr = item.elapsed_ms ? `${Math.round(item.elapsed_ms)} ms` : '--';
-                const providerModel = `${item.provider || 'openrouter'} / ${item.model || 'default'}`;
+                const providerModel = `${escapeHtml(item.provider || 'openrouter')} / ${escapeHtml(item.model || 'default')}`;
+                const safeId = typeof item.id === 'number' ? item.id : parseInt(item.id, 10) || 0;
 
                 return `
                     <tr>
-                        <td style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">#${item.id}</td>
-                        <td style="font-size: 0.8rem; color: var(--text-muted);">${dateStr}</td>
-                        <td><span class="badge-action ${actionBadgeClass}">${actionLabel}</span></td>
-                        <td style="font-size: 0.82rem; color: #cbd5e1; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${providerModel}">${providerModel}</td>
-                        <td style="font-family: var(--font-mono);">${ttftStr}</td>
-                        <td style="font-family: var(--font-mono);">${latStr}</td>
+                        <td style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">#${escapeHtml(item.id)}</td>
+                        <td style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(dateStr)}</td>
+                        <td><span class="badge-action ${escapeHtml(actionBadgeClass)}">${escapeHtml(actionLabel)}</span></td>
+                        <td style="font-size: 0.82rem; color: #cbd5e1; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(providerModel)}">${providerModel}</td>
+                        <td style="font-family: var(--font-mono);">${escapeHtml(ttftStr)}</td>
+                        <td style="font-family: var(--font-mono);">${escapeHtml(latStr)}</td>
                         <td>${modeTag}</td>
                         <td>${statusTag}</td>
                         <td style="text-align: right;">
-                            <button class="btn-inspect" onclick="inspectPayload(${item.id})">🔍 Inspect</button>
+                            <button class="btn-inspect" onclick="inspectPayload(${safeId})">🔍 Inspect</button>
                         </td>
                     </tr>
                 `;

@@ -50,7 +50,7 @@ Unlike generative Large Language Models that output unconstrained conversational
 
 ### 1. Web Cockpit UI (Localhost Dashboard)
 
-Launch the interactive cyber/dark Web Cockpit following the [Website Project Tracking Template]:
+Launch the interactive cyber/dark Web Cockpit:
 
 ```powershell
 # Double-click start_ui.bat or run:

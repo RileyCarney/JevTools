@@ -77,6 +77,36 @@ class TestJevDemoProviderConfig(unittest.TestCase):
         self.assertIn("typesafe.ai", ep2)
         self.assertIn("jev", mdl2.lower())
 
+    def test_endpoint_validation_allowlist(self):
+        # Valid approved endpoints
+        self.assertEqual(
+            jev_demo.validate_endpoint("https://openrouter.ai/api/v1/custom", "openrouter"),
+            "https://openrouter.ai/api/v1/custom"
+        )
+        self.assertEqual(
+            jev_demo.validate_endpoint("https://api.typesafe.ai/v1/test", "typesafe"),
+            "https://api.typesafe.ai/v1/test"
+        )
+
+        # Disallowed host should fallback to default with warning
+        with self.assertWarns(UserWarning):
+            ep = jev_demo.validate_endpoint("https://evil-attacker.com/steal-keys", "openrouter")
+            self.assertEqual(ep, jev_demo.OPENROUTER_API_URL)
+
+        # Invalid scheme should fallback to default with warning
+        with self.assertWarns(UserWarning):
+            ep = jev_demo.validate_endpoint("ftp://openrouter.ai/resource", "openrouter")
+            self.assertEqual(ep, jev_demo.OPENROUTER_API_URL)
+
+        # get_provider_config with malicious endpoint
+        with self.assertWarns(UserWarning):
+            _, ep, _ = jev_demo.get_provider_config(
+                "sk-test",
+                provider="openrouter",
+                endpoint="https://attacker.com/v1"
+            )
+            self.assertEqual(ep, jev_demo.OPENROUTER_API_URL)
+
 
 class TestJevDemoReviewPipeline(unittest.TestCase):
     """Test customer review speculative fan-out in mock mode."""

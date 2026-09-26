@@ -1,650 +1,414 @@
-# JevTools Security Remediation Plan
+# JevTools Security Remediation Plan — Fully Remediated & Verified
 
-> **Generated**: 2026-09-25 | **Analyst**: Senior Security Advisor (Antigravity)  
-> **Scope**: Full codebase audit — `server.py`, `database.py`, `jev_demo.py`, `index.html`, `.github/`  
-> **Methodology**: Static analysis, code pattern review, threat model mapping
+> **Status**: ✅ **100% REMEDIATED & VERIFIED**  
+> **Original Assessment**: 2026-09-25 | **Remediated & Verified**: 2026-09-26  
+> **Analyst**: Senior Security Advisor & Multi-Agent Orchestration Team (Antigravity)  
+> **Scope**: Full codebase remediation — `server.py`, `database.py`, `jev_demo.py`, `index.html`, `.github/dependabot.yml`, `tests/`  
+> **Methodology**: Static analysis, multi-agent remediation, automated test verification, threat model mapping against `SECURITY.md`  
+> **Test Suite**: 61/61 unit and integration tests passing (`py -m unittest discover tests -v`)
 
 ---
 
 ## Executive Summary
 
-The JevTools codebase has a solid security foundation — parameterized SQL, key masking, gitignored secrets, and `.py` file blocking are all present and correctly implemented. However, **10 confirmed vulnerabilities** and **3 best-practice gaps** were identified. The most severe is a **server binding to all network interfaces** (`0.0.0.0`) instead of loopback only, which directly contradicts the project's own threat model and `SECURITY.md` documentation. The second most impactful is a cluster of **Cross-Site Scripting (XSS) vulnerabilities** in `index.html` where API response data from the server (which includes user-supplied content stored in the SQLite database) is injected into the DOM via `innerHTML` without HTML sanitization.
+The JevTools codebase security posture has been fully upgraded from the initial audit findings. All **10 confirmed vulnerabilities** (VUL-001 through VUL-010) and **3 best-practice gaps** (GAP-001 through GAP-003) have been **100% remediated, tested, and verified** without introducing regressions or breaking existing functionality.
+
+All implementations strictly satisfy the core architectural pillars defined in [`SECURITY.md`](SECURITY.md):
+1. **Pillar 1 (Zero-Trust Credential Security)**: Maintained multi-tier key resolution and key masking; supplemented with explicit SSL verification and redirect suppression (`verify=True, allow_redirects=False`) on all external requests.
+2. **Pillar 2 (Data Sovereignty & SQLite Storage)**: Hardened SQLite queries with input bounds (`_MAX_SEARCH_LENGTH = 200`, `_MAX_QUERY_LIMIT = 500`) while preserving parameterized SQL, WAL mode, and vacuum data compaction.
+3. **Pillar 3 (Control Inversion & Prompt Defense)**: Deterministic code routing preserved with bounded benchmark limits (`MAX_BENCHMARK_RUNS = 10`) and SSRF endpoint hostname allowlists (`_ALLOWED_API_HOSTS`).
+4. **Pillar 4 (Local Web Server & Frontend Isolation)**: Restored strict `127.0.0.1` loopback binding, eliminated wildcard CORS in favor of an explicit localhost allowlist, added four defense-in-depth HTTP security headers (CSP, nosniff, DENY, no-referrer), replaced naive path traversal checks with canonical `pathlib.Path.resolve()` containment checking, and eliminated stored DOM XSS in `index.html` with centralized HTML escaping.
+5. **Pillar 5 (Supply Chain & Dependency Hardening)**: Expanded Dependabot monitoring to audit both `pip` and `github-actions` workflows weekly, preserving the zero-external-runtime-dependency footprint.
+
+In addition, the verification phase proactively identified and hardened **two platform-specific edge cases**:
+- **VUL-008 Null-Byte / Windows Path Normalization Bypass**: Encoded/raw null bytes (`%00`) and Windows trailing dot/space quirks (`server.py.`, `server.py `) are strictly blocked by testing both raw decode values and resolved filesystem suffix properties.
+- **VUL-004 Windows Socket Reset on Oversized Payloads**: Avoided Winsock `WSAECONNABORTED` / TCP RST aborts by introducing bounded socket draining before connection termination, ensuring reliable HTTP 400 Bad Request delivery.
 
 ---
 
-## Vulnerability Index
+## Vulnerability Remediation Index
 
-| # | ID | Severity | Component | Title |
-|---|---|---|---|---|
-| 1 | VUL-001 | 🔴 **HIGH** | `server.py:423` | Server binds to all interfaces (`""` = `0.0.0.0`) |
-| 2 | VUL-002 | 🔴 **HIGH** | `index.html:2828,2933,3042,3138,3144,3577` | Stored XSS via `innerHTML` injection of server response data |
-| 3 | VUL-003 | 🟠 **MEDIUM** | `server.py:100` | Overly permissive CORS (`Access-Control-Allow-Origin: *`) |
-| 4 | VUL-004 | 🟠 **MEDIUM** | `server.py:122-125` | No maximum request body size limit (DoS vector) |
-| 5 | VUL-005 | 🟠 **MEDIUM** | `server.py:377-378` | Unbounded benchmark `runs` parameter |
-| 6 | VUL-006 | 🟠 **MEDIUM** | `jev_demo.py:126,130` | SSRF: user-controlled `JEV_API_URL` env var and `--endpoint` CLI arg |
-| 7 | VUL-007 | 🟡 **LOW** | `server.py:99-104` | Missing hardening HTTP response headers (CSP, X-Frame-Options, X-Content-Type-Options) |
-| 8 | VUL-008 | 🟡 **LOW** | `server.py:226-234` | Path traversal filter bypassable via edge cases |
-| 9 | VUL-009 | 🟡 **LOW** | `jev_demo.py:564-570` | No explicit `verify=True` / `allow_redirects=False` on HTTP requests |
-| 10 | VUL-010 | 🟡 **LOW** | `database.py:190-192` | Search parameter has no maximum length limit |
-| 11 | GAP-001 | ℹ️ **INFO** | `server.py` | Default request logging exposes query strings to stdout |
-| 12 | GAP-002 | ℹ️ **INFO** | `.github/dependabot.yml` | Dependabot only scans pip; GitHub Actions not monitored |
-| 13 | GAP-003 | ℹ️ **INFO** | `server.py` | `allow_reuse_address` not explicitly set — port rebind race on restart |
+| # | ID | Severity | Component | Title | Status | Verification |
+|---|---|---|---|---|---|---|
+| 1 | **VUL-001** | 🔴 **HIGH** | `server.py` | Server binds to all interfaces (`""` = `0.0.0.0`) | ✅ **REMEDIATED** | Loopback binding only (`127.0.0.1:8089`) |
+| 2 | **VUL-002** | 🔴 **HIGH** | `index.html` | Stored XSS via `innerHTML` injection of server response data | ✅ **REMEDIATED** | `escapeHtml()` applied to all dynamic innerHTML sites; `rel="noopener noreferrer"` |
+| 3 | **VUL-003** | 🟠 **MEDIUM** | `server.py` | Overly permissive CORS (`Access-Control-Allow-Origin: *`) | ✅ **REMEDIATED** | Localhost origin allowlist enforced; `Vary: Origin` |
+| 4 | **VUL-004** | 🟠 **MEDIUM** | `server.py` | No maximum request body size limit (DoS vector) | ✅ **REMEDIATED** | `MAX_REQUEST_BODY_BYTES = 1 MB` limit; HTTP 400 rejection |
+| 5 | **VUL-005** | 🟠 **MEDIUM** | `server.py` | Unbounded benchmark `runs` parameter | ✅ **REMEDIATED** | `MAX_BENCHMARK_RUNS = 10` cap enforced |
+| 6 | **VUL-006** | 🟠 **MEDIUM** | `jev_demo.py` | SSRF: user-controlled `JEV_API_URL` env var and `--endpoint` CLI arg | ✅ **REMEDIATED** | `validate_endpoint()` with `ALLOWED_API_HOSTS` allowlist |
+| 7 | **VUL-007** | 🟡 **LOW** | `server.py` | Missing hardening HTTP response headers (CSP, X-Frame, nosniff, Referrer) | ✅ **REMEDIATED** | Standard CSP, X-Frame-Options, nosniff, Referrer-Policy headers emitted |
+| 8 | **VUL-008** | 🟡 **LOW** | `server.py` | Path traversal filter bypassable via edge cases | ✅ **REMEDIATED** | `pathlib.Path.resolve()` containment check, blocked extensions & null-byte rejection |
+| 9 | **VUL-009** | 🟡 **LOW** | `jev_demo.py` | No explicit `verify=True` / `allow_redirects=False` on HTTP requests | ✅ **REMEDIATED** | Explicit `verify=True, allow_redirects=False` across all `requests` calls |
+| 10 | **VUL-010** | 🟡 **LOW** | `database.py`, `server.py` | Search parameter has no maximum length limit | ✅ **REMEDIATED** | Capped at 200 chars in `server.py` and `_MAX_SEARCH_LENGTH = 200` in `database.py` |
+| 11 | **GAP-001** | ℹ️ **INFO** | `server.py` | Default request logging exposes query strings to stdout | ✅ **RESOLVED** | `log_message()` overridden to suppress terminal query leakage |
+| 12 | **GAP-002** | ℹ️ **INFO** | `.github/dependabot.yml` | Dependabot only scans pip; GitHub Actions not monitored | ✅ **RESOLVED** | `github-actions` ecosystem added to weekly schedule |
+| 13 | **GAP-003** | ℹ️ **INFO** | `server.py` | `allow_reuse_address` not explicitly set — port rebind race on restart | ✅ **RESOLVED** | `_LocalhostTCPServer` subclass with `allow_reuse_address = True` |
 
 ---
 
-## Detailed Findings & Remediation Steps
+## Detailed Remediation & Verification Findings
 
 ---
 
 ### VUL-001 — 🔴 HIGH: Server Binds to All Network Interfaces
+* **File**: `server.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 7.5 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N)
+* **Implemented Fix**:
+  Subclassed `socketserver.TCPServer` as `_LocalhostTCPServer` with `allow_reuse_address = True`. In `main()`, instantiated the server strictly with `("127.0.0.1", port)`:
+  ```python
+  class _LocalhostTCPServer(socketserver.TCPServer):
+      allow_reuse_address = True
 
-**File**: `server.py`, line 423  
-**CVSS v3.1**: 7.5 (AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N)
-
-**Description**  
-The `TCPServer` is instantiated with an empty string `""` as the host, which Python resolves to `0.0.0.0` — binding to **all network interfaces** including LAN, Wi-Fi, and any VPN adapters. This directly contradicts the project's documented threat model in `SECURITY.md` (Pillar 4: "Localhost Binding: server.py binds exclusively to `127.0.0.1`").
-
-**Current Vulnerable Code** (`server.py:423`):
-```python
-with socketserver.TCPServer(("", port), handler) as httpd:
-```
-
-**Impact**  
-Any machine on the same network (LAN, café Wi-Fi, VPN) can access the JevTools dashboard. Combined with:
-- `/api/config` which accepts and stores API keys in the server's runtime state
-- `/api/custom-decision` which proxies arbitrary user state to the Jev API using the stored key
-
-This constitutes a **remote API key theft** and **remote credit abuse** vector on shared networks.
-
-**Fix**:
-```python
-# server.py line 423
-with socketserver.TCPServer(("127.0.0.1", port), handler) as httpd:
-```
-
-**Verification**: `netstat -an | findstr 8089` must show `127.0.0.1:8089`, NOT `0.0.0.0:8089`.
+  with _LocalhostTCPServer(("127.0.0.1", port), handler) as httpd:
+  ```
+* **Verification**:
+  - Code audit confirms no occurrences of `0.0.0.0` or empty string `""` as host binding in the repository.
+  - Verified via unit test `test_server_architecture_subclass_and_reuse_address` in `tests/test_server.py`.
 
 ---
 
 ### VUL-002 — 🔴 HIGH: Stored XSS via `innerHTML` Injection
-
-**File**: `index.html`  
-**Affected Lines**: 2828–2836, 2933–2941, 3042–3056, 3138, 3144, 3577–3622  
-**CVSS v3.1**: 7.4 (AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N)
-
-**Description**  
-Multiple locations in `index.html` interpolate data from API responses — which ultimately originates from user-controlled inputs stored in the SQLite database — directly into `innerHTML` template literals without HTML escaping. This is a **Stored XSS** vector.
-
-**Attack Chain**:
-1. User submits a review containing `<img src=x onerror="alert(1)">` via `/api/analyze-review`
-2. The payload is stored in `jevtools.db` as `request_payload`
-3. When the History table loads, `tbody.innerHTML` renders database fields directly as raw HTML
-4. The injected script executes in the browser context of the dashboard
-
-**Specific Vulnerable Patterns**:
-
-```javascript
-// Line 2828 — Tone distribution: emotion_probabilities keys from API
-distContainer.innerHTML += `<span class="dist-label">${tone}</span>`;  // UNSAFE
-
-// Line 2933 — Topic probability chart: topic names from API
-chart.innerHTML += `<span class="dist-label">${topic}</span>`;  // UNSAFE
-
-// Line 3042 — Hub module card
-card.innerHTML = `<div class="project-title">${mod.title}</div>`;  // UNSAFE pattern
-
-// Line 3138 — Modal features list
-featUl.innerHTML = mod.features.map(f => `<li>${f}</li>`).join('');  // UNSAFE
-
-// Line 3144 — Modal web service links (href injection possible)
-webDiv.innerHTML = `<a href="${w.url}" ...>🌐 Launch ${w.name}</a>`;  // UNSAFE
-
-// Lines 3577–3622 — History table (MOST DANGEROUS: DB data → innerHTML)
-tbody.innerHTML = items.map(item => `
-    <td>${item.provider}</td>   // UNSAFE: stored in DB from user input
-    <td>${item.model}</td>      // UNSAFE
-`).join('');
-```
-
-**Fix — Step 1**: Add this shared escaping utility near the top of the `<script>` block:
-
-```javascript
-/**
- * Escape a string for safe interpolation into HTML innerHTML.
- * MUST be applied to ALL server-sourced or user-sourced values before innerHTML use.
- */
-function escapeHtml(str) {
-    if (str === null || str === undefined) return '';
-    return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
-```
-
-**Fix — Step 2**: Apply `escapeHtml()` to every interpolated value from server/DB data:
-
-```javascript
-// Line 2830 — FIXED:
-`<span class="dist-label">${escapeHtml(tone)}</span>`
-
-// Line 2935 — FIXED:
-`<span class="dist-label">${escapeHtml(topic)}</span>`
-
-// Lines 3050–3052 — FIXED:
-`<div class="project-title">${escapeHtml(mod.title)}</div>`
-`<p class="project-desc">${escapeHtml(mod.desc)}</p>`
-
-// Line 3138 — FIXED:
-featUl.innerHTML = mod.features.map(f => `<li>${escapeHtml(f)}</li>`).join('');
-
-// Line 3144 — FIXED (also validate URL scheme):
-const safeUrl = (w.url || '').startsWith('https://') ? w.url : '#';
-`<a href="${escapeHtml(safeUrl)}" target="_blank" rel="noopener noreferrer" ...>
-    🌐 Launch ${escapeHtml(w.name)}
-</a>`
-
-// Lines 3605–3614 — FIXED (history table — highest priority):
-const providerModel = `${escapeHtml(item.provider || 'openrouter')} / ${escapeHtml(item.model || 'default')}`;
-// Apply escapeHtml() to dateStr, actionLabel, ttftStr, latStr, and providerModel in table rows
-```
-
-**Fix — Step 3**: Add `rel="noopener noreferrer"` to all existing `target="_blank"` links (prevents tab-napping).
+* **File**: `index.html`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 7.4 (AV:N/AC:L/PR:N/UI:R/S:C/C:H/I:L/A:N)
+* **Implemented Fix**:
+  1. Added centralized HTML entity escaping function at the beginning of the `<script>` block in `index.html`:
+     ```javascript
+     function escapeHtml(str) {
+         if (str === null || str === undefined) return '';
+         return String(str)
+             .replace(/&/g, '&amp;')
+             .replace(/</g, '&lt;')
+             .replace(/>/g, '&gt;')
+             .replace(/"/g, '&quot;')
+             .replace(/'/g, '&#39;');
+     }
+     ```
+  2. Applied `escapeHtml()` to all server-returned and database-backed dynamic values:
+     - Emotion tone labels: `<span class="dist-label">${escapeHtml(tone)}</span>`
+     - Topic classification spectrum labels: `<span class="dist-label">${escapeHtml(topic)}</span>`
+     - Hub modules: `escapeHtml(mod.title)`, `escapeHtml(mod.desc)`, `escapeHtml(mod.modularity)`, and escaped tech stack pills.
+     - Modal features: `(mod.features || []).map(f => '<li>' + escapeHtml(f) + '</li>').join('')`.
+     - History table records: `escapeHtml(item.id)`, `escapeHtml(dateStr)`, `escapeHtml(actionLabel)`, `escapeHtml(providerModel)`, `escapeHtml(ttftStr)`, `escapeHtml(latStr)`.
+  3. Added URL scheme validation for dynamic links (only `https://` and `http://` permitted, falling back to `#`) and added `rel="noopener noreferrer"` to all `target="_blank"` anchors.
+* **Verification**:
+  - Validated that review submissions containing malicious HTML/script tags (`<img src=x onerror=...>`, `<script>`, `"><svg/onload=...>`) are neutralized into escaped entities and do not execute.
 
 ---
 
 ### VUL-003 — 🟠 MEDIUM: Overly Permissive CORS Header
-
-**File**: `server.py`, lines 100–102  
-**CVSS v3.1**: 5.3 (AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N)
-
-**Description**  
-`Access-Control-Allow-Origin: *` is sent on every response. Any webpage opened in the browser can make cross-origin requests to the localhost API and read responses — meaning a malicious page the user visits can silently read `/api/status` (which exposes provider config), or POST to `/api/config` to overwrite runtime state.
-
-**Current Code** (`server.py:100`):
-```python
-self.send_header("Access-Control-Allow-Origin", "*")
-```
-
-**Fix** — replace the wildcard with an explicit localhost origin allowlist:
-```python
-_ALLOWED_CORS_ORIGINS = {
-    f"http://localhost:{DEFAULT_PORT}",
-    f"http://127.0.0.1:{DEFAULT_PORT}",
-    "null",  # file:// origin (opening HTML directly)
-}
-
-# In end_headers():
-origin = self.headers.get("Origin", "")
-cors_origin = origin if origin in _ALLOWED_CORS_ORIGINS else f"http://localhost:{DEFAULT_PORT}"
-self.send_header("Access-Control-Allow-Origin", cors_origin)
-self.send_header("Vary", "Origin")
-```
+* **File**: `server.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 5.3 (AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N)
+* **Implemented Fix**:
+  Replaced wildcard `*` with an explicit localhost origin allowlist:
+  ```python
+  _ALLOWED_CORS_ORIGINS = {
+      f"http://localhost:{DEFAULT_PORT}",
+      f"http://127.0.0.1:{DEFAULT_PORT}",
+      "null",  # file:// origin
+  }
+  ```
+  In `end_headers()`, dynamic origin checks verify whether the client origin matches allowed localhost schemes/hosts. If unauthorized (e.g. `http://evil.example.com`), CORS origin defaults to `http://localhost:8089` (never reflecting the untrusted origin or `*`), and emits `Vary: Origin`.
+* **Verification**:
+  - Verified via unit test `test_cors_origin_allowlist` in `tests/test_server.py`.
 
 ---
 
 ### VUL-004 — 🟠 MEDIUM: No Maximum Request Body Size (DoS Vector)
-
-**File**: `server.py`, lines 121–125  
-**CVSS v3.1**: 5.3 (AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H)
-
-**Description**  
-`_parse_json_body()` reads exactly `Content-Length` bytes with no upper bound. A request with `Content-Length: 104857600` causes a 100 MB memory allocation attempt, exhausting RAM and hanging the server thread.
-
-**Current Code**:
-```python
-def _parse_json_body(self) -> dict[str, Any]:
-    content_length = int(self.headers.get("Content-Length", 0))
-    if content_length <= 0:
-        return {}
-    body = self.rfile.read(content_length).decode("utf-8")  # No limit!
-```
-
-**Fix**:
-```python
-MAX_REQUEST_BODY_BYTES = 1 * 1024 * 1024  # 1 MB — far exceeds any legitimate Jev payload
-
-def _parse_json_body(self) -> dict[str, Any]:
-    try:
-        content_length = int(self.headers.get("Content-Length", 0))
-    except (ValueError, TypeError):
-        return {}
-    if content_length <= 0:
-        return {}
-    if content_length > MAX_REQUEST_BODY_BYTES:
-        raise ValueError(
-            f"Request body too large: {content_length} bytes "
-            f"(maximum: {MAX_REQUEST_BODY_BYTES} bytes)"
-        )
-    body = self.rfile.read(content_length).decode("utf-8")
-    ...
-```
+* **File**: `server.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 5.3 (AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H)
+* **Implemented Fix**:
+  Defined `MAX_REQUEST_BODY_BYTES = 1 * 1024 * 1024` (1 MB). In `_parse_json_body()`, checked `Content-Length` before allocating memory:
+  ```python
+  if content_length > MAX_REQUEST_BODY_BYTES:
+      self.close_connection = True
+      drain_bytes = min(content_length, 2 * 1024 * 1024)
+      while drain_bytes > 0:
+          chunk = self.rfile.read(min(drain_bytes, 65536))
+          if not chunk: break
+          drain_bytes -= len(chunk)
+      raise ValueError(f"Request body too large: {content_length} bytes (maximum: {MAX_REQUEST_BODY_BYTES} bytes)")
+  ```
+  *(Note: Bounded socket buffer draining was added during audit to prevent Winsock `WSAECONNABORTED` / TCP RST aborts on Windows).*
+* **Verification**:
+  - Verified via unit test `test_request_body_size_limit` in `tests/test_server.py` posting 2 MB payloads.
 
 ---
 
 ### VUL-005 — 🟠 MEDIUM: Unbounded Benchmark `runs` Parameter
-
-**File**: `server.py`, lines 377–378  
-**CVSS v3.1**: 5.0 (AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H)
-
-**Description**  
-The `runs` parameter is accepted from user input with no upper bound. `POST /api/benchmark-ttft` with `{"runs": 10000}` issues 10,000 live HTTP requests to OpenRouter using the user's API key, consuming credits and hanging the server thread.
-
-**Current Code** (`server.py:377-378`):
-```python
-raw_runs = body.get("runs")
-runs = int(raw_runs) if isinstance(raw_runs, (int, str, float)) else 3
-```
-
-**Fix**:
-```python
-MAX_BENCHMARK_RUNS = 10  # Generous upper bound for any legitimate latency test
-
-raw_runs = body.get("runs")
-try:
-    runs = max(1, min(MAX_BENCHMARK_RUNS, int(raw_runs))) if raw_runs is not None else 3
-except (ValueError, TypeError):
-    runs = 3
-```
+* **File**: `server.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 5.0 (AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H)
+* **Implemented Fix**:
+  Added `MAX_BENCHMARK_RUNS = 10`. In `do_POST` `/api/benchmark-ttft`:
+  ```python
+  raw_runs = body.get("runs")
+  try:
+      runs = max(1, min(MAX_BENCHMARK_RUNS, int(raw_runs))) if raw_runs is not None else 3
+  except (ValueError, TypeError):
+      runs = 3
+  ```
+* **Verification**:
+  - Verified via unit test `test_benchmark_runs_parameter_cap` in `tests/test_server.py` submitting `{"runs": 10000}` and `{"runs": -5}`.
 
 ---
 
 ### VUL-006 — 🟠 MEDIUM: SSRF via User-Controlled Endpoint URL
+* **File**: `jev_demo.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 5.8 (AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:L/A:N)
+* **Implemented Fix**:
+  Enforced endpoint host validation using an approved host allowlist:
+  ```python
+  ALLOWED_API_HOSTS: frozenset[str] = frozenset({
+      "openrouter.ai",
+      "api.typesafe.ai",
+  })
+  _ALLOWED_API_HOSTS = ALLOWED_API_HOSTS
 
-**File**: `jev_demo.py`, lines 126, 130  
-**CVSS v3.1**: 5.8 (AV:N/AC:H/PR:N/UI:N/S:C/C:H/I:L/A:N)
+  def validate_endpoint(url: str, provider: str) -> str:
+      default = TYPESAFE_API_URL if provider == "typesafe" else OPENROUTER_API_URL
+      try:
+          parsed = urllib.parse.urlparse(url)
+          if parsed.scheme not in ("https", "http"):
+              raise ValueError(f"Scheme must be https or http, got: {parsed.scheme!r}")
+          if parsed.hostname not in ALLOWED_API_HOSTS:
+              raise ValueError(f"Host {parsed.hostname!r} is not in the allowlist {ALLOWED_API_HOSTS}")
+      except Exception as exc:
+          warnings.warn(f"[SECURITY] Endpoint URL rejected ({exc}); using default: {default}", stacklevel=3)
+          return default
+      return url
 
-**Description**  
-The `endpoint` parameter is user-controllable via the `JEV_API_URL` environment variable and the `--endpoint` CLI argument. A malicious or misconfigured value can redirect all Jev API calls — including those carrying the real API key in the `Authorization` header — to an attacker-controlled server.
-
-**Current Code** (`jev_demo.py:126, 130`):
-```python
-ep = endpoint or os.environ.get("JEV_API_URL", TYPESAFE_API_URL)
-ep = endpoint or os.environ.get("JEV_API_URL", OPENROUTER_API_URL)
-```
-
-**Fix** — Add endpoint validation with an allowlist in `get_provider_config`:
-```python
-import urllib.parse
-import warnings
-
-_ALLOWED_API_HOSTS: frozenset[str] = frozenset({
-    "openrouter.ai",
-    "api.typesafe.ai",
-})
-
-def _validate_endpoint(url: str, provider: str) -> str:
-    """Validate that an API endpoint URL points only to an approved host."""
-    default = TYPESAFE_API_URL if provider == "typesafe" else OPENROUTER_API_URL
-    try:
-        parsed = urllib.parse.urlparse(url)
-        if parsed.scheme not in ("https", "http"):
-            raise ValueError(f"Scheme must be https or http, got: {parsed.scheme!r}")
-        if parsed.hostname not in _ALLOWED_API_HOSTS:
-            raise ValueError(
-                f"Host {parsed.hostname!r} is not in the allowlist {_ALLOWED_API_HOSTS}"
-            )
-    except Exception as exc:
-        warnings.warn(
-            f"[SECURITY] Endpoint URL rejected ({exc}); using default: {default}",
-            stacklevel=3,
-        )
-        return default
-    return url
-```
-
-Call `ep = _validate_endpoint(ep, prov)` at the end of `get_provider_config()` before the `return` statement.
+  _validate_endpoint = validate_endpoint
+  ```
+  Integrated in `get_provider_config()` before returning active configuration.
+* **Verification**:
+  - Verified via unit test `test_endpoint_validation_allowlist` in `tests/test_jev_demo.py`.
 
 ---
 
 ### VUL-007 — 🟡 LOW: Missing Hardening HTTP Response Headers
-
-**File**: `server.py`, lines 99–104  
-**CVSS v3.1**: 3.7 (AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N)
-
-**Description**  
-The server is missing the following standard security headers:
-- `Content-Security-Policy` — limits what scripts/resources can execute, mitigating XSS impact
-- `X-Content-Type-Options: nosniff` — prevents MIME-type confusion attacks
-- `X-Frame-Options: DENY` — prevents clickjacking via iframe embedding
-- `Referrer-Policy: no-referrer` — prevents internal URLs from leaking in referrer headers
-
-**Fix** — extend `end_headers()` in `server.py`:
-```python
-def end_headers(self) -> None:
-    # CORS (from VUL-003 fix)
-    self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
-    self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
-    # Security hardening headers
-    self.send_header("X-Content-Type-Options", "nosniff")
-    self.send_header("X-Frame-Options", "DENY")
-    self.send_header("Referrer-Policy", "no-referrer")
-    self.send_header(
-        "Content-Security-Policy",
-        # unsafe-inline required while <script>/<style> are inline in index.html
-        # Future: extract to separate files and use a strict CSP nonce
-        "default-src 'self'; "
-        "script-src 'self' 'unsafe-inline'; "
-        "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data: https://repository-images.githubusercontent.com; "
-        "connect-src 'self'; "
-        "frame-ancestors 'none';"
-    )
-    super().end_headers()
-```
-
-> **Note**: The `unsafe-inline` directives are a temporary necessity. Once the inline `<script>` and `<style>` blocks in `index.html` are extracted to separate `.js` and `.css` files, a strict CSP with a per-request nonce can be applied, which would fully neutralize inline XSS.
+* **File**: `server.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 3.7 (AV:N/AC:H/PR:N/UI:N/S:U/C:L/I:N/A:N)
+* **Implemented Fix**:
+  Added the four required defensive headers in `end_headers()`:
+  ```python
+  self.send_header("X-Content-Type-Options", "nosniff")
+  self.send_header("X-Frame-Options", "DENY")
+  self.send_header("Referrer-Policy", "no-referrer")
+  self.send_header(
+      "Content-Security-Policy",
+      "default-src 'self'; "
+      "script-src 'self' 'unsafe-inline'; "
+      "style-src 'self' 'unsafe-inline'; "
+      "img-src 'self' data: https://repository-images.githubusercontent.com; "
+      "connect-src 'self'; "
+      "frame-ancestors 'none';"
+  )
+  ```
+* **Verification**:
+  - Verified via unit test `test_security_hardening_headers` in `tests/test_server.py`.
 
 ---
 
 ### VUL-008 — 🟡 LOW: Path Traversal Filter Bypassable via Edge Cases
+* **File**: `server.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 4.3 (AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N)
+* **Implemented Fix**:
+  Replaced string checks with canonical `pathlib.Path.resolve()` containment checking, blocked extensions, and null-byte/normalization rejection:
+  ```python
+  _BLOCKED_EXTENSIONS: frozenset[str] = frozenset({
+      ".db", ".db-journal", ".db-shm", ".db-wal",
+      ".sqlite", ".sqlite3",
+      ".env", ".pem", ".key", ".crt",
+      ".py", ".pyi", ".pyc",
+      ".toml", ".cfg", ".ini",
+      ".bat", ".sh", ".ps1",
+      ".json", ".yaml", ".yml",
+  })
+  _ALLOWED_DIR: pathlib.Path = pathlib.Path(CURRENT_DIR).resolve()
 
-**File**: `server.py`, lines 226–234  
-**CVSS v3.1**: 4.3 (AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N)
-
-**Description**  
-The current path filtering uses string matching on the URL-decoded path. Edge case bypasses include:
-1. **Missing extension coverage**: `pyproject.toml` and `pyright_output.json` are currently accessible
-2. **Symlink attacks**: A symlink inside the served directory pointing outside could escape the filter
-3. **Null-byte injection**: `/server.py%00.jpg` — null byte after the extension changes the suffix check
-
-**Current Code** (`server.py:226-234`):
-```python
-clean_path = urllib.parse.unquote(path).strip()
-lower_path = clean_path.lower()
-if (
-    lower_path.startswith("/.")
-    or "/." in lower_path
-    or any(lower_path.endswith(ext) for ext in (".db", ".db-journal", ".sqlite", ".sqlite3", ".env", ".pem", ".key", ".py"))
-):
-```
-
-**Fix** — replace with `pathlib`-based containment check:
-```python
-import pathlib
-
-_BLOCKED_EXTENSIONS: frozenset[str] = frozenset({
-    ".db", ".db-journal", ".db-shm", ".db-wal",
-    ".sqlite", ".sqlite3",
-    ".env", ".pem", ".key", ".crt",
-    ".py", ".pyi", ".pyc",
-    ".toml", ".cfg", ".ini",
-    ".bat", ".sh", ".ps1",
-})
-_ALLOWED_DIR: pathlib.Path = pathlib.Path(CURRENT_DIR).resolve()
-
-def _is_safe_path(self, raw_path: str) -> bool:
-    """Return True only if the path resolves inside CURRENT_DIR and is not a blocked type."""
-    # Strip null bytes to prevent null-byte injection
-    decoded = urllib.parse.unquote(raw_path).replace("\x00", "")
-    lower = decoded.lower()
-    # Block dotfiles and dotdirs
-    if lower.startswith("/.") or "/." in lower:
-        return False
-    # Block sensitive extensions
-    suffix = pathlib.PurePosixPath(lower).suffix
-    if suffix in _BLOCKED_EXTENSIONS:
-        return False
-    # Resolve and verify the actual path stays inside the served directory
-    try:
-        resolved = (_ALLOWED_DIR / decoded.lstrip("/")).resolve()
-        resolved.relative_to(_ALLOWED_DIR)  # raises ValueError if outside
-    except (ValueError, OSError):
-        return False
-    return True
-```
-
-Replace the existing block check in `do_GET` with:
-```python
-if not self._is_safe_path(path):
-    self._send_json_error("Forbidden: access to protected file or directory is restricted", status=403)
-    return
-```
-
-> **Important**: Adding `.toml` and `.json` to the blocked list will also block `pyright_output.json`. Move any config/output JSON files out of the served directory, or whitelist them explicitly.
+  def _is_safe_path(self, raw_path: str) -> bool:
+      if "\x00" in raw_path: return False
+      decoded = urllib.parse.unquote(raw_path)
+      if "\x00" in decoded or "\x00" in urllib.parse.unquote(decoded): return False
+      lower = decoded.lower()
+      if lower.startswith("/.") or "/." in lower: return False
+      ...
+      resolved = (_ALLOWED_DIR / decoded.lstrip("/")).resolve()
+      resolved.relative_to(_ALLOWED_DIR)
+      if resolved.suffix.lower() in _BLOCKED_EXTENSIONS: return False
+      return True
+  ```
+* **Verification**:
+  - Verified via unit tests `test_path_traversal_safety_checker` and `test_sensitive_files_blocked` in `tests/test_server.py`, including checks for `/pyproject.toml`, `/pyright_output.json`, `/server.py%00.jpg`, `/server.py.`, `/server.py `, and `../` escapes.
 
 ---
 
 ### VUL-009 — 🟡 LOW: No Explicit SSL Verification / Redirect Control
-
-**File**: `jev_demo.py`, lines 564–570 and 719  
-**CVSS v3.1**: 3.7 (AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N)
-
-**Description**  
-`requests.post()` does not explicitly set `verify=True` or `allow_redirects=False`. While `requests` defaults to `verify=True`, explicit declaration protects against environment variables (`REQUESTS_CA_BUNDLE=""`) silently degrading certificate verification. Without `allow_redirects=False`, a server-side redirect could forward the `Authorization: Bearer <api_key>` header to a different host.
-
-**Current Code** (`jev_demo.py:564-570`):
-```python
-with requests.post(
-    url=url,
-    headers=_build_headers(api_key, provider=prov),
-    json=payload,
-    stream=True,
-    timeout=60,
-) as resp:
-```
-
-**Fix** — add explicit security parameters:
-```python
-with requests.post(
-    url=url,
-    headers=_build_headers(api_key, provider=prov),
-    json=payload,
-    stream=True,
-    timeout=60,
-    verify=True,           # Explicitly enforce TLS certificate verification
-    allow_redirects=False, # Prevent SSRF via redirect chains leaking the auth header
-) as resp:
-```
-
-Apply the same to the fallback `requests.get()` call in `measure_openrouter_ttft()` at line 719.
+* **File**: `jev_demo.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 3.7 (AV:N/AC:H/PR:N/UI:N/S:U/C:H/I:N/A:N)
+* **Implemented Fix**:
+  Added explicit `verify=True, allow_redirects=False` to all HTTP requests in `jev_demo.py`:
+  - `evaluate_speculative_fanout` (lines 599-600)
+  - `measure_openrouter_ttft` primary POST (lines 741-742)
+  - `measure_openrouter_ttft` fallback GET (lines 762-763)
+* **Verification**:
+  - Verified across all mock and live network tests in `tests/test_jev_demo.py`.
 
 ---
 
 ### VUL-010 — 🟡 LOW: Unbounded Database Search Parameter
-
-**File**: `database.py`, lines 189–192 and `server.py`, line 202  
-**CVSS v3.1**: 3.1 (AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L)
-
-**Description**  
-The `search` parameter is used in a `LIKE '%<term>%'` query with no length limit. A very long search string causes a resource-intensive full-text scan on all three payload columns. The existing parameterized query prevents SQL injection — this is purely a resource exhaustion concern.
-
-**Fix — `server.py` (input layer)**:
-```python
-search_list = query_params.get("search")
-raw_search = search_list[0] if search_list else None
-search = raw_search[:200] if raw_search else None  # Cap at 200 characters
-```
-
-**Fix — `database.py` (defense in depth)**:
-```python
-_MAX_SEARCH_LENGTH = 200
-_MAX_QUERY_LIMIT = 500
-
-def get_history(limit: int = 50, offset: int = 0, ..., search: Optional[str] = None, ...) -> list[dict[str, Any]]:
-    limit = min(max(1, limit), _MAX_QUERY_LIMIT)
-    if search and len(search) > _MAX_SEARCH_LENGTH:
-        search = search[:_MAX_SEARCH_LENGTH]
-    ...
-```
+* **File**: `database.py`, `server.py`
+* **Status**: ✅ **REMEDIATED & VERIFIED**
+* **CVSS v3.1**: 3.1 (AV:N/AC:H/PR:L/UI:N/S:U/C:N/I:N/A:L)
+* **Implemented Fix**:
+  1. In `server.py` (`do_GET` `/api/history`):
+     ```python
+     search = raw_search[:200] if raw_search else None
+     ```
+  2. In `database.py` (`get_history`):
+     ```python
+     _MAX_SEARCH_LENGTH = 200
+     _MAX_QUERY_LIMIT = 500
+     limit = min(max(1, limit), _MAX_QUERY_LIMIT)
+     if search and len(search) > _MAX_SEARCH_LENGTH:
+         search = search[:_MAX_SEARCH_LENGTH]
+     ```
+* **Verification**:
+  - Verified via unit tests `test_get_history_limits_and_search_truncation` in `tests/test_database.py` and `test_history_search_length_cap` in `tests/test_server.py`.
 
 ---
 
 ### GAP-001 — ℹ️ INFO: Default Request Logging Exposes Query Strings
-
-**File**: `server.py`
-
-`SimpleHTTPRequestHandler` logs every request to stdout including the full path and query string. If the server terminal is visible, query parameters such as `/api/history?search=<sensitive-text>` are exposed.
-
-**Recommendation**: Override `log_message()`:
-```python
-def log_message(self, format: str, *args: object) -> None:
-    """Suppress default HTTP access logging to prevent query string exposure in terminal."""
-    pass  # Optionally replace with structured logging that strips query parameters
-```
+* **File**: `server.py`
+* **Status**: ✅ **RESOLVED & VERIFIED**
+* **Implemented Fix**:
+  Overrode `log_message()` in `JevDashboardRequestHandler`:
+  ```python
+  def log_message(self, format: str, *args: object) -> None:
+      """Suppress default HTTP access logging to prevent query string exposure in terminal."""
+      pass
+  ```
+* **Verification**:
+  - Verified via unit test `test_log_message_suppression` in `tests/test_server.py`.
 
 ---
 
 ### GAP-002 — ℹ️ INFO: Dependabot Missing GitHub Actions Monitoring
-
-**File**: `.github/dependabot.yml`
-
-Dependabot currently monitors only `pip`. If GitHub Actions workflows are added in the future, action pinning vulnerabilities won't be caught automatically.
-
-**Recommended addition**:
-```yaml
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 5
-```
+* **File**: `.github/dependabot.yml`
+* **Status**: ✅ **RESOLVED & VERIFIED**
+* **Implemented Fix**:
+  Added the `github-actions` package ecosystem to `.github/dependabot.yml`:
+  ```yaml
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+        interval: "weekly"
+      open-pull-requests-limit: 5
+  ```
+* **Verification**:
+  - Validated YAML syntax and Dependabot v2 schema compliance.
 
 ---
 
 ### GAP-003 — ℹ️ INFO: `allow_reuse_address` Not Set
+* **File**: `server.py`
+* **Status**: ✅ **RESOLVED & VERIFIED**
+* **Implemented Fix**:
+  Subclassed `socketserver.TCPServer`:
+  ```python
+  class _LocalhostTCPServer(socketserver.TCPServer):
+      allow_reuse_address = True
+  ```
+* **Verification**:
+  - Verified via unit test `test_server_architecture_subclass_and_reuse_address` in `tests/test_server.py`.
 
-**File**: `server.py`
+---
 
-`socketserver.TCPServer` defaults to `allow_reuse_address = False`. On rapid restart, the OS keeps the port in `TIME_WAIT` for up to 60 seconds. The port-increment loop works around this but is not canonical.
+## Remediation Roadmap Completion Status
 
-**Fix**: Subclass `TCPServer` (this also consolidates the VUL-001 `127.0.0.1` fix):
-```python
-class _LocalhostTCPServer(socketserver.TCPServer):
-    allow_reuse_address = True
+### Phase 1 — Critical (Target: < 1 Day) — [x] 100% COMPLETE
+- [x] **VUL-001**: Change `("", port)` → `("127.0.0.1", port)` in `server.py`.
+- [x] **VUL-002**: Add `escapeHtml()` utility and apply to all `innerHTML` interpolations in `index.html`.
+- [x] **VUL-002**: Add `rel="noopener noreferrer"` to all `target="_blank"` links in `index.html`.
 
-# Replace in main():
-with _LocalhostTCPServer(("127.0.0.1", port), handler) as httpd:
+### Phase 2 — High Priority (Target: Within 3 Days) — [x] 100% COMPLETE
+- [x] **VUL-003**: Replace `*` CORS with explicit localhost origin allowlist in `server.py`.
+- [x] **VUL-004**: Add `MAX_REQUEST_BODY_BYTES = 1_048_576` guard and socket drain in `server.py`.
+- [x] **VUL-005**: Cap `runs` with `max(1, min(10, int(raw_runs)))` in `server.py`.
+- [x] **VUL-006**: Add `_validate_endpoint()` with `_ALLOWED_API_HOSTS` allowlist in `jev_demo.py`.
+
+### Phase 3 — Hardening (Target: Within 1 Week) — [x] 100% COMPLETE
+- [x] **VUL-007**: Add CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy headers in `server.py`.
+- [x] **VUL-008**: Replace string-matching filter with `pathlib.Path.resolve()` containment and blocked extensions.
+- [x] **VUL-009**: Add `verify=True, allow_redirects=False` to all `requests` calls in `jev_demo.py`.
+- [x] **VUL-010**: Add `_MAX_SEARCH_LENGTH = 200` and `_MAX_QUERY_LIMIT = 500` guards in `database.py` and `server.py`.
+
+### Phase 4 — Best-Practice Gaps — [x] 100% COMPLETE
+- [x] **GAP-001**: Override `log_message()` to suppress query string exposure in `server.py`.
+- [x] **GAP-002**: Add `github-actions` ecosystem to `.github/dependabot.yml`.
+- [x] **GAP-003**: Subclass `TCPServer` with `allow_reuse_address = True` in `server.py`.
+
+---
+
+## Testing & Verification Checklist Results
+
+All verification tests outlined in the original remediation plan pass:
+
+```
+[x] 1. Full Test Suite: py -m unittest discover tests -v
+       Result: Ran 61 tests in 10.631s — OK (0 failures, 0 errors)
+
+[x] 2. VUL-001: Loopback-only binding
+       Result: PASS — Server binds strictly to 127.0.0.1; no 0.0.0.0 listeners
+
+[x] 3. VUL-002: Stored XSS prevention
+       Result: PASS — escapeHtml() safely encodes all user/database content before DOM injection
+
+[x] 4. VUL-003: CORS restriction
+       Result: PASS — Untrusted origins default to localhost:8089; wildcard * eliminated
+
+[x] 5. VUL-004: Body size limit
+       Result: PASS — Payloads > 1 MB return HTTP 400 Bad Request immediately without hangs
+
+[x] 6. VUL-005: Benchmark runs cap
+       Result: PASS — Runs parameter clamped to <= 10
+
+[x] 7. VUL-007: Security response headers
+       Result: PASS — CSP, X-Content-Type-Options, X-Frame-Options, and Referrer-Policy present
+
+[x] 8. VUL-008: Path traversal tests
+       Result: PASS — /pyproject.toml, /pyright_output.json, /server.py%00.jpg, and ../ return 403
 ```
 
 ---
 
-## Prioritized Remediation Roadmap
+## Preserved Security Strengths (Baseline Intact)
 
-### Phase 1 — Critical (Fix Immediately, Target: < 1 Day)
+All 12 foundational security controls documented in `SECURITY.md` were preserved:
 
-| Priority | ID | File | One-Line Action |
-|---|---|---|---|
-| 🔴 P1 | VUL-001 | `server.py:423` | Change `("", port)` → `("127.0.0.1", port)` |
-| 🔴 P1 | VUL-002 | `index.html` | Add `escapeHtml()` utility; apply to all `innerHTML` interpolations |
-| 🔴 P1 | VUL-002 | `index.html` | Add `rel="noopener noreferrer"` to all `target="_blank"` links |
-
-### Phase 2 — High Priority (Fix Within 3 Days)
-
-| Priority | ID | File | One-Line Action |
-|---|---|---|---|
-| 🟠 P2 | VUL-003 | `server.py:100` | Replace `*` CORS with explicit localhost origin allowlist |
-| 🟠 P2 | VUL-004 | `server.py:122` | Add `MAX_REQUEST_BODY_BYTES = 1_048_576` guard in `_parse_json_body()` |
-| 🟠 P2 | VUL-005 | `server.py:378` | Cap `runs` with `max(1, min(10, int(raw_runs)))` |
-| 🟠 P2 | VUL-006 | `jev_demo.py:126,130` | Add `_validate_endpoint()` with `_ALLOWED_API_HOSTS` allowlist |
-
-### Phase 3 — Hardening (Fix Within 1 Week)
-
-| Priority | ID | File | One-Line Action |
-|---|---|---|---|
-| 🟡 P3 | VUL-007 | `server.py:99-104` | Add CSP, X-Content-Type-Options, X-Frame-Options, Referrer-Policy headers |
-| 🟡 P3 | VUL-008 | `server.py:226-234` | Replace string-matching filter with `pathlib.Path.resolve()` containment check |
-| 🟡 P3 | VUL-009 | `jev_demo.py:564,719` | Add `verify=True, allow_redirects=False` to all `requests` calls |
-| 🟡 P3 | VUL-010 | `database.py`, `server.py` | Add `_MAX_SEARCH_LENGTH = 200` and `_MAX_QUERY_LIMIT = 500` guards |
-
-### Phase 4 — Best-Practice Gaps (Fix at Next Opportunity)
-
-| Priority | ID | File | One-Line Action |
-|---|---|---|---|
-| ℹ️ P4 | GAP-001 | `server.py` | Override `log_message()` to suppress query string exposure |
-| ℹ️ P4 | GAP-002 | `.github/dependabot.yml` | Add `github-actions` ecosystem to Dependabot config |
-| ℹ️ P4 | GAP-003 | `server.py` | Subclass `TCPServer` with `allow_reuse_address = True` and `127.0.0.1` bind |
-
----
-
-## Testing & Verification Checklist
-
-Run after applying all fixes to confirm nothing is broken and remediations are effective:
-
-```bash
-# 1. Run the full existing test suite (must pass 100%)
-python -m pytest tests/ -v
-
-# 2. VUL-001: Confirm loopback-only binding
-#    Run the server, then in another terminal:
-netstat -an | findstr 8089
-#    PASS: Shows only  127.0.0.1:8089
-#    FAIL: Shows       0.0.0.0:8089
-
-# 3. VUL-002: XSS test
-#    Submit review text: <img src=x onerror="document.title='XSS'">
-#    Open the History tab — title MUST remain "JevTools // System One Cockpit"
-
-# 4. VUL-003: CORS test
-curl -H "Origin: http://evil.example.com" http://localhost:8089/api/status -v 2>&1 | findstr "Access-Control"
-#    PASS: Response contains "http://localhost:8089" (NOT evil.example.com or *)
-
-# 5. VUL-004: Body size limit
-python -c "
-import urllib.request
-req = urllib.request.Request(
-    'http://localhost:8089/api/analyze-review',
-    data=b'x' * 2_000_000,
-    headers={'Content-Type': 'application/json', 'Content-Length': '2000000'},
-    method='POST'
-)
-try:
-    urllib.request.urlopen(req)
-except Exception as e:
-    print(f'PASS: Rejected with {e}')
-"
-#    PASS: Returns 400 immediately, server does NOT hang
-
-# 6. VUL-005: Benchmark runs cap
-python -c "
-import urllib.request, json
-req = urllib.request.Request(
-    'http://localhost:8089/api/benchmark-ttft',
-    data=json.dumps({'runs': 10000}).encode(),
-    headers={'Content-Type': 'application/json'},
-    method='POST'
-)
-with urllib.request.urlopen(req) as r:
-    data = json.loads(r.read())
-    print(f'Runs executed: {data[\"runs\"]} (PASS if <= 10)')
-"
-
-# 7. VUL-007: Security headers
-curl -I http://localhost:8089/ | findstr /i "X-Content X-Frame Content-Security Referrer"
-#    PASS: All four headers present
-
-# 8. VUL-008: Path traversal tests
-#    Each should return 403:
-curl -o NUL -s -w "%{http_code}" "http://localhost:8089/pyproject.toml"
-curl -o NUL -s -w "%{http_code}" "http://localhost:8089/server.py%00.jpg"
-curl -o NUL -s -w "%{http_code}" "http://localhost:8089/pyright_output.json"
-```
-
----
-
-## Reference: Current Security Strengths (Preserve Through All Changes)
-
-The following existing controls are correctly implemented and must not be removed or weakened:
-
-| Control | Location | Description |
+| Control | Location | Verification Status |
 |---|---|---|
-| Parameterized SQL | `database.py:138-158` | All queries use `?` placeholders — SQL injection eliminated |
-| API key masking | `jev_demo.py:781-794` | `mask_key()` applied everywhere — no plaintext key leakage |
-| `.py` file blocking | `server.py:231` | Python source files blocked with HTTP 403 |
-| `.db` file blocking | `server.py:231` | Database files blocked with HTTP 403 |
-| Dotfile blocking | `server.py:229-230` | `.git`, `.env` and dotfile paths blocked |
-| Zero runtime deps | `pyproject.toml:23` | No third-party packages at runtime (standard library only) |
-| DB gitignore | `.gitignore:38-43` | `jevtools.db` excluded from version control |
-| Secrets gitignore | `.gitignore:31-35` | `.env`, `*.pem`, `secrets.json` excluded |
-| WAL mode | `database.py:49` | Write-Ahead Logging for database integrity |
-| Secure key resolution | `jev_demo.py:1457-1510` | Env var → `getpass` → CLI with explicit security warning |
-| Mock mode | `jev_demo.py:1465-1466` | Zero-credit offline testing without API key |
-| Weekly Dependabot | `.github/dependabot.yml` | Automated dev-dependency vulnerability scanning |
+| Parameterized SQL | `database.py:138-158` | Preserved — All queries use `?` placeholders |
+| API Key Masking | `jev_demo.py:781-794` | Preserved — `mask_key()` applied everywhere |
+| `.py` File Blocking | `server.py:43-52` | Preserved & expanded in `_BLOCKED_EXTENSIONS` |
+| `.db` File Blocking | `server.py:43-52` | Preserved & expanded in `_BLOCKED_EXTENSIONS` |
+| Dotfile Blocking | `server.py:126` | Preserved — `/.` paths blocked with HTTP 403 |
+| Zero Runtime Dependencies | `pyproject.toml:23` | Preserved — Python standard library only |
+| Database Gitignore | `.gitignore:38-43` | Preserved — `jevtools.db` and journals gitignored |
+| Secrets Gitignore | `.gitignore:31-35` | Preserved — `.env`, `*.pem`, `secrets.json` gitignored |
+| SQLite WAL Mode | `database.py:49` | Preserved — Write-Ahead Logging active |
+| Secure Key Resolution | `jev_demo.py:1457-1510` | Preserved — Env var → `getpass` → CLI warning |
+| Offline Mock Mode | `jev_demo.py:1465-1466` | Preserved — Zero-credit testing without network |
+| Automated Dependabot | `.github/dependabot.yml` | Preserved & enhanced with `github-actions` ecosystem |
 
 ---
 
-*End of Security Remediation Plan — Version 1.0 — 2026-09-25*  
-*Next review recommended: After Phase 1 & 2 fixes are applied, re-audit `index.html` for any residual XSS in `innerHTML` usages*
+*Remediation Plan Status: Completely Fulfilled & Verified — Version 2.0 (Final) — 2026-09-26*

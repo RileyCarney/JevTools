@@ -113,14 +113,16 @@ Traditional LLM architectures allow untrusted inputs to dictate workflow and con
 - **Application Logic in Code**: Thresholds, fallback branches, actions, and escalation policies reside purely in deterministic Python code. A malicious prompt cannot instruct Jev to bypass routing rules or execute arbitrary commands.
 
 ### Pillar 4: Local Web Server & Frontend Isolation
-- **Localhost Binding**: `server.py` binds exclusively to `127.0.0.1`, preventing exposure to external networks or LAN interfaces.
-- **Path Traversal & File Disclosure Defense**: Static file serving explicitly filters and blocks requests targeting dotfiles (`/.git`, `/.env`), database files (`*.db`, `*.sqlite`), credentials (`*.pem`, `*.key`), and Python source files (`*.py`), returning HTTP `403 Forbidden`.
-- **Cache Invalidation**: HTTP responses enforce `Cache-Control: no-cache, no-store, must-revalidate` to prevent proxy or browser disk caching of sensitive state.
-- **XSS Prevention**: `index.html` renders dynamic content, API responses, and database logs exclusively via DOM `textContent` APIs rather than `innerHTML` interpolation.
+- **Localhost Loopback Binding Only**: `server.py` binds exclusively to `127.0.0.1` via `_LocalhostTCPServer` with `allow_reuse_address = True`, strictly preventing exposure to LAN or external network interfaces.
+- **Strict CORS Origin Allowlist**: Replaced wildcard CORS with an explicit localhost allowlist (`localhost`, `127.0.0.1`, `null`) and `Vary: Origin`.
+- **DoS & Resource Guards**: Request bodies capped at 1 MB (`MAX_REQUEST_BODY_BYTES = 1048576`) with safe socket buffer draining; benchmark runs clamped to a maximum of 10.
+- **Path Traversal & File Disclosure Defense**: Static file serving uses canonical `pathlib.Path.resolve()` containment checks against `_ALLOWED_DIR`, explicitly rejecting dotfiles (`/.`), null bytes (`%00`), Windows normalization quirks, and blocked extensions (`.db`, `.env`, `.pem`, `.key`, `.py`, `.toml`, `.json`, shell scripts) with HTTP `403 Forbidden`.
+- **Defensive HTTP Response Headers**: All responses emit `Content-Security-Policy`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`, and `Cache-Control: no-cache, no-store, must-revalidate`.
+- **Stored & DOM XSS Elimination**: `index.html` sanitizes all dynamic interpolations through a centralized `escapeHtml()` utility, enforces `rel="noopener noreferrer"` on all external links, and validates URL protocols (`https://`, `http://`).
 
 ### Pillar 5: Supply Chain & Dependency Hardening
 - **Zero Runtime Dependencies**: The core JevTools library (`database.py`, `server.py`, `jev_demo.py`) has zero third-party dependencies at runtime. It runs entirely on the standard Python 3.10+ library.
-- **Development Dependency Isolation**: Optional test and lint dependencies (`pytest`, `ruff`) are isolated in `pyproject.toml` and monitored weekly via `.github/dependabot.yml`.
+- **Automated Ecosystem Auditing**: Automated Dependabot checks (`.github/dependabot.yml`) audit both `pip` Python packages and `github-actions` workflows weekly.
 
 ---
 
@@ -151,7 +153,8 @@ The following timeline details all security-relevant architectural changes, bug 
 | **2026-09-25 00:32:14 -07:00** | [`8221329`](https://github.com/RileyCarney/JevTools/commit/8221329530ef3fa5fbbf70d9c0f6f390f3b354a8) | [`main`](https://github.com/RileyCarney/JevTools/tree/main) | `.github/dependabot.yml` | Automated weekly dependency vulnerability scanning |
 | **2026-09-25 01:10:04 -07:00** | [`f3e817a`](https://github.com/RileyCarney/JevTools/commit/f3e817a7e9b0396ebe715bcbc1ee65f31a083fb4) | [`main`](https://github.com/RileyCarney/JevTools/tree/main) | `database.py`, `server.py`, `index.html` | Parameterized SQL, WAL mode, database gitignore, XSS protection |
 | **2026-09-25 01:13:50 -07:00** | [`a88e0fc`](https://github.com/RileyCarney/JevTools/commit/a88e0fcdd5403049e5ea4cf2e4a21b1b91c6beb6) | [`main`](https://github.com/RileyCarney/JevTools/tree/main) | `pyproject.toml`, `requirements.txt` | Zero external runtime dependency footprint |
-| **2026-09-25 (Current)** | Local Hardening | [`main`](https://github.com/RileyCarney/JevTools/tree/main) | `server.py`, `tests/test_server.py` | Local static file disclosure protection (403 Forbidden) |
+| **2026-09-25** | Local Hardening | [`main`](https://github.com/RileyCarney/JevTools/tree/main) | `server.py`, `tests/test_server.py` | Initial local static file disclosure protection |
+| **2026-09-26 (Latest)** | Complete Remediation | [`main`](https://github.com/RileyCarney/JevTools/tree/main) | Full Codebase | Full remediation of VUL-001 through VUL-010 & GAP-001 through GAP-003 (Loopback bind, XSS, CORS, request caps, SSRF guard, headers, traversal, SSL verify, actions dependabot) |
 
 ---
 
@@ -418,6 +421,24 @@ if (
     self._send_json_error("Forbidden: access to protected file or directory is restricted", status=403)
     return
 ```
+
+---
+
+#### 11. Full-Stack Security Remediation & Hardening (VUL-001 through VUL-010 & GAP-001 through GAP-003)
+- **Published Date**: 2026-09-26
+- **Branch**: [`main`](https://github.com/RileyCarney/JevTools/tree/main)
+- **Problem**: Comprehensive audit identified 10 vulnerabilities (loopback binding, stored DOM XSS, wildcard CORS, unconstrained request bodies, unbounded benchmark runs, SSRF risk via user-controlled endpoint, missing HTTP defense headers, path traversal edge cases, implicit SSL verification, unbounded database search) and 3 best-practice gaps.
+- **Resolution & Architecture Fulfillment**:
+  - Detailed plan and verification matrices documented in [`SECURITY_REMEDIATION_PLAN.md`](SECURITY_REMEDIATION_PLAN.md).
+  - Loopback-only binding (`127.0.0.1`) enforced via `_LocalhostTCPServer(allow_reuse_address=True)` in `server.py`.
+  - Stored XSS eliminated in `index.html` via centralized `escapeHtml()` and strict URL scheme validation.
+  - Strict localhost CORS origin allowlist and defensive security headers (`CSP`, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: no-referrer`) applied in `server.py`.
+  - Request body capped at 1 MB with safe socket buffer draining; benchmark runs capped at 10.
+  - SSRF protection via `_ALLOWED_API_HOSTS` allowlist and explicit `verify=True, allow_redirects=False` on all HTTP client calls in `jev_demo.py`.
+  - Path traversal hardened using canonical `pathlib.Path.resolve()` containment with null-byte rejection.
+  - Database search capped at 200 characters and query limits bounded at 500 in `database.py`.
+  - Dependabot updated with weekly `github-actions` package ecosystem monitoring.
+  - 100% test pass rate across 61 unit and integration tests.
 
 ---
 

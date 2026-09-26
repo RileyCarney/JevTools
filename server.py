@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 server.py - Localhost Web Dashboard Server for JevTools System One Cockpit.
-Follows the Website Project Tracking Template architecture.
 
 Serves the interactive cyber/dark UI on http://localhost:8089 (or next available port),
 provides REST API endpoints connecting directly to jev_demo.py, and opens the browser.
@@ -14,6 +13,7 @@ import argparse
 import http.server
 import json
 import os
+import pathlib
 import socket
 import socketserver
 import sys
@@ -31,6 +31,25 @@ import database
 import jev_demo
 
 DEFAULT_PORT = 8089
+MAX_REQUEST_BODY_BYTES = 1 * 1024 * 1024  # 1 MB
+MAX_BENCHMARK_RUNS = 10
+
+_ALLOWED_CORS_ORIGINS = {
+    f"http://localhost:{DEFAULT_PORT}",
+    f"http://127.0.0.1:{DEFAULT_PORT}",
+    "null",  # file:// origin
+}
+
+_BLOCKED_EXTENSIONS: frozenset[str] = frozenset({
+    ".db", ".db-journal", ".db-shm", ".db-wal",
+    ".sqlite", ".sqlite3",
+    ".env", ".pem", ".key", ".crt",
+    ".py", ".pyi", ".pyc",
+    ".toml", ".cfg", ".ini",
+    ".bat", ".sh", ".ps1",
+    ".json", ".yaml", ".yml",
+})
+_ALLOWED_DIR: pathlib.Path = pathlib.Path(CURRENT_DIR).resolve()
 
 
 class RuntimeState(TypedDict):
@@ -96,11 +115,69 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
     ) -> None:
         super().__init__(request, client_address, server, directory=CURRENT_DIR)
 
+    def log_message(self, format: str, *args: object) -> None:
+        """Suppress default HTTP access logging to prevent query string exposure in terminal."""
+        pass
+
+    @staticmethod
+    def is_safe_path(raw_path: str) -> bool:
+        """Return True only if the path resolves inside CURRENT_DIR and is not a blocked type."""
+        if "\x00" in raw_path:
+            return False
+        decoded = urllib.parse.unquote(raw_path)
+        if "\x00" in decoded or "\x00" in urllib.parse.unquote(decoded):
+            return False
+
+        lower = decoded.lower().replace("\\", "/")
+        if lower.startswith("/.") or "/." in lower:
+            return False
+        suffix = pathlib.PurePosixPath(lower).suffix
+        if suffix in _BLOCKED_EXTENSIONS:
+            return False
+        try:
+            clean = decoded.replace("\\", "/").lstrip("/")
+            resolved = (_ALLOWED_DIR / clean).resolve()
+            resolved.relative_to(_ALLOWED_DIR)
+            if resolved.suffix.lower() in _BLOCKED_EXTENSIONS or any(s.lower() in _BLOCKED_EXTENSIONS for s in resolved.suffixes):
+                return False
+        except (ValueError, OSError):
+            return False
+        return True
+
+    _is_safe_path = is_safe_path
+
     def end_headers(self) -> None:
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = self.headers.get("Origin", "")
+        # Check if origin is allowed (null, or http://localhost:<port>, http://127.0.0.1:<port>)
+        is_allowed = False
+        if origin in _ALLOWED_CORS_ORIGINS:
+            is_allowed = True
+        elif origin:
+            try:
+                parsed_origin = urllib.parse.urlsplit(origin)
+                if parsed_origin.scheme in ("http", "https") and parsed_origin.hostname in ("localhost", "127.0.0.1"):
+                    is_allowed = True
+            except Exception:
+                pass
+
+        cors_origin = origin if is_allowed else f"http://localhost:{DEFAULT_PORT}"
+        self.send_header("Access-Control-Allow-Origin", cors_origin)
+        self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header(
+            "Content-Security-Policy",
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline'; "
+            "style-src 'self' 'unsafe-inline'; "
+            "img-src 'self' data: https://repository-images.githubusercontent.com; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none';"
+        )
         super().end_headers()
 
     def do_OPTIONS(self) -> None:
@@ -112,16 +189,37 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(payload)))
+        if getattr(self, "close_connection", False):
+            self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(payload)
+        self.wfile.flush()
 
     def _send_json_error(self, message: str, status: int = 400) -> None:
         self._send_json_response({"error": message, "status": status}, status=status)
 
     def _parse_json_body(self) -> dict[str, Any]:
-        content_length = int(self.headers.get("Content-Length", 0))
+        try:
+            content_length = int(self.headers.get("Content-Length", 0))
+        except (ValueError, TypeError):
+            return {}
         if content_length <= 0:
             return {}
+        if content_length > MAX_REQUEST_BODY_BYTES:
+            self.close_connection = True
+            try:
+                drain = min(content_length, 2 * 1024 * 1024)
+                while drain > 0:
+                    chunk = self.rfile.read(min(drain, 65536))
+                    if not chunk:
+                        break
+                    drain -= len(chunk)
+            except Exception:
+                pass
+            raise ValueError(
+                f"Request body too large: {content_length} bytes "
+                f"(maximum: {MAX_REQUEST_BODY_BYTES} bytes)"
+            )
         body = self.rfile.read(content_length).decode("utf-8")
         try:
             parsed: Any = json.loads(body)
@@ -199,7 +297,8 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             status_filter = status_list[0] if status_list else None
 
             search_list = query_params.get("search")
-            search = search_list[0] if search_list else None
+            raw_search = search_list[0] if search_list else None
+            search = raw_search[:200] if raw_search else None
 
             items = database.get_history(
                 limit=limit,
@@ -222,14 +321,8 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_response(database.get_stats())
             return
 
-        # Block access to hidden files, databases, credentials, and source files
-        clean_path = urllib.parse.unquote(path).strip()
-        lower_path = clean_path.lower()
-        if (
-            lower_path.startswith("/.")
-            or "/." in lower_path
-            or any(lower_path.endswith(ext) for ext in (".db", ".db-journal", ".sqlite", ".sqlite3", ".env", ".pem", ".key", ".py"))
-        ):
+        # Block access to hidden files, databases, credentials, config, and source files
+        if not self.is_safe_path(path):
             self._send_json_error("Forbidden: access to protected file or directory is restricted", status=403)
             return
 
@@ -375,7 +468,10 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/benchmark-ttft":
             raw_runs = body.get("runs")
-            runs = int(raw_runs) if isinstance(raw_runs, (int, str, float)) else 3
+            try:
+                runs = max(1, min(MAX_BENCHMARK_RUNS, int(raw_runs))) if raw_runs is not None else 3
+            except (ValueError, TypeError):
+                runs = 3
             stats = jev_demo.measure_openrouter_ttft(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
             if stats.get("avg_latency_ms"):
                 RUNTIME_STATE["tested_latency_ms"] = float(stats["avg_latency_ms"])
@@ -401,6 +497,16 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
         self._send_json_error(f"Endpoint not found: {path}", status=404)
 
 
+is_safe_path = JevDashboardRequestHandler.is_safe_path
+
+
+class LocalhostTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
+
+
+_LocalhostTCPServer = LocalhostTCPServer
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="JevTools System One Localhost Web Dashboard Server")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"Port to serve dashboard on (default: {DEFAULT_PORT})")
@@ -420,7 +526,7 @@ def main() -> None:
 
     while port < int(getattr(args, "port", DEFAULT_PORT)) + 25:
         try:
-            with socketserver.TCPServer(("", port), handler) as httpd:
+            with LocalhostTCPServer(("127.0.0.1", port), handler) as httpd:
                 url = f"http://localhost:{port}/index.html"
                 print("=" * 64)
                 print(" [>] JevTools System One Cockpit Active")

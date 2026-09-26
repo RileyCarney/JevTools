@@ -15,7 +15,7 @@ import time
 import urllib.error
 import urllib.request
 import unittest
-from typing import Any
+from typing import Any, cast
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PARENT_DIR = os.path.dirname(CURRENT_DIR)
@@ -340,11 +340,129 @@ class TestServerEndpoints(unittest.TestCase):
 
     def test_sensitive_files_blocked(self):
         """Verify that server blocks access to sensitive files like .env, .git, .db, and python sources."""
-        for path in ("/jevtools.db", "/.env", "/.git/config", "/server.py", "/database.py"):
+        for path in (
+            "/jevtools.db",
+            "/.env",
+            "/.git/config",
+            "/server.py",
+            "/database.py",
+            "/pyproject.toml",
+            "/pyright_output.json",
+            "/server.py%00.jpg",
+        ):
             status, body = self._get(path)
             self.assertEqual(status, 403, f"Path {path} must be rejected with 403 Forbidden")
             self.assertIsInstance(body, dict)
             self.assertIn("error", body)
+
+    def test_security_hardening_headers(self):
+        """Verify that security hardening response headers are sent on responses (VUL-007)."""
+        url = f"http://127.0.0.1:{self.port}/api/status"
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req) as resp:
+            headers = resp.headers
+            self.assertEqual(headers.get("X-Content-Type-Options"), "nosniff")
+            self.assertEqual(headers.get("X-Frame-Options"), "DENY")
+            self.assertEqual(headers.get("Referrer-Policy"), "no-referrer")
+            csp = headers.get("Content-Security-Policy", "")
+            self.assertIn("default-src 'self'", csp)
+            self.assertIn("frame-ancestors 'none'", csp)
+            self.assertEqual(headers.get("Vary"), "Origin")
+
+    def test_cors_origin_allowlist(self):
+        """Verify CORS headers only reflect permitted origins, falling back to localhost (VUL-003)."""
+        url = f"http://127.0.0.1:{self.port}/api/status"
+
+        # Allowed Origin: localhost with port
+        req_local = urllib.request.Request(url, headers={"Origin": f"http://localhost:{self.port}"})
+        with urllib.request.urlopen(req_local) as resp:
+            self.assertEqual(resp.headers.get("Access-Control-Allow-Origin"), f"http://localhost:{self.port}")
+
+        # Allowed Origin: 127.0.0.1
+        req_ip = urllib.request.Request(url, headers={"Origin": f"http://127.0.0.1:{server.DEFAULT_PORT}"})
+        with urllib.request.urlopen(req_ip) as resp:
+            self.assertEqual(resp.headers.get("Access-Control-Allow-Origin"), f"http://127.0.0.1:{server.DEFAULT_PORT}")
+
+        # Disallowed Origin: untrusted external origin falls back to default localhost
+        req_bad = urllib.request.Request(url, headers={"Origin": "https://malicious-external-site.com"})
+        with urllib.request.urlopen(req_bad) as resp:
+            self.assertEqual(resp.headers.get("Access-Control-Allow-Origin"), f"http://localhost:{server.DEFAULT_PORT}")
+
+    def test_request_body_size_limit(self):
+        """Verify that oversized request bodies are rejected with 400 (VUL-004)."""
+        url = f"http://127.0.0.1:{self.port}/api/config"
+        oversized_payload = json.dumps({"overflow": "A" * (server.MAX_REQUEST_BODY_BYTES + 50)}).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=oversized_payload,
+            headers={
+                "Content-Type": "application/json",
+                "Content-Length": str(len(oversized_payload)),
+            },
+            method="POST",
+        )
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(req)
+        self.assertEqual(ctx.exception.code, 400)
+        body = json.loads(ctx.exception.read().decode("utf-8"))
+        self.assertIn("Request body too large", body.get("error", ""))
+
+    def test_benchmark_runs_parameter_cap(self):
+        """Verify that benchmark runs parameter is capped at MAX_BENCHMARK_RUNS (VUL-005)."""
+        from unittest.mock import patch
+        with patch.object(server.jev_demo, "measure_openrouter_ttft") as mock_measure:
+            mock_measure.return_value = {"avg_ttft_ms": 120.0, "avg_latency_ms": 250.0, "runs": 10}
+            status, _ = self._post("/api/benchmark-ttft", {"runs": 99999})
+            self.assertEqual(status, 200)
+            mock_measure.assert_called_once()
+            _, kwargs = mock_measure.call_args
+            self.assertEqual(kwargs.get("runs"), server.MAX_BENCHMARK_RUNS)
+
+    def test_history_search_length_cap(self):
+        """Verify that search query parameter is capped at 200 chars (VUL-010)."""
+        long_search = "Q" * 350
+        status, body = self._get(f"/api/history?search={long_search}")
+        self.assertEqual(status, 200)
+        self.assertIn("items", body)
+
+    def test_server_architecture_subclass_and_reuse_address(self):
+        """Verify TCPServer subclassing and allow_reuse_address (VUL-001 & GAP-003)."""
+        self.assertTrue(issubclass(cast(type[Any], server.LocalhostTCPServer), server.socketserver.TCPServer))
+        self.assertTrue(server.LocalhostTCPServer.allow_reuse_address)
+
+    def test_path_traversal_safety_checker(self):
+        """Verify is_safe_path blocks traversal and blocked extensions (VUL-008)."""
+        handler = server.JevDashboardRequestHandler
+        self.assertTrue(handler.is_safe_path("/"))
+        self.assertTrue(handler.is_safe_path("/index.html"))
+        self.assertTrue(handler.is_safe_path("/assets/icon.png"))
+        self.assertFalse(handler.is_safe_path("/server.py"))
+        self.assertFalse(handler.is_safe_path("/database.py"))
+        self.assertFalse(handler.is_safe_path("/jevtools.db"))
+        self.assertFalse(handler.is_safe_path("/.env"))
+        self.assertFalse(handler.is_safe_path("/.git/config"))
+        self.assertFalse(handler.is_safe_path("/pyproject.toml"))
+        self.assertFalse(handler.is_safe_path("/pyright_output.json"))
+        self.assertFalse(handler.is_safe_path("/server.py%00.jpg"))
+        self.assertFalse(handler.is_safe_path("/server.py\x00.jpg"))
+        self.assertFalse(handler.is_safe_path("/server.py."))
+        self.assertFalse(handler.is_safe_path("/server.py "))
+        self.assertFalse(handler.is_safe_path("/assets/../server.py"))
+        self.assertFalse(handler.is_safe_path("/../../etc/passwd"))
+
+    def test_log_message_suppression(self):
+        """Verify default access logging is suppressed (GAP-001)."""
+        import io
+        import sys
+        dummy = object.__new__(server.JevDashboardRequestHandler)
+        captured = io.StringIO()
+        old_stderr = sys.stderr
+        try:
+            sys.stderr = captured
+            dummy.log_message("test format %s", "arg")
+            self.assertEqual(captured.getvalue(), "")
+        finally:
+            sys.stderr = old_stderr
 
 
 if __name__ == "__main__":

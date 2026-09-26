@@ -26,6 +26,13 @@ logger = logging.getLogger("jevtools.database")
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_DB_FILENAME = "jevtools.db"
 
+MAX_SEARCH_LENGTH = 200
+MAX_QUERY_LIMIT = 500
+
+# Backward compatibility aliases
+_MAX_SEARCH_LENGTH = MAX_SEARCH_LENGTH
+_MAX_QUERY_LIMIT = MAX_QUERY_LIMIT
+
 
 def get_default_db_path() -> str:
     """Return the absolute path to the local personal device database file."""
@@ -174,6 +181,10 @@ def get_history(
     Query logged requests and responses from the local database, ordered newest first.
     Supports filtering by action_type, status, search term, and pagination.
     """
+    limit = min(max(1, limit), MAX_QUERY_LIMIT)
+    if search and len(search) > MAX_SEARCH_LENGTH:
+        search = search[:MAX_SEARCH_LENGTH]
+
     init_db(db_path)
     query = "SELECT * FROM request_logs WHERE 1=1"
     params: list[Any] = []
