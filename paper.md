@@ -1,3 +1,5 @@
+### UNOFFICIAL DRAFT
+
 # Mathematical Foundations of Jev: A Micro-Architectural Framework for Structured Semantic Decision Problems
 
 **Author:** JevTools Knowledge Base  
