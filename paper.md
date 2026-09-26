@@ -1,6 +1,4 @@
-## UNOFFICIAL DRAFT PLEASE DO NOT USE THIS DOCUMENT THE MATH ISN'T VALID
- 
- # Mathematical Foundations of Jev: A Micro-Architectural Framework for Structured Semantic Decision Problems
+# Mathematical Foundations of Jev: A Micro-Architectural Framework for Structured Semantic Decision Problems
 
 **Author:** Riley Carney and the TypeSafe AI Research Group  
 **Repository:** [RileyCarney/JevTools](https://github.com/RileyCarney/JevTools)  
@@ -10,7 +8,7 @@
 =======
 **Version:** 2.1 — Comprehensive Formal Mathematical Framework & Reference Implementation Edition  
 >>>>>>> a302324cb2fcffed9deef41588d6d64af9909821
-**Status:** Working Paper
+**Status:** Working Paper (Prepared for Top-Tier Publication)
 
 ---
 
@@ -143,7 +141,7 @@ $$\mathcal{S} := \mathcal{S}_{\mathrm{str}} \cup \mathcal{S}_{\mathrm{obj}} \cup
 
 where:
 - $\mathcal{S}_{\mathrm{str}}$ is the set of all finite UTF-8 strings (unstructured text passages).
-- $\mathcal{S}_{\mathrm{obj}} = \{ \{ (k_i, v_i) \}_{i=1}^m : k_i \in \Sigma^*, v_i \in \mathcal{S} \}$ is the set of finite JSON-compatible key-value maps (structured object payloads; the preferred representation).
+- $\mathcal{S}_{\mathrm{obj}} = \{ \{ (k_i, v_i) \}_{i=1}^m : k_i \in \Sigma^\ast, v_i \in \mathcal{S} \}$ is the set of finite JSON-compatible key-value maps (structured object payloads; the preferred representation).
 - $\mathcal{S}_{\mathrm{arr}} = \bigcup_{k=0}^\infty \mathcal{S}^k$ is the set of finite ordered sequences of state elements.
 
 The semantic content of a state is represented via an implicit state encoder:
@@ -161,7 +159,7 @@ Let $\mathcal{D} \in \mathcal{P}(\mathcal{S} \times \Omega_q)$ be the joint data
    Equivalently, observing state $s$ updates the epistemic credence on $Y_q$ away from the base prior $P(Y_q)$.
 
 **Definition 2.2 (Field Accessor Operator).**
-Let $\mathrm{Path} = \bigcup_{k=1}^\infty (\Sigma^*)^k$ denote the set of finite dot-delimited access paths (e.g., `ticket.messages[0].text`). The field accessor is the partial projection:
+Let $\mathrm{Path} = \bigcup_{k=1}^\infty (\Sigma^\ast)^k$ denote the set of finite dot-delimited access paths (e.g., `ticket.messages[0].text`). The field accessor is the partial projection:
 
 $$\Pi_{\mathrm{path}} : \mathcal{S}_{\mathrm{obj}} \times \mathrm{Path} \to \mathcal{S} \cup \{\bot\}$$
 
@@ -176,7 +174,7 @@ All three Jev primitives project state encodings onto probability distributions 
 **Definition 2.3 (Closed Probability Simplex).**
 For a finite outcome space $\Omega$ with cardinality $|\Omega| = N \ge 2$, the **closed probability simplex** is:
 
-$$\Delta_N := \Delta(\Omega) := \left\{ p \in \mathbb{R}^N : p_i \ge 0 \; \forall i \in \{1, \dots, N\}, \; \sum_{i=1}^N p_i = 1 \right\}$$
+$$\Delta_N := \Delta(\Omega) := \left\lbrace p \in \mathbb{R}^N : p_i \ge 0 \; \forall i \in \{1, \dots, N\}, \; \sum_{i=1}^N p_i = 1 \right\rbrace$$
 
 The simplex $\Delta_N$ is a compact, convex $(N-1)$-dimensional subset of the affine hyperplane $\{\sum p_i = 1\} \subset \mathbb{R}^N$. Special instances:
 - $N = 2$ (Noul): $\Delta_2 \cong [0, 1]$, the unit interval of binary credences.
@@ -243,8 +241,8 @@ For question $q$ with outcome hypothesis space $\Omega$, let $p_0(\omega)$ denot
 $$P(Y = \omega \mid \mu(s)) = \frac{\mathcal{L}(\mu(s) \mid \omega) \, p_0(\omega)}{\sum_{\omega' \in \Omega} \mathcal{L}(\mu(s) \mid \omega') \, p_0(\omega')}$$
 
 1. **Noul:** $\mathcal{N}_q(s) = P(Y_q = 1 \mid \mu(s)) \in [0, 1]$ (posterior credence on binary predicate).
-2. **Choice:** $\mathbb{C}_q(s).p^* = \left( P(Y_q = \omega_1 \mid \mu(s)), \dots, P(Y_q = \omega_K \mid \mu(s)) \right)^T \in \Delta_K$.
-3. **Score:** $\mathcal{Sc}_q(s).p^* = \left( P(Y_q = \lambda_0 \mid \mu(s)), \dots, P(Y_q = \lambda_{L-1} \mid \mu(s)) \right)^T \in \Delta_L$.
+2. **Choice:** $\mathbb{C}_q(s).p^\ast = \left( P(Y_q = \omega_1 \mid \mu(s)), \dots, P(Y_q = \omega_K \mid \mu(s)) \right)^T \in \Delta_K$.
+3. **Score:** $\mathcal{Sc}_q(s).p^\ast = \left( P(Y_q = \lambda_0 \mid \mu(s)), \dots, P(Y_q = \lambda_{L-1} \mid \mu(s)) \right)^T \in \Delta_L$.
 
 ---
 
@@ -590,20 +588,20 @@ Given question $q$ with a finite, mutually exclusive, and exhaustive candidate o
 
 $$\mathbb{C}_q : \mathcal{S} \to \Delta_K \times \Omega \times [0, 1]$$
 
-$$\mathbb{C}_q(s) := (p^*, \omega^*, c)$$
+$$\mathbb{C}_q(s) := (p^\ast, \omega^\ast, c)$$
 
 where:
-- $p^* \in \Delta_K$ is the calibrated posterior categorical distribution: $p^*_i = P(Y = \omega_i \mid \mu(s))$.
-- $\omega^* = \arg\max_{\omega \in \Omega} p^*(\omega)$ is the Maximum A Posteriori (MAP) choice (ties resolved lexicographically).
+- $p^\ast \in \Delta_K$ is the calibrated posterior categorical distribution: $p^\ast_i = P(Y = \omega_i \mid \mu(s))$.
+- $\omega^\ast = \arg\max_{\omega \in \Omega} p^\ast(\omega)$ is the Maximum A Posteriori (MAP) choice (ties resolved lexicographically).
 - $c \in [0, 1]$ is the peakedness-normalized confidence metric (Definition 3.3).
 
 **Remark 3.3 (Closed-World Assumption & Fallback Requirement).**
 The option set $\Omega$ is caller-specified. Jev cannot assign probability mass to hypotheses outside $\Omega$. If an out-of-distribution state occurs whose true semantic label $\omega_{\mathrm{true}} \notin \Omega$, the model projects probability mass onto the nearest in-vocabulary elements, degrading calibration unless an explicit fallback option $\omega_\emptyset$ is included.
 
 **Proposition 3.1 (Out-of-Vocabulary Degradation under Softmax Energy Projections).**
-*Let the model potential for option $\omega$ be governed by semantic metric distance: $E(s, \omega) = -d_\mathcal{M}(\mu(s), \mu(\omega)) / \tau_T$. If the true class $\omega^* \notin \Omega_{\mathrm{closed}}$ and $\omega_{\mathrm{prox}} = \arg\min_{\omega \in \Omega_{\mathrm{closed}}} d_\mathcal{M}(\mu(s), \mu(\omega))$, then:*
+*Let the model potential for option $\omega$ be governed by semantic metric distance: $E(s, \omega) = -d_\mathcal{M}(\mu(s), \mu(\omega)) / \tau_T$. If the true class $\omega^\ast \notin \Omega_{\mathrm{closed}}$ and $\omega_{\mathrm{prox}} = \arg\min_{\omega \in \Omega_{\mathrm{closed}}} d_\mathcal{M}(\mu(s), \mu(\omega))$, then:*
 
-$$P_M(\omega_{\mathrm{prox}} \mid s, \Omega_{\mathrm{closed}}) < P_M(\omega^* \mid s, \Omega_{\mathrm{true}})$$
+$$P_M(\omega_{\mathrm{prox}} \mid s, \Omega_{\mathrm{closed}}) < P_M(\omega^\ast \mid s, \Omega_{\mathrm{true}})$$
 
 *and the resulting confidence $c(\mathbb{C}_q(s))$ is depressed relative to in-vocabulary evaluation.*
 
@@ -624,25 +622,25 @@ Given question $q$ with an ordered rubric $\Lambda = (\lambda_0, \lambda_1, \dot
 
 $$\mathcal{Sc}_q : \mathcal{S} \to \Delta_L \times [0, L-1] \times [0, 1]$$
 
-$$\mathcal{Sc}_q(s) := (p^*, \sigma, c)$$
+$$\mathcal{Sc}_q(s) := (p^\ast, \sigma, c)$$
 
 where:
-- $p^* \in \Delta_L$ is the calibrated posterior distribution over ordinal rubric levels.
-- $\sigma = \sum_{j=0}^{L-1} j \cdot p^*_j \in [0, L-1]$ is the posterior expected level index.
+- $p^\ast \in \Delta_L$ is the calibrated posterior distribution over ordinal rubric levels.
+- $\sigma = \sum_{j=0}^{L-1} j \cdot p^\ast_j \in [0, L-1]$ is the posterior expected level index.
 - $c \in [0, 1]$ is the distributional confidence evaluated over $L$ outcomes via Definition 3.3.
 
 **Theorem 3.2 (Score as Minimum Mean Square Error Projection).**
-*The raw score $\sigma := \sum_{j=0}^{L-1} j \cdot p^*_j$ is the unique Bayes-optimal point prediction minimizing the expected posterior quadratic loss over rubric indices:*
+*The raw score $\sigma := \sum_{j=0}^{L-1} j \cdot p^\ast_j$ is the unique Bayes-optimal point prediction minimizing the expected posterior quadratic loss over rubric indices:*
 
-$$\sigma = \arg\min_{\hat{y} \in \mathbb{R}} \mathbb{E}_{J \sim p^*}\left[ (J - \hat{y})^2 \right]$$
+$$\sigma = \arg\min_{\hat{y} \in \mathbb{R}} \mathbb{E}_{J \sim p^\ast}\left[ (J - \hat{y})^2 \right]$$
 
 *In particular, $\sigma \in [0, L-1]$ and is continuously valued, representing genuine probability mass distributed across adjacent rubric levels.*
 
-*Proof.* Let $\psi(\hat{y}) = \mathbb{E}_{J \sim p^*}[(J - \hat{y})^2] = \sum_{j=0}^{L-1} p^*_j (j - \hat{y})^2$. Differentiating with respect to $\hat{y}$:
+*Proof.* Let $\psi(\hat{y}) = \mathbb{E}_{J \sim p^\ast}[(J - \hat{y})^2] = \sum_{j=0}^{L-1} p^\ast_j (j - \hat{y})^2$. Differentiating with respect to $\hat{y}$:
 
-$$\psi'(\hat{y}) = -2 \sum_{j=0}^{L-1} p^*_j (j - \hat{y}) = -2 \left( \sum_{j=0}^{L-1} j p^*_j - \hat{y} \sum_{j=0}^{L-1} p^*_j \right)$$
+$$\psi'(\hat{y}) = -2 \sum_{j=0}^{L-1} p^\ast_j (j - \hat{y}) = -2 \left( \sum_{j=0}^{L-1} j p^\ast_j - \hat{y} \sum_{j=0}^{L-1} p^\ast_j \right)$$
 
-Since $p^* \in \Delta_L$, we have $\sum p^*_j = 1$. Thus $\psi'(\hat{y}) = -2 (\sigma - \hat{y})$. Setting $\psi'(\hat{y}) = 0$ yields the unique stationary point $\hat{y} = \sigma$. The second derivative $\psi''(\hat{y}) = 2 > 0$ confirms that $\sigma$ is the unique global minimizer. The bounds $0 \le \sigma \le L-1$ follow immediately from the fact that $\sigma$ is a convex combination of points in $\{0, 1, \dots, L-1\}$. $\blacksquare$
+Since $p^\ast \in \Delta_L$, we have $\sum p^\ast_j = 1$. Thus $\psi'(\hat{y}) = -2 (\sigma - \hat{y})$. Setting $\psi'(\hat{y}) = 0$ yields the unique stationary point $\hat{y} = \sigma$. The second derivative $\psi''(\hat{y}) = 2 > 0$ confirms that $\sigma$ is the unique global minimizer. The bounds $0 \le \sigma \le L-1$ follow immediately from the fact that $\sigma$ is a convex combination of points in $\{0, 1, \dots, L-1\}$. $\blacksquare$
 
 **Definition 3.5 (Score Normalization).**
 The **normalized score** is defined as:
@@ -652,7 +650,7 @@ $$\sigma_{\mathrm{norm}} := \frac{\sigma}{L - 1} \in [0, 1]$$
 Normalizing by $(L - 1)$ maps scores from rubrics with varying cardinality onto a common unit scale, which is essential for multi-rubric composite scoring (Section 6.3, Theorem 6.5).
 
 **Proposition 3.2 (Maximum Entropy Score Midpoint).**
-*Under maximal uncertainty where the posterior is uniform $p^* = (1/L, \dots, 1/L)^T$, the raw and normalized scores evaluate exactly to the rubric centroid:*
+*Under maximal uncertainty where the posterior is uniform $p^\ast = (1/L, \dots, 1/L)^T$, the raw and normalized scores evaluate exactly to the rubric centroid:*
 
 $$\sigma = \frac{L - 1}{2}, \quad \sigma_{\mathrm{norm}} = \frac{1}{2}$$
 
@@ -933,12 +931,12 @@ Since $\rho > 1/K$, $(K - 1)\rho > \frac{K-1}{K} = 1 - 1/K > 1 - \rho$. Thus the
 **Theorem 4.3 (Confidence-Threshold Ordering Consistency).**
 *Let $\tau_L < \tau_H \in [0, 1]$ be operational thresholds. For a random state $S \sim \mathcal{D}$ evaluated by strongly calibrated model $M$, the expected top-option posterior mass conditioned on high confidence strictly dominates that conditioned on low confidence:*
 
-$$\mathbb{E}_{(S, Y) \sim \mathcal{D}}[p^*(S)_{\omega^*} \mid c(S) \ge \tau_H] \ge \tau_H \frac{K-1}{K} + \frac{1}{K} > \tau_L \frac{K-1}{K} + \frac{1}{K} > \mathbb{E}_{(S, Y) \sim \mathcal{D}}[p^*(S)_{\omega^*} \mid c(S) < \tau_L]$$
+$$\mathbb{E}_{(S, Y) \sim \mathcal{D}}[p^\ast(S)_{\omega^\ast} \mid c(S) \ge \tau_H] \ge \tau_H \frac{K-1}{K} + \frac{1}{K} > \tau_L \frac{K-1}{K} + \frac{1}{K} > \mathbb{E}_{(S, Y) \sim \mathcal{D}}[p^\ast(S)_{\omega^\ast} \mid c(S) < \tau_L]$$
 
-*Proof.* Inverting Definition 3.3 expresses peakedness as $\rho(p^*(S)) = c(S) \frac{K-1}{K} + \frac{1}{K}$. Under the high-confidence conditioning event $\mathcal{E}_H = \{S : c(S) \ge \tau_H\}$, monotonicity of conditional expectation guarantees:
-$$\mathbb{E}[\rho(p^*(S)) \mid \mathcal{E}_H] \ge \tau_H \frac{K-1}{K} + \frac{1}{K}.$$
+*Proof.* Inverting Definition 3.3 expresses peakedness as $\rho(p^\ast(S)) = c(S) \frac{K-1}{K} + \frac{1}{K}$. Under the high-confidence conditioning event $\mathcal{E}_H = \{S : c(S) \ge \tau_H\}$, monotonicity of conditional expectation guarantees:
+$$\mathbb{E}[\rho(p^\ast(S)) \mid \mathcal{E}_H] \ge \tau_H \frac{K-1}{K} + \frac{1}{K}.$$
 Conversely, under the low-confidence conditioning event $\mathcal{E}_L = \{S : c(S) < \tau_L\}$:
-$$\mathbb{E}[\rho(p^*(S)) \mid \mathcal{E}_L] < \tau_L \frac{K-1}{K} + \frac{1}{K}.$$
+$$\mathbb{E}[\rho(p^\ast(S)) \mid \mathcal{E}_L] < \tau_L \frac{K-1}{K} + \frac{1}{K}.$$
 Because $\tau_H > \tau_L$ and $\frac{K-1}{K} > 0$ for $K \ge 2$, the strict inequality $\tau_H \frac{K-1}{K} + \frac{1}{K} > \tau_L \frac{K-1}{K} + \frac{1}{K}$ separates the two expectations. $\blacksquare$
 
 ---
@@ -1405,7 +1403,7 @@ $$\Phi_w(s) := w^T \sigma_{\mathrm{norm}}(s) = \sum_{i=1}^k w_i \cdot \sigma_{i,
 **Theorem 6.6 (First-Order Approximation to Smooth Priority Functionals).**
 *Let $F : [0, 1]^k \to [0, 1]$ be any twice continuously differentiable priority functional whose gradient $\nabla F$ is $L_F$-Lipschitz continuous, with:*
 
-$$L_F := \sup_{\xi \in [0, 1]^k} \|\nabla^2 F(\xi)\|_2 = \sup_{\xi \in [0, 1]^k} \lambda_{\max}(\nabla^2 F(\xi))$$
+$$L_F := \sup_{\xi \in [0, 1]^k} \|\nabla^2 F(\xi)\|_2 = \sup_{\xi \in [0, 1]^k} \rho(\nabla^2 F(\xi)) = \sup_{\xi \in [0, 1]^k} \max_{1 \le j \le k} |\lambda_j(\nabla^2 F(\xi))|$$
 
 *denoting the spectral norm of the Hessian $\nabla^2 F$. For any reference point $\sigma_0 \in [0, 1]^k$, the composite functional $\Phi_w$ with normalized weights $w = \nabla F(\sigma_0) / \sum_i \frac{\partial F}{\partial \sigma_i}(\sigma_0)$ and affine proxy $\tilde{\Phi}(\sigma) := F(\sigma_0) + \nabla F(\sigma_0)^T (\sigma - \sigma_0)$ satisfies:*
 
@@ -1428,9 +1426,9 @@ A *complete intent partition* of user state space is a collection of semantic re
 *Under a complete intent partition, the routing policy:*
 
 $$\pi_{\mathrm{intent}}(s) = \begin{cases}
-\mathrm{escalate}(\text{"low\_confidence"}) & \text{if } c < \tau_{\mathrm{low}} \\
-\mathrm{escalate}(\text{"unrecognized\_fallback"}) & \text{if } \omega^* = \omega_\emptyset \\
-\mathrm{dispatch}(\omega^*) & \text{otherwise}
+\mathrm{escalate}(\mathtt{"low\_confidence"}) & \text{if } c < \tau_{\mathrm{low}} \\
+\mathrm{escalate}(\mathtt{"unrecognized\_fallback"}) & \text{if } \omega^\ast = \omega_\emptyset \\
+\mathrm{dispatch}(\omega^\ast) & \text{otherwise}
 \end{cases}$$
 
 *is total on $\mathcal{S}$ and exhibits zero unhandled edge-case states.*
@@ -1629,17 +1627,17 @@ We now formalize the problem classes for which Jev's micro-architecture is mathe
 ### 7.1 Closed $K$-Class Classification Problems
 
 **Definition 7.1 (Closed $K$-Class Semantic Classification Problem).**
-A closed semantic classification problem is a triple $(\mathcal{S}, \Omega, h^*)$ where $\Omega = \{\omega_1, \dots, \omega_K\}$ is a finite, fixed discrete hypothesis set and $h^* : \mathcal{S} \to \Omega$ is the ground-truth labeling function.
+A closed semantic classification problem is a triple $(\mathcal{S}, \Omega, h^\ast)$ where $\Omega = \{\omega_1, \dots, \omega_K\}$ is a finite, fixed discrete hypothesis set and $h^\ast : \mathcal{S} \to \Omega$ is the ground-truth labeling function.
 
 **Theorem 7.1 (Jev Solves Closed $K$-Class Classification).**
-*Any closed classification problem $(\mathcal{S}, \Omega, h^*)$ is solvable by the Choice operator $\mathbb{C}_q$ under the conditions:*
+*Any closed classification problem $(\mathcal{S}, \Omega, h^\ast)$ is solvable by the Choice operator $\mathbb{C}_q$ under the conditions:*
 1. $\Omega$ *includes an explicit fallback option $\omega_\emptyset$ (Theorem 6.7).*
 2. *The instructions define mutually exclusive partition boundaries.*
 3. *State $s$ has positive pointwise mutual information with target labels (Definition 2.1).*
 
-*The Jev classifier $h_{\mathrm{Jev}}(s) = \arg\max_{\omega \in \Omega} p^*(\omega)$ is the Bayes-optimal Maximum A Posteriori (MAP) estimator minimizing 0-1 classification loss. Under strong calibration, its conditional accuracy is given exactly by the distributional peakedness:*
+*The Jev classifier $h_{\mathrm{Jev}}(s) = \arg\max_{\omega \in \Omega} p^\ast(\omega)$ is the Bayes-optimal Maximum A Posteriori (MAP) estimator minimizing 0-1 classification loss. Under strong calibration, its conditional accuracy is given exactly by the distributional peakedness:*
 
-$$\mathbb{P}_{(s, y) \sim \mathcal{D}}\left( h_{\mathrm{Jev}}(s) = y \;\middle|\; p^*(s) \right) = \rho(p^*(s))$$
+$$\mathbb{P}_{(s, y) \sim \mathcal{D}}\left( h_{\mathrm{Jev}}(s) = y \;\middle|\; p^\ast(s) \right) = \rho(p^\ast(s))$$
 
 **Proposition 7.1 (Compounded Geometric Decay in Hierarchical Cascades).**
 *For taxonomies with tree depth $d_{\mathrm{tax}} > 1$, a sequence of $d_{\mathrm{tax}}$ conditional Choice queries narrows the candidate branch. By the chain rule of conditional probability, total end-to-end classification accuracy is bounded by the product:*
@@ -1675,16 +1673,16 @@ A verification problem $(\varphi, e, s)$ tests whether evidence passage $e \subs
 *The verification task is resolved by $\mathcal{N}_q(s)$, providing a strongly calibrated probability $n \in [0, 1]$. Under confidence routing ($\S 6.2$), instances with $n \ge \tau_{\mathrm{high}}$ are accepted automatically, instances with $n \le \tau_{\mathrm{low}}$ are rejected, and intermediate instances trigger human-in-the-loop review.*
 
 **Definition 7.4 (Structured Candidate Extraction Problem).**
-Given state $s$ containing candidate values $V = \{v_1, \dots, v_m\}$ extracted by deterministic code (e.g., regexes, parsers), select the intended entity $v^* \in V$.
+Given state $s$ containing candidate values $V = \{v_1, \dots, v_m\}$ extracted by deterministic code (e.g., regexes, parsers), select the intended entity $v^\ast \in V$.
 
 **Theorem 7.4 (Risk Domination of Discriminative Candidate Selection).**
-*Formulating structured extraction as a Choice selection over closed vocabulary $V \cup \{ \text{"none\_of\_the\_above"} \}$ strictly risk-dominates unconstrained text generation:*
+*Formulating structured extraction as a Choice selection over closed vocabulary $V \cup \{ \mathtt{"none\_of\_the\_above"} \}$ strictly risk-dominates unconstrained text generation:*
 
-$$\mathbb{P}(\text{error} \mid \text{Selection}) \le \mathbb{P}(v^* \notin V) + \mathbb{P}(\text{wrong choice} \mid v^* \in V)$$
+$$\mathbb{P}(\text{error} \mid \text{Selection}) \le \mathbb{P}(v^\ast \notin V) + \mathbb{P}(\text{wrong choice} \mid v^\ast \in V)$$
 
 $$\mathbb{P}(\text{error} \mid \text{Generation}) \le \mathbb{P}(\text{hallucination}) + \mathbb{P}(\text{syntax failure}) + \mathbb{P}(\text{normalization error})$$
 
-*The candidate selection error $\mathbb{P}(v^* \notin V)$ is entirely reducible by improving deterministic code extraction, whereas generative LLMs carry irreducible epistemic hallucination error components.*
+*The candidate selection error $\mathbb{P}(v^\ast \notin V)$ is entirely reducible by improving deterministic code extraction, whereas generative LLMs carry irreducible epistemic hallucination error components.*
 
 ---
 
@@ -1700,11 +1698,11 @@ Let $\mathcal{H} = \{h_1, \dots, h_m\}$ be a set of non-mutually exclusive conte
 3. **Composite Risk Rule:** $\mathrm{risk}_{\mathrm{comp}}(s) = \sum_{i=1}^m w_i p_i$.
 
 **Lemma 7.1 (Fundamental Inadequacy of Single Choice for Multi-Label Hazards).**
-*Let $K(s) \subseteq \mathcal{H}$ denote the true set of active hazards in state $s$. Any single Choice operator $\mathbb{C}_q(s)$ over $\Omega = \mathcal{H}$ selects at most one modal hazard $\omega^* = \arg\max_{h \in \mathcal{H}} p^*(h)$. Whenever multiple hazards co-occur ($|K(s)| \ge 2$), Choice suffers an absolute false-negative failure:*
+*Let $K(s) \subseteq \mathcal{H}$ denote the true set of active hazards in state $s$. Any single Choice operator $\mathbb{C}_q(s)$ over $\Omega = \mathcal{H}$ selects at most one modal hazard $\omega^\ast = \arg\max_{h \in \mathcal{H}} p^\ast(h)$. Whenever multiple hazards co-occur ($|K(s)| \ge 2$), Choice suffers an absolute false-negative failure:*
 
 $$\mathbb{P}(\text{miss at least } |K(s)| - 1 \text{ active hazards} \mid |K(s)| \ge 2) = 1$$
 
-*Proof.* $|\{\omega^*\} \cap K(s)| \le 1$. Hence $|K(s) \setminus \{\omega^*\}| \ge |K(s)| - 1 \ge 1$ whenever $|K(s)| \ge 2$. By contrast, $m$ concurrent Nouls evaluate the full power set $\mathcal{P}(\mathcal{H}) \cong \{0, 1\}^m$. $\blacksquare$
+*Proof.* $|\{\omega^\ast\} \cap K(s)| \le 1$. Hence $|K(s) \setminus \{\omega^\ast\}| \ge |K(s)| - 1 \ge 1$ whenever $|K(s)| \ge 2$. By contrast, $m$ concurrent Nouls evaluate the full power set $\mathcal{P}(\mathcal{H}) \cong \{0, 1\}^m$. $\blacksquare$
 
 ---
 
@@ -1906,19 +1904,19 @@ Real-world neural models are never perfectly calibrated. In this section, we pro
 **Definition 8.1 (Ordinal Simplex Wasserstein Calibration Error).**
 Let rubric $\Lambda = (\lambda_0, \dots, \lambda_{L-1})$ be endowed with normalized metric $d_\Lambda(j, k) = |j - k| / (L - 1)$. The **normalized Wasserstein-1 calibration error** for Score query $q$ is:
 
-$$\varepsilon_q^{(W)} := \sup_{s \in \mathcal{S}} W_1\left( p^*(s), p^{*,\mathrm{true}}(s) \right) = \sup_{s \in \mathcal{S}} \inf_{\gamma \in \Pi(p^*, p^{*,\mathrm{true}})} \sum_{j, k} \frac{|j - k|}{L - 1} \gamma_{jk}$$
+$$\varepsilon_q^{(W)} := \sup_{s \in \mathcal{S}} W_1\left( p^\ast(s), p^{\ast,\mathrm{true}}(s) \right) = \sup_{s \in \mathcal{S}} \inf_{\gamma \in \Pi(p^\ast, p^{\ast,\mathrm{true}})} \sum_{j, k} \frac{|j - k|}{L - 1} \gamma_{jk}$$
 
 **Theorem 8.1 (Exact Error Propagation in Composite Scores).**
 *Let $\Phi_w(s) = \sum_{i=1}^k w_i \sigma_{i,\mathrm{norm}}(s)$ with $w \in \Delta_k$. If each constituent Score dimension has normalized Wasserstein calibration error bounded by $\varepsilon_i^{(W)}$, then:*
 
-$$|\Phi_w(s) - \Phi_w^*(s)| \le \sum_{i=1}^k w_i \varepsilon_i^{(W)} \le \max_{1 \le i \le k} \varepsilon_i^{(W)}$$
+$$|\Phi_w(s) - \Phi_w^\ast(s)| \le \sum_{i=1}^k w_i \varepsilon_i^{(W)} \le \max_{1 \le i \le k} \varepsilon_i^{(W)}$$
 
-*where $\Phi_w^*(s)$ is the hypothetical composite score under perfect calibration.*
+*where $\Phi_w^\ast(s)$ is the hypothetical composite score under perfect calibration.*
 
 *Proof.* By the Kantorovich-Rubinstein duality theorem, the normalized score expectation functional $f(j) = \frac{j}{L-1}$ is 1-Lipschitz with respect to metric $d_\Lambda(j, k) = \frac{|j - k|}{L - 1}$. Therefore:
-$$|\sigma_{i,\mathrm{norm}}(s) - \sigma_{i,\mathrm{norm}}^*(s)| = |\mathbb{E}_{p^*}[f] - \mathbb{E}_{p^{*,\mathrm{true}}}[f]| \le W_1(p^*, p^{*,\mathrm{true}}) \le \varepsilon_i^{(W)}$$
+$$|\sigma_{i,\mathrm{norm}}(s) - \sigma_{i,\mathrm{norm}}^\ast(s)| = |\mathbb{E}_{p^\ast}[f] - \mathbb{E}_{p^{\ast,\mathrm{true}}}[f]| \le W_1(p^\ast, p^{\ast,\mathrm{true}}) \le \varepsilon_i^{(W)}$$
 Applying the triangle inequality to the linear combination:
-$$|\Phi_w(s) - \Phi_w^*(s)| = \left| \sum_{i=1}^k w_i (\sigma_{i,\mathrm{norm}}(s) - \sigma_{i,\mathrm{norm}}^*(s)) \right| \le \sum_{i=1}^k w_i |\sigma_{i,\mathrm{norm}}(s) - \sigma_{i,\mathrm{norm}}^*(s)| \le \sum_{i=1}^k w_i \varepsilon_i^{(W)}$$
+$$|\Phi_w(s) - \Phi_w^\ast(s)| = \left| \sum_{i=1}^k w_i (\sigma_{i,\mathrm{norm}}(s) - \sigma_{i,\mathrm{norm}}^\ast(s)) \right| \le \sum_{i=1}^k w_i |\sigma_{i,\mathrm{norm}}(s) - \sigma_{i,\mathrm{norm}}^\ast(s)| \le \sum_{i=1}^k w_i \varepsilon_i^{(W)}$$
 Because $w_i \ge 0$ and $\sum w_i = 1$, the convex combination is upper-bounded by $\max_i \varepsilon_i^{(W)}$. $\blacksquare$
 
 *Corollary 8.1 (Non-Amplification of Errors).* The composite priority functional does not amplify calibration errors; the total error is strictly bounded by the worst-case single-question error.
@@ -2318,11 +2316,11 @@ The Jev micro-architecture is not a general-purpose AI substrate; it is an optim
 We enumerate six fundamental open research problems arising from this framework:
 
 1. **OP1 (Computable Semantic Orthogonality Metric):** Establish an unsupervised metric $d_{\mathcal{Q}}(q_1, q_2)$ over query instruction tokens that upper-bounds the conditional mutual information $I(Y_{q_1}; Y_{q_2} \mid \mu(S))$ without requiring labeled validation co-occurrence data.
-2. **OP2 (Optimal Question Set Synthesis):** Given an empirical task loss and a computational question budget $n$, design an efficient polynomial-time algorithm that synthesizes a minimally sufficient question set $\mathcal{Q}^*$ satisfying Theorem 5.1.
+2. **OP2 (Optimal Question Set Synthesis):** Given an empirical task loss and a computational question budget $n$, design an efficient polynomial-time algorithm that synthesizes a minimally sufficient question set $\mathcal{Q}^\ast$ satisfying Theorem 5.1.
 3. **OP3 (Calibration Bounds under Distribution Shift):** Characterize the degradation of the Wasserstein calibration error $\varepsilon_q^{(W)}$ as a function of the Wasserstein covariate shift $W_1(\mathcal{D}_{\mathrm{train}}, \mathcal{D}_{\mathrm{test}})$.
 4. **OP4 (Non-Linear Latency and Batch Overhead Modeling):** Develop an extended parametric latency model accounting for GPU memory bandwidth saturation and tensor serialization overhead when batch sizes grow large ($n > 50$).
-5. **OP5 (Optimal Cascade Stage Depth & Beam Width):** Determine the optimal cascade depth $d^*$ and beam width $B^*$ that minimize expected latency subject to an end-to-end task accuracy constraint $\mathbb{P}(\text{correct}) \ge 1 - \alpha$.
-6. **OP6 (Regret-Minimizing Threshold Allocation):** For arbitrary asymmetric loss matrices $L \in \mathbb{R}^{m \times m}$, derive the optimal action threshold schedule $\tau^*(a)$ that minimizes expected regret under an automation constraint $\mathbb{P}(\text{execute}) \ge \beta$.
+5. **OP5 (Optimal Cascade Stage Depth & Beam Width):** Determine the optimal cascade depth $d^\ast$ and beam width $B^\ast$ that minimize expected latency subject to an end-to-end task accuracy constraint $\mathbb{P}(\text{correct}) \ge 1 - \alpha$.
+6. **OP6 (Regret-Minimizing Threshold Allocation):** For arbitrary asymmetric loss matrices $L \in \mathbb{R}^{m \times m}$, derive the optimal action threshold schedule $\tau^\ast(a)$ that minimizes expected regret under an automation constraint $\mathbb{P}(\text{execute}) \ge \beta$.
 
 ---
 
@@ -2393,7 +2391,7 @@ By uniting formal proofs with verified Python reference implementations embedded
 - Keeney, R. L., & Raiffa, H. (1976). *Decisions with Multiple Objectives: Preferences and Value Tradeoffs*. John Wiley & Sons.
 - Murphy, A. H. (1973). A new vector partition of the probability score. *Journal of Applied Meteorology and Climatology*, 12(4), 595–600.
 - Nesterov, Y. (1983). A method for solving the convex programming problem with convergence rate $O(1/k^2)$. *Soviet Mathematics Doklady*, 27(2), 372–376.
-- Platt, J. (1999). Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods. *Advances in Large Margin Classifiers*, 10(3), 61–74.
+- Platt, J. (1999). Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods. In A. J. Smola, P. Bartlett, B. Schölkopf, & D. Schuurmans (Eds.), Advances in Large Margin Classifiers (pp. 61–74). MIT Press.
 - Savage, L. J. (1971). Elicitation of personal probabilities and expectations. *Journal of the American Statistical Association*, 66(336), 783–801.
 - Taskar, B., Guestrin, C., & Koller, D. (2004). Max-margin Markov networks. *Advances in Neural Information Processing Systems (NeurIPS)*, 16.
 - Tishby, N., Pereira, F. C., & Bialek, W. (2000). The information bottleneck method. *arXiv preprint* physics/0004057.
