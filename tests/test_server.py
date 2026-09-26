@@ -338,6 +338,80 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertIn("cleared", body_d)
         self.assertGreater(body_d["cleared"], 0)
 
+    def test_history_schema_and_options_endpoints(self):
+        # Clear and seed one item
+        self._delete("/api/history")
+        self._post("/api/classify-topic", {"paragraph": "Quantum supremacy research."})
+
+        # Test GET /api/history/schema
+        status, schema = self._get("/api/history/schema")
+        self.assertEqual(status, 200)
+        self.assertEqual(schema["table_name"], "request_logs")
+        self.assertIn("columns", schema)
+        self.assertIn("indexes", schema)
+        self.assertEqual(schema["total_records"], 1)
+
+        # Test GET /api/history/options
+        status_o, opts = self._get("/api/history/options")
+        self.assertEqual(status_o, 200)
+        self.assertIn("action_types", opts)
+        self.assertIn("providers", opts)
+        self.assertIn("models", opts)
+        self.assertEqual(opts["total_count"], 1)
+
+    def test_history_filtering_pagination_and_sorting(self):
+        self._delete("/api/history")
+        # Seed 3 items with distinct features
+        self._post("/api/analyze-review", {"review": "Love the noise cancelling", "product": "Earbuds A"})
+        self._post("/api/classify-topic", {"paragraph": "Deep learning models are scaling rapidly."})
+        self._post("/api/classify-topic", {"paragraph": "Another biology scientific breakthrough."})
+
+        # Query all with limit=all
+        status_all, body_all = self._get("/api/history?limit=all")
+        self.assertEqual(status_all, 200)
+        self.assertEqual(body_all["total_matching"], 3)
+        self.assertEqual(body_all["count"], 3)
+        self.assertIn("schema", body_all)
+        self.assertIn("filter_options", body_all)
+
+        # Filter by action_type
+        status_f, body_f = self._get("/api/history?action_type=topic_classification")
+        self.assertEqual(status_f, 200)
+        self.assertEqual(body_f["total_matching"], 2)
+        self.assertEqual(body_f["count"], 2)
+
+        # Test pagination with limit=1, page=2
+        status_p, body_p = self._get("/api/history?limit=1&page=2")
+        self.assertEqual(status_p, 200)
+        self.assertEqual(body_p["count"], 1)
+        self.assertEqual(body_p["total_matching"], 3)
+        self.assertEqual(body_p["page"], 2)
+        self.assertEqual(body_p["total_pages"], 3)
+
+        # Test sorting
+        status_s, body_s = self._get("/api/history?sort_by=id&sort_order=asc")
+        self.assertEqual(status_s, 200)
+        items = body_s["items"]
+        self.assertLess(items[0]["id"], items[-1]["id"])
+
+    def test_history_export_csv_and_json(self):
+        self._delete("/api/history")
+        self._post("/api/analyze-review", {"review": "Ergonomic chair review", "product": "Chair Pro"})
+
+        # Export CSV
+        status_csv, raw_csv = self._get("/api/history/export?format=csv")
+        self.assertEqual(status_csv, 200)
+        self.assertIsInstance(raw_csv, str)
+        self.assertIn("id,timestamp,action_type", raw_csv)
+        self.assertIn("review_analysis", raw_csv)
+
+        # Export JSON
+        status_json, data_json = self._get("/api/history/export?format=json")
+        self.assertEqual(status_json, 200)
+        self.assertIn("items", data_json)
+        self.assertEqual(len(data_json["items"]), 1)
+        self.assertEqual(data_json["items"][0]["action_type"], "review_analysis")
+
     def test_sensitive_files_blocked(self):
         """Verify that server blocks access to sensitive files like .env, .git, .db, and python sources."""
         for path in (
@@ -463,6 +537,57 @@ class TestServerEndpoints(unittest.TestCase):
             self.assertEqual(captured.getvalue(), "")
         finally:
             sys.stderr = old_stderr
+
+    def test_history_unlimited_default_and_database_routes(self):
+        """Verify GET /api/history defaults to returning all records and database routes serve index.html."""
+        # 1. Clear database
+        self._delete("/api/history")
+
+        # 2. Seed 3 records
+        self._post("/api/analyze-review", {"review": "Product quality is fantastic.", "product": "Earbuds A"})
+        self._post("/api/classify-topic", {"paragraph": "Advances in machine learning and distributed systems."})
+        self._post("/api/classify-topic", {"paragraph": "Clinical trials for immunotherapy treatments."})
+
+        # 3. GET /api/history without limit should return all 3 records by default
+        status, body = self._get("/api/history")
+        self.assertEqual(status, 200)
+        self.assertEqual(body["total_matching"], 3)
+        self.assertEqual(body["count"], 3)
+        self.assertEqual(len(body["items"]), 3)
+
+        # 4. GET /api/database/records alias should return the same
+        status_alias, body_alias = self._get("/api/database/records")
+        self.assertEqual(status_alias, 200)
+        self.assertEqual(body_alias["count"], 3)
+
+        # 5. Database direct URL routes (/database, /db, /history, /explorer) serve index.html
+        for route in ("/database", "/db", "/history", "/explorer"):
+            status_route, content = self._get(route)
+            self.assertEqual(status_route, 200)
+            self.assertIn("JEVTOOLS", content)
+
+    def test_structural_column_query_and_post_filter(self):
+        """Verify structural column queries and POST /api/database/filter endpoint."""
+        self._delete("/api/history")
+        self._post("/api/analyze-review", {"review": "Noise cancelling is awesome", "product": "Headphones"})
+        self._post("/api/classify-topic", {"paragraph": "Microprocessor lithography innovations."})
+
+        # Query by column & column_op & column_val
+        status, body = self._get("/api/history?column=action_type&column_op=eq&column_val=review_analysis")
+        self.assertEqual(status, 200)
+        self.assertEqual(body["total_matching"], 1)
+        self.assertEqual(body["items"][0]["action_type"], "review_analysis")
+
+        # Query POST /api/database/filter
+        post_status, post_body = self._post("/api/database/filter", {
+            "column_filters": [
+                {"column": "action_type", "operator": "eq", "value": "topic_classification"}
+            ]
+        })
+        self.assertEqual(post_status, 200)
+        self.assertEqual(post_body["total_matching"], 1)
+        self.assertEqual(post_body["items"][0]["action_type"], "topic_classification")
+        self.assertIn("schema", post_body)
 
 
 if __name__ == "__main__":

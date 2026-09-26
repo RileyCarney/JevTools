@@ -8,8 +8,10 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
+import tempfile
 from typing import Any
 import unittest
 
@@ -252,22 +254,34 @@ class TestJevDemoTTFT(unittest.TestCase):
 class TestJevDemoHistoryCLI(unittest.TestCase):
     """Test CLI commands for personal device database history inspection and clearing."""
 
+    def setUp(self):
+        self.temp_dir = tempfile.mkdtemp(prefix="jev_cli_test_")
+        self.test_db = os.path.join(self.temp_dir, "test_jev.db")
+        self.env = {**os.environ, "JEV_DB_PATH": self.test_db}
+
+    def tearDown(self):
+        if os.path.exists(self.temp_dir):
+            try:
+                shutil.rmtree(self.temp_dir, ignore_errors=True)
+            except Exception:
+                pass
+
     def test_cli_clear_history(self):
         cmd = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--clear-history"]
-        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True, env=self.env)
         self.assertIn("[OK] Cleared", result.stdout)
 
     def test_cli_history_json(self):
         # Clear first
-        subprocess.run([sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--clear-history"], check=True)
+        subprocess.run([sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--clear-history"], check=True, env=self.env)
 
         # Run a review
         cmd_run = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--mock", "--review", "Amazing product", "--json"]
-        subprocess.run(cmd_run, check=True)
+        subprocess.run(cmd_run, check=True, env=self.env)
 
         # Check history via CLI
         cmd_hist = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--history", "--json"]
-        result = subprocess.run(cmd_hist, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd_hist, capture_output=True, text=True, check=True, env=self.env)
         data = json.loads(result.stdout)
         self.assertIn("stats", data)
         self.assertIn("history", data)
@@ -276,9 +290,37 @@ class TestJevDemoHistoryCLI(unittest.TestCase):
 
     def test_cli_history_text_display(self):
         cmd_hist = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--history"]
-        result = subprocess.run(cmd_hist, capture_output=True, text=True, check=True)
+        result = subprocess.run(cmd_hist, capture_output=True, text=True, check=True, env=self.env)
         self.assertIn("LOCAL REQUEST/RESPONSE HISTORY & STATS", result.stdout)
         self.assertIn("Database Path", result.stdout)
+
+    def test_cli_db_schema(self):
+        cmd_schema = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--db-schema"]
+        result = subprocess.run(cmd_schema, capture_output=True, text=True, check=True, env=self.env)
+        self.assertIn("SQLITE DATABASE STRUCTURE & SCHEMA", result.stdout)
+        self.assertIn("request_logs", result.stdout)
+        self.assertIn("COLUMNS DEFINITION", result.stdout)
+        self.assertIn("INDEXES", result.stdout)
+
+    def test_cli_history_filtering_and_all(self):
+        subprocess.run([sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--clear-history"], check=True, env=self.env)
+        # Seed 2 different actions
+        subprocess.run([sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--mock", "--review", "Sample review", "--json"], check=True, env=self.env)
+        subprocess.run([sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--mock", "--topic", "Sample paragraph", "--json"], check=True, env=self.env)
+
+        # Filter by action review_analysis
+        cmd_filter = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--history", "--filter-action", "review_analysis", "--json"]
+        res = subprocess.run(cmd_filter, capture_output=True, text=True, check=True, env=self.env)
+        data = json.loads(res.stdout)
+        self.assertEqual(data["total_matching"], 1)
+        self.assertEqual(data["history"][0]["action_type"], "review_analysis")
+
+        # Query all with --all
+        cmd_all = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--history", "--all", "--json"]
+        res_all = subprocess.run(cmd_all, capture_output=True, text=True, check=True, env=self.env)
+        data_all = json.loads(res_all.stdout)
+        self.assertEqual(data_all["total_matching"], 2)
+        self.assertEqual(len(data_all["history"]), 2)
 
 
 if __name__ == "__main__":

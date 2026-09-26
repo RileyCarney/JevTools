@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from datetime import datetime, timezone
-from typing import Any, Generator, Optional
+from typing import Any, Generator, Optional, TypedDict, cast
 import json
 import logging
 import os
@@ -32,6 +32,120 @@ MAX_QUERY_LIMIT = 500
 # Backward compatibility aliases
 _MAX_SEARCH_LENGTH = MAX_SEARCH_LENGTH
 _MAX_QUERY_LIMIT = MAX_QUERY_LIMIT
+
+
+class ColumnInfo(TypedDict):
+    cid: int
+    name: str
+    type: str
+    notnull: bool
+    default_value: Any
+    primary_key: bool
+    non_null_count: int
+    null_count: int
+    distinct_count: Optional[int]
+    sample_values: list[str]
+
+
+class IndexInfo(TypedDict):
+    name: str
+    unique: bool
+    columns: list[str]
+
+
+class SchemaInfo(TypedDict):
+    table_name: str
+    all_tables: list[str]
+    db_path: str
+    db_filename: str
+    db_size_bytes: int
+    db_size_kb: float
+    journal_mode: str
+    page_size: int
+    page_count: int
+    total_records: int
+    columns: list[ColumnInfo]
+    structure: dict[str, ColumnInfo]
+    indexes: list[IndexInfo]
+
+
+class RequestLog(TypedDict):
+    id: int
+    timestamp: str
+    action_type: str
+    provider: str
+    model: str
+    endpoint: str
+    status: str
+    ttft_ms: float
+    elapsed_ms: float
+    is_mock: bool
+    request_payload: Any
+    response_payload: Any
+    error_message: Optional[str]
+    client_info: str
+
+
+class FilterCountItem(TypedDict):
+    name: str
+    count: int
+
+
+class FilterOptions(TypedDict):
+    action_types: list[FilterCountItem]
+    providers: list[FilterCountItem]
+    models: list[FilterCountItem]
+    statuses: list[FilterCountItem]
+    modes: list[FilterCountItem]
+    client_infos: list[FilterCountItem]
+    endpoints: list[FilterCountItem]
+    min_timestamp: Optional[str]
+    max_timestamp: Optional[str]
+    min_latency_ms: float
+    max_latency_ms: float
+    min_ttft_ms: float
+    max_ttft_ms: float
+    min_id: Optional[int]
+    max_id: Optional[int]
+    total_count: int
+
+
+class DatabaseStats(TypedDict):
+    db_path: str
+    db_filename: str
+    db_size_bytes: int
+    db_size_kb: float
+    total_requests: int
+    success_count: int
+    error_count: int
+    mock_count: int
+    live_count: int
+    avg_ttft_ms: float
+    avg_latency_ms: float
+    action_breakdown: dict[str, int]
+    provider_breakdown: dict[str, int]
+
+
+__all__ = [
+    "ColumnInfo",
+    "DatabaseStats",
+    "FilterCountItem",
+    "FilterOptions",
+    "IndexInfo",
+    "RequestLog",
+    "SchemaInfo",
+    "clear_history",
+    "count_history",
+    "get_connection",
+    "get_default_db_path",
+    "get_filter_options",
+    "get_history",
+    "get_request",
+    "get_schema_info",
+    "get_stats",
+    "init_db",
+    "log_interaction",
+]
 
 
 def get_default_db_path() -> str:
@@ -100,6 +214,203 @@ def init_db(db_path: Optional[str] = None) -> None:
             CREATE INDEX IF NOT EXISTS idx_request_logs_status
             ON request_logs(status);
         """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_request_logs_provider
+            ON request_logs(provider);
+        """)
+        conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_request_logs_mock
+            ON request_logs(is_mock);
+        """)
+
+
+ALL_TABLE_COLUMNS: frozenset[str] = frozenset({
+    "id", "timestamp", "action_type", "provider", "model", "endpoint",
+    "status", "ttft_ms", "elapsed_ms", "is_mock", "request_payload",
+    "response_payload", "error_message", "client_info"
+})
+
+ALLOWED_SORT_COLUMNS: dict[str, str] = {
+    "id": "id",
+    "timestamp": "timestamp",
+    "elapsed_ms": "elapsed_ms",
+    "latency": "elapsed_ms",
+    "ttft_ms": "ttft_ms",
+    "ttft": "ttft_ms",
+    "action_type": "action_type",
+    "action": "action_type",
+    "provider": "provider",
+    "model": "model",
+    "endpoint": "endpoint",
+    "status": "status",
+    "is_mock": "is_mock",
+    "mode": "is_mock",
+    "client_info": "client_info",
+    "client": "client_info",
+    "error_message": "error_message",
+    "error": "error_message",
+}
+
+
+def _build_filter_clause(
+    action_type: Optional[str] = None,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+    endpoint: Optional[str] = None,
+    is_mock: Optional[bool | int] = None,
+    client_info: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    min_latency: Optional[float] = None,
+    max_latency: Optional[float] = None,
+    min_ttft: Optional[float] = None,
+    max_ttft: Optional[float] = None,
+    id: Optional[int] = None,
+    min_id: Optional[int] = None,
+    max_id: Optional[int] = None,
+    has_error: Optional[bool] = None,
+    error_contains: Optional[str] = None,
+    column_filters: Optional[list[dict[str, Any]]] = None,
+) -> tuple[str, list[Any]]:
+    """Build a parameterized SQL WHERE clause and parameter list from filter specifications."""
+    clauses: list[str] = ["1=1"]
+    params: list[Any] = []
+
+    if id is not None:
+        clauses.append("id = ?")
+        params.append(int(id))
+
+    if min_id is not None:
+        clauses.append("id >= ?")
+        params.append(int(min_id))
+
+    if max_id is not None:
+        clauses.append("id <= ?")
+        params.append(int(max_id))
+
+    if action_type:
+        clauses.append("action_type = ?")
+        params.append(action_type.strip())
+
+    if status:
+        clauses.append("status = ?")
+        params.append(status.strip())
+
+    if provider:
+        clauses.append("provider = ?")
+        params.append(provider.strip())
+
+    if model:
+        clauses.append("model = ?")
+        params.append(model.strip())
+
+    if endpoint:
+        clean_ep = endpoint.strip()
+        clauses.append("endpoint LIKE ?")
+        params.append(f"%{clean_ep}%" if not ("%" in clean_ep or "_" in clean_ep) else clean_ep)
+
+    if is_mock is not None:
+        clauses.append("is_mock = ?")
+        params.append(1 if bool(is_mock) else 0)
+
+    if client_info:
+        clauses.append("client_info = ?")
+        params.append(client_info.strip())
+
+    if start_date:
+        clean_start = start_date.strip()
+        clauses.append("timestamp >= ?")
+        params.append(clean_start)
+
+    if end_date:
+        clean_end = end_date.strip()
+        # If date only (YYYY-MM-DD), include through end of day
+        if len(clean_end) == 10 and clean_end.count("-") == 2:
+            clean_end = f"{clean_end}T23:59:59.999999Z"
+        clauses.append("timestamp <= ?")
+        params.append(clean_end)
+
+    if min_latency is not None:
+        clauses.append("elapsed_ms >= ?")
+        params.append(float(min_latency))
+
+    if max_latency is not None:
+        clauses.append("elapsed_ms <= ?")
+        params.append(float(max_latency))
+
+    if min_ttft is not None:
+        clauses.append("ttft_ms >= ?")
+        params.append(float(min_ttft))
+
+    if max_ttft is not None:
+        clauses.append("ttft_ms <= ?")
+        params.append(float(max_ttft))
+
+    if has_error is not None:
+        if bool(has_error):
+            clauses.append("(status != 'success' OR error_message IS NOT NULL)")
+        else:
+            clauses.append("(status = 'success' AND (error_message IS NULL OR error_message = ''))")
+
+    if error_contains:
+        clauses.append("error_message LIKE ?")
+        params.append(f"%{error_contains.strip()}%")
+
+    # Dynamic arbitrary structural column filters
+    if column_filters:
+        for cf in column_filters:
+            col_name = str(cf.get("column", "")).lower().strip()
+            if col_name not in ALL_TABLE_COLUMNS:
+                continue
+            op = str(cf.get("operator", cf.get("op", "contains"))).lower().strip()
+            val = cf.get("value", cf.get("val", ""))
+
+            if op in ("eq", "=", "equals"):
+                clauses.append(f"{col_name} = ?")
+                params.append(val)
+            elif op in ("neq", "!=", "not_equals"):
+                clauses.append(f"{col_name} != ?")
+                params.append(val)
+            elif op in ("contains", "like"):
+                clauses.append(f"{col_name} LIKE ?")
+                params.append(f"%{val}%")
+            elif op in ("starts_with", "startswith"):
+                clauses.append(f"{col_name} LIKE ?")
+                params.append(f"{val}%")
+            elif op in ("ends_with", "endswith"):
+                clauses.append(f"{col_name} LIKE ?")
+                params.append(f"%{val}")
+            elif op in ("gt", ">"):
+                clauses.append(f"{col_name} > ?")
+                params.append(val)
+            elif op in ("gte", ">="):
+                clauses.append(f"{col_name} >= ?")
+                params.append(val)
+            elif op in ("lt", "<"):
+                clauses.append(f"{col_name} < ?")
+                params.append(val)
+            elif op in ("lte", "<="):
+                clauses.append(f"{col_name} <= ?")
+                params.append(val)
+            elif op in ("is_null", "null", "empty"):
+                clauses.append(f"({col_name} IS NULL OR {col_name} = '')")
+            elif op in ("is_not_null", "not_null", "not_empty"):
+                clauses.append(f"({col_name} IS NOT NULL AND {col_name} != '')")
+
+    if search:
+        clean_search = search.strip()
+        if len(clean_search) > MAX_SEARCH_LENGTH:
+            clean_search = clean_search[:MAX_SEARCH_LENGTH]
+        wildcard = f"%{clean_search}%"
+        clauses.append(
+            "(request_payload LIKE ? OR response_payload LIKE ? OR error_message LIKE ? OR endpoint LIKE ? OR model LIKE ?)"
+        )
+        params.extend([wildcard, wildcard, wildcard, wildcard, wildcard])
+
+    where_sql = " WHERE " + " AND ".join(clauses)
+    return where_sql, params
 
 
 def _safe_serialize(obj: Any) -> str:
@@ -170,47 +481,80 @@ def log_interaction(
 
 
 def get_history(
-    limit: int = 50,
+    limit: Optional[int] = 50,
     offset: int = 0,
     action_type: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+    endpoint: Optional[str] = None,
+    is_mock: Optional[bool | int] = None,
+    client_info: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    min_latency: Optional[float] = None,
+    max_latency: Optional[float] = None,
+    min_ttft: Optional[float] = None,
+    max_ttft: Optional[float] = None,
+    id: Optional[int] = None,
+    min_id: Optional[int] = None,
+    max_id: Optional[int] = None,
+    has_error: Optional[bool] = None,
+    error_contains: Optional[str] = None,
+    column_filters: Optional[list[dict[str, Any]]] = None,
+    sort_by: str = "id",
+    sort_order: str = "DESC",
+    allow_unlimited: bool = False,
     db_path: Optional[str] = None,
-) -> list[dict[str, Any]]:
+    **kwargs: Any,
+) -> list[RequestLog]:
     """
-    Query logged requests and responses from the local database, ordered newest first.
-    Supports filtering by action_type, status, search term, and pagination.
+    Query logged requests and responses from the local database.
+    Supports comprehensive multi-column filtering, full-text search, custom sorting, and pagination.
     """
-    limit = min(max(1, limit), MAX_QUERY_LIMIT)
-    if search and len(search) > MAX_SEARCH_LENGTH:
-        search = search[:MAX_SEARCH_LENGTH]
-
     init_db(db_path)
-    query = "SELECT * FROM request_logs WHERE 1=1"
-    params: list[Any] = []
+    where_sql, params = _build_filter_clause(
+        action_type=action_type,
+        status=status,
+        search=search,
+        provider=provider,
+        model=model,
+        endpoint=endpoint,
+        is_mock=is_mock,
+        client_info=client_info,
+        start_date=start_date,
+        end_date=end_date,
+        min_latency=min_latency,
+        max_latency=max_latency,
+        min_ttft=min_ttft,
+        max_ttft=max_ttft,
+        id=id,
+        min_id=min_id,
+        max_id=max_id,
+        has_error=has_error,
+        error_contains=error_contains,
+        column_filters=column_filters,
+    )
 
-    if action_type:
-        query += " AND action_type = ?"
-        params.append(action_type)
+    col = ALLOWED_SORT_COLUMNS.get(sort_by.lower().strip(), "id")
+    order = "ASC" if sort_order.upper().strip() == "ASC" else "DESC"
 
-    if status:
-        query += " AND status = ?"
-        params.append(status)
+    query = f"SELECT * FROM request_logs {where_sql} ORDER BY {col} {order}"
 
-    if search:
-        query += " AND (request_payload LIKE ? OR response_payload LIKE ? OR error_message LIKE ?)"
-        wildcard = f"%{search}%"
-        params.extend([wildcard, wildcard, wildcard])
-
-    query += " ORDER BY id DESC LIMIT ? OFFSET ?"
-    params.extend([max(1, limit), max(0, offset)])
+    if allow_unlimited or limit is None or limit <= 0:
+        query += " LIMIT 50000"
+    else:
+        capped_limit = min(max(1, limit), MAX_QUERY_LIMIT)
+        query += " LIMIT ? OFFSET ?"
+        params.extend([capped_limit, max(0, offset)])
 
     with get_connection(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute(query, params)
         rows = cursor.fetchall()
 
-    results: list[dict[str, Any]] = []
+    results: list[RequestLog] = []
     for r in rows:
         item = dict(r)
         # Parse JSON payloads if possible for structured client consumption
@@ -222,12 +566,280 @@ def get_history(
                 except Exception:
                     pass
         item["is_mock"] = bool(item.get("is_mock"))
-        results.append(item)
+        results.append(cast(RequestLog, item))
 
     return results
 
 
-def get_request(request_id: int, db_path: Optional[str] = None) -> Optional[dict[str, Any]]:
+def count_history(
+    action_type: Optional[str] = None,
+    status: Optional[str] = None,
+    search: Optional[str] = None,
+    provider: Optional[str] = None,
+    model: Optional[str] = None,
+    endpoint: Optional[str] = None,
+    is_mock: Optional[bool | int] = None,
+    client_info: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    min_latency: Optional[float] = None,
+    max_latency: Optional[float] = None,
+    min_ttft: Optional[float] = None,
+    max_ttft: Optional[float] = None,
+    id: Optional[int] = None,
+    min_id: Optional[int] = None,
+    max_id: Optional[int] = None,
+    has_error: Optional[bool] = None,
+    error_contains: Optional[str] = None,
+    column_filters: Optional[list[dict[str, Any]]] = None,
+    db_path: Optional[str] = None,
+    **kwargs: Any,
+) -> int:
+    """Count the total number of logged requests matching filter criteria across the entire database."""
+    init_db(db_path)
+    where_sql, params = _build_filter_clause(
+        action_type=action_type,
+        status=status,
+        search=search,
+        provider=provider,
+        model=model,
+        endpoint=endpoint,
+        is_mock=is_mock,
+        client_info=client_info,
+        start_date=start_date,
+        end_date=end_date,
+        min_latency=min_latency,
+        max_latency=max_latency,
+        min_ttft=min_ttft,
+        max_ttft=max_ttft,
+        id=id,
+        min_id=min_id,
+        max_id=max_id,
+        has_error=has_error,
+        error_contains=error_contains,
+        column_filters=column_filters,
+    )
+    query = f"SELECT COUNT(*) FROM request_logs {where_sql};"
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        row = cursor.fetchone()
+        return row[0] if row else 0
+
+
+def get_filter_options(db_path: Optional[str] = None) -> FilterOptions:
+    """Retrieve distinct column values and metadata to dynamically populate filtering controls."""
+    init_db(db_path)
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+
+        # Distinct action types
+        cursor.execute("""
+            SELECT action_type, COUNT(*) as count 
+            FROM request_logs 
+            WHERE action_type IS NOT NULL AND action_type != '' 
+            GROUP BY action_type 
+            ORDER BY count DESC;
+        """)
+        action_types: list[FilterCountItem] = [{"name": str(r[0]), "count": int(r[1])} for r in cursor.fetchall()]
+
+        # Distinct providers
+        cursor.execute("""
+            SELECT provider, COUNT(*) as count 
+            FROM request_logs 
+            WHERE provider IS NOT NULL AND provider != '' 
+            GROUP BY provider 
+            ORDER BY count DESC;
+        """)
+        providers: list[FilterCountItem] = [{"name": str(r[0]), "count": int(r[1])} for r in cursor.fetchall()]
+
+        # Distinct models
+        cursor.execute("""
+            SELECT model, COUNT(*) as count 
+            FROM request_logs 
+            WHERE model IS NOT NULL AND model != '' 
+            GROUP BY model 
+            ORDER BY count DESC;
+        """)
+        models: list[FilterCountItem] = [{"name": str(r[0]), "count": int(r[1])} for r in cursor.fetchall()]
+
+        # Distinct statuses
+        cursor.execute("""
+            SELECT status, COUNT(*) as count 
+            FROM request_logs 
+            GROUP BY status 
+            ORDER BY count DESC;
+        """)
+        statuses: list[FilterCountItem] = [{"name": str(r[0]), "count": int(r[1])} for r in cursor.fetchall()]
+
+        # Modes breakdown
+        cursor.execute("""
+            SELECT is_mock, COUNT(*) as count 
+            FROM request_logs 
+            GROUP BY is_mock 
+            ORDER BY is_mock ASC;
+        """)
+        modes: list[FilterCountItem] = [{"name": "mock" if r[0] else "live", "count": int(r[1])} for r in cursor.fetchall()]
+
+        # Distinct client_info
+        cursor.execute("""
+            SELECT client_info, COUNT(*) as count 
+            FROM request_logs 
+            WHERE client_info IS NOT NULL AND client_info != '' 
+            GROUP BY client_info 
+            ORDER BY count DESC;
+        """)
+        client_infos: list[FilterCountItem] = [{"name": str(r[0]), "count": int(r[1])} for r in cursor.fetchall()]
+
+        # Distinct endpoints
+        cursor.execute("""
+            SELECT endpoint, COUNT(*) as count 
+            FROM request_logs 
+            WHERE endpoint IS NOT NULL AND endpoint != '' 
+            GROUP BY endpoint 
+            ORDER BY count DESC;
+        """)
+        endpoints: list[FilterCountItem] = [{"name": str(r[0]), "count": int(r[1])} for r in cursor.fetchall()]
+
+        # Min and max timestamp & latency
+        cursor.execute("""
+            SELECT 
+                MIN(timestamp), MAX(timestamp),
+                MIN(elapsed_ms), MAX(elapsed_ms),
+                MIN(ttft_ms), MAX(ttft_ms),
+                MIN(id), MAX(id),
+                COUNT(*)
+            FROM request_logs;
+        """)
+        ranges = cursor.fetchone()
+
+    return cast(FilterOptions, {
+        "action_types": action_types,
+        "providers": providers,
+        "models": models,
+        "statuses": statuses,
+        "modes": modes,
+        "client_infos": client_infos,
+        "endpoints": endpoints,
+        "min_timestamp": ranges[0] if ranges else None,
+        "max_timestamp": ranges[1] if ranges else None,
+        "min_latency_ms": round(ranges[2], 1) if ranges and ranges[2] is not None else 0.0,
+        "max_latency_ms": round(ranges[3], 1) if ranges and ranges[3] is not None else 0.0,
+        "min_ttft_ms": round(ranges[4], 1) if ranges and ranges[4] is not None else 0.0,
+        "max_ttft_ms": round(ranges[5], 1) if ranges and ranges[5] is not None else 0.0,
+        "min_id": ranges[6] if ranges else None,
+        "max_id": ranges[7] if ranges else None,
+        "total_count": ranges[8] if ranges else 0,
+    })
+
+
+def get_schema_info(db_path: Optional[str] = None) -> SchemaInfo:
+    """Inspect and return the complete SQLite table schema, columns, datatypes, and index structure."""
+    init_db(db_path)
+    path = db_path or get_default_db_path()
+    with get_connection(db_path) as conn:
+        cursor = conn.cursor()
+
+        # All tables in the database
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';")
+        all_tables = [r[0] for r in cursor.fetchall()]
+
+        cursor.execute("SELECT COUNT(*) FROM request_logs;")
+        row_count_row = cursor.fetchone()
+        row_count = row_count_row[0] if row_count_row else 0
+
+        # Columns
+        cursor.execute("PRAGMA table_info(request_logs);")
+        raw_cols = cursor.fetchall()
+        cols: list[ColumnInfo] = []
+        structure_map: dict[str, ColumnInfo] = {}
+
+        for r in raw_cols:
+            col_name = r[1]
+            col_type = r[2]
+            not_null = bool(r[3])
+            default_val = r[4]
+            is_pk = bool(r[5])
+
+            # Profiling for this column
+            cursor.execute(f"SELECT COUNT(*) FROM request_logs WHERE {col_name} IS NOT NULL AND {col_name} != '';")
+            nn_row = cursor.fetchone()
+            non_null_count = nn_row[0] if nn_row else 0
+            null_count = max(0, row_count - non_null_count)
+
+            distinct_count = None
+            sample_values: list[str] = []
+            if col_name not in ("request_payload", "response_payload"):
+                try:
+                    cursor.execute(f"SELECT COUNT(DISTINCT {col_name}) FROM request_logs WHERE {col_name} IS NOT NULL AND {col_name} != '';")
+                    d_row = cursor.fetchone()
+                    distinct_count = d_row[0] if d_row else 0
+
+                    cursor.execute(f"SELECT DISTINCT {col_name} FROM request_logs WHERE {col_name} IS NOT NULL AND {col_name} != '' LIMIT 4;")
+                    sample_values = [str(sr[0])[:50] for sr in cursor.fetchall() if sr[0] is not None]
+                except Exception:
+                    pass
+
+            col_entry: ColumnInfo = {
+                "cid": r[0],
+                "name": col_name,
+                "type": col_type,
+                "notnull": not_null,
+                "default_value": default_val,
+                "primary_key": is_pk,
+                "non_null_count": non_null_count,
+                "null_count": null_count,
+                "distinct_count": distinct_count,
+                "sample_values": sample_values,
+            }
+            cols.append(col_entry)
+            structure_map[col_name] = col_entry
+
+        # Indexes
+        cursor.execute("PRAGMA index_list(request_logs);")
+        indexes: list[IndexInfo] = []
+        for r in cursor.fetchall():
+            idx_name = r[1]
+            cursor.execute(f"PRAGMA index_info({idx_name});")
+            idx_cols = [ir[2] for ir in cursor.fetchall()]
+            indexes.append({
+                "name": idx_name,
+                "unique": bool(r[2]),
+                "columns": idx_cols,
+            })
+
+        cursor.execute("PRAGMA journal_mode;")
+        journal_row = cursor.fetchone()
+        journal_mode = journal_row[0] if journal_row else "unknown"
+
+        cursor.execute("PRAGMA page_size;")
+        page_size_row = cursor.fetchone()
+        page_size = page_size_row[0] if page_size_row else 4096
+
+        cursor.execute("PRAGMA page_count;")
+        page_count_row = cursor.fetchone()
+        page_count = page_count_row[0] if page_count_row else 0
+
+    file_size_bytes = os.path.getsize(path) if os.path.exists(path) else 0
+
+    return cast(SchemaInfo, {
+        "table_name": "request_logs",
+        "all_tables": all_tables,
+        "db_path": path,
+        "db_filename": os.path.basename(path),
+        "db_size_bytes": file_size_bytes,
+        "db_size_kb": round(file_size_bytes / 1024, 2),
+        "journal_mode": journal_mode,
+        "page_size": page_size,
+        "page_count": page_count,
+        "total_records": row_count,
+        "columns": cols,
+        "structure": structure_map,
+        "indexes": indexes,
+    })
+
+
+def get_request(request_id: int, db_path: Optional[str] = None) -> Optional[RequestLog]:
     """Retrieve a single request/response log entry by its primary key."""
     init_db(db_path)
     with get_connection(db_path) as conn:
@@ -246,7 +858,7 @@ def get_request(request_id: int, db_path: Optional[str] = None) -> Optional[dict
                 except Exception:
                     pass
         item["is_mock"] = bool(item.get("is_mock"))
-        return item
+        return cast(RequestLog, item)
 
 
 def clear_history(db_path: Optional[str] = None) -> int:
@@ -270,7 +882,7 @@ def clear_history(db_path: Optional[str] = None) -> int:
     return count
 
 
-def get_stats(db_path: Optional[str] = None) -> dict[str, Any]:
+def get_stats(db_path: Optional[str] = None) -> DatabaseStats:
     """
     Calculate summary statistics across all logged requests on the personal device.
     """
@@ -308,7 +920,7 @@ def get_stats(db_path: Optional[str] = None) -> dict[str, Any]:
         """)
         provider_breakdown = {r["provider"]: r["count"] for r in cursor.fetchall()}
 
-    return {
+    return cast(DatabaseStats, {
         "db_path": path,
         "db_filename": os.path.basename(path),
         "db_size_bytes": file_size_bytes,
@@ -322,4 +934,30 @@ def get_stats(db_path: Optional[str] = None) -> dict[str, Any]:
         "avg_latency_ms": round(row["avg_latency_ms"] or 0.0, 2),
         "action_breakdown": action_breakdown,
         "provider_breakdown": provider_breakdown,
-    }
+    })
+
+
+__all__ = [
+    "ColumnInfo",
+    "IndexInfo",
+    "SchemaInfo",
+    "RequestLog",
+    "FilterCountItem",
+    "FilterOptions",
+    "DatabaseStats",
+    "get_default_db_path",
+    "get_connection",
+    "init_db",
+    "log_interaction",
+    "get_history",
+    "count_history",
+    "get_filter_options",
+    "get_schema_info",
+    "get_request",
+    "clear_history",
+    "get_stats",
+    "ALL_TABLE_COLUMNS",
+    "ALLOWED_SORT_COLUMNS",
+    "MAX_SEARCH_LENGTH",
+    "MAX_QUERY_LIMIT",
+]

@@ -95,19 +95,37 @@ All outgoing requests (prompt inputs, application state, typed questions) and in
 
 - **100% On-Device & Gitignored:** The database file (`jevtools.db`), SQLite journals (`*.db-journal`), and database wildcards (`*.sqlite`, `*.sqlite3`) are strictly added to [`.gitignore`](./.gitignore). Your data, API payloads, and internal evaluations **never leave your local machine** and will never be committed to source control.
 - **Zero Dependencies:** Powered by Python's standard `sqlite3` library with WAL (Write-Ahead Logging) mode and thread-safe connections.
-- **Inspect via Web UI:** The Cockpit UI includes a dedicated **📜 Request History & Storage** tab with aggregate statistics, live filtering, full-text search, and side-by-side JSON payload viewers.
+- **Inspect via Web UI:** The Cockpit UI includes a dedicated **📜 Request History & Database Structure** tab featuring:
+  - **Database Structure & Schema Explorer:** Interactive view of SQLite table schema, PRAGMA metadata, column definitions, data types, nullability, constraints, and indexes.
+  - **Structural Column Filter Tool:** Filter across any structural column in the SQLite schema (`id`, `timestamp`, `action_type`, `provider`, `model`, `endpoint`, `status`, `ttft_ms`, `elapsed_ms`, `is_mock`, `request_payload`, `response_payload`, `error_message`, `client_info`) with operators (`=`, `!=`, `contains`, `starts_with`, `ends_with`, `>`, `>=`, `<`, `<=`, `is_null`, `is_not_null`).
+  - **Unrestricted Database Viewing by Default:** The Web Cockpit and `GET /api/history` show every request in the database by default (`limit=all`), with selectable page sizes (10, 25, 50, 100, 250, All) and full pagination controls.
+  - **Database Structure & Schema Explorer:** Interactive schema card viewer with column metrics (non-null counts, distinct counts, sample values) and click-to-filter support.
+  - **Direct Browser Navigation Routes:** Navigate directly to `http://127.0.0.1:8080/database`, `/db`, `/history`, or `/explorer` to jump straight to the database explorer.
+  - **Dynamic Quick-Filter Chips & Sorting:** Clickable status/action chips and sortable column headers (`Timestamp`, `Latency`, `Action`, `Status`, `ID`).
+  - **Export:** Instant one-click export of filtered records to CSV or formatted JSON.
 - **Inspect via CLI:**
   ```powershell
-  # View recent request history table and summary statistics
+  # View request history table (default: recent 25)
   py jev_demo.py --history
 
-  # Output full history records as JSON
-  py jev_demo.py --history --json
+  # View entire database without caps
+  py jev_demo.py --history --all
+
+  # Filter by action, status, mode, endpoint, or full-text query
+  py jev_demo.py --history --filter-action review_analysis --filter-status success
+  py jev_demo.py --history --filter-endpoint openrouter
+  py jev_demo.py --history --filter-search "battery" --limit 50
+
+  # Inspect SQLite database schema, columns, datatypes, and indexes
+  py jev_demo.py --db-schema
+
+  # Output full matching history records as JSON
+  py jev_demo.py --history --all --json
 
   # Purge all local records and reclaim disk space
   py jev_demo.py --clear-history
   ```
-- **No Key Required:** Viewing or purging history runs directly on your local database without prompting for an API key.
+- **No Key Required:** Viewing schema, filtering, or purging history runs directly on your local database without prompting for an API key.
 
 ---
 

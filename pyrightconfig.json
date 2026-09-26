@@ -1,8 +1,14 @@
 {
   "include": [
-    "server.py"
+    "server.py",
+    "jev_demo.py",
+    "database.py"
+  ],
+  "extraPaths": [
+    "."
   ],
   "pythonVersion": "3.14",
   "pythonPlatform": "Windows",
-  "typeCheckingMode": "strict"
+  "typeCheckingMode": "strict",
+  "reportMissingModuleSource": false
 }

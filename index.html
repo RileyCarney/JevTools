@@ -1667,6 +1667,334 @@
             transform: translateY(-1px);
         }
 
+        /* Database Structure & Schema Explorer */
+        .structure-accordion {
+            background: rgba(10, 10, 26, 0.7);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            margin-bottom: 1.4rem;
+            overflow: hidden;
+            transition: all 0.25s ease;
+        }
+
+        .structure-accordion:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .structure-header {
+            padding: 0.85rem 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            background: rgba(15, 18, 40, 0.7);
+            transition: background 0.2s ease;
+        }
+
+        .structure-header:hover {
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        .structure-body {
+            padding: 1.2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(5, 7, 20, 0.6);
+        }
+
+        .schema-col-card {
+            background: rgba(20, 24, 50, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .schema-col-name {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 0.82rem;
+            color: #a78bfa;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .schema-col-type {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: #94a3b8;
+        }
+
+        /* Quick Filter Chips */
+        .quick-chips-bar {
+            background: rgba(10, 10, 26, 0.5);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.85rem 1.1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .filter-chip {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            padding: 0.3rem 0.65rem;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .filter-chip:hover {
+            background: rgba(139, 92, 246, 0.25);
+            border-color: var(--primary);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            border-color: #a78bfa;
+            color: #fff;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+        }
+
+        .chip-count {
+            background: rgba(0, 0, 0, 0.35);
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+        }
+
+        /* Advanced Filter Panel */
+        .history-filter-panel {
+            background: rgba(10, 10, 24, 0.7);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1.1rem 1.3rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .filter-grid-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 0.8rem;
+            align-items: flex-end;
+        }
+
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .filter-field-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+        }
+
+        .history-input-control {
+            background: rgba(5, 5, 15, 0.85);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 0.5rem 0.75rem;
+            font-size: 0.84rem;
+            outline: none;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .history-input-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);
+        }
+
+        .filter-actions-row {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 0.4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Active Filter Badges */
+        .active-filters-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            background: rgba(16, 20, 48, 0.5);
+            border: 1px dashed rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+            padding: 0.65rem 1rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .active-filter-badge {
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.45);
+            color: #e9d5ff;
+            font-size: 0.78rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .active-filter-badge button {
+            background: transparent;
+            border: none;
+            color: #fca5a5;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 0;
+            line-height: 1;
+            font-size: 0.85rem;
+        }
+
+        .active-filter-badge button:hover {
+            color: #ef4444;
+        }
+
+        /* Pagination Bar */
+        .pagination-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            padding: 0.4rem 0.2rem;
+            font-size: 0.85rem;
+        }
+
+        .pagination-nav {
+            display: flex;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .page-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.35rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 32px;
+            text-align: center;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .page-btn.active {
+            background: var(--primary);
+            border-color: #a78bfa;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* Sortable column headers */
+        th.sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        th.sortable:hover {
+            background: rgba(139, 92, 246, 0.25);
+            color: #fff;
+        }
+
+        .sort-indicator {
+            display: inline-block;
+            margin-left: 0.25rem;
+            font-size: 0.72rem;
+            color: var(--primary);
+        }
+
+        .payload-snippet {
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 0.78rem;
+            color: #94a3b8;
+            font-family: var(--font-mono);
+        }
+
+        .btn-copy-mini {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #94a3b8;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-copy-mini:hover {
+            border-color: var(--primary);
+            color: #fff;
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        /* Floating Toast */
+        .toast-notify {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: #10b981;
+            color: #000;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .toast-notify.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
         /* Payload Inspector Modal */
         .payload-dialog-box {
             width: 94%;
@@ -2239,42 +2567,278 @@
             </div>
 
             <!-- Toolbar & Filter Controls -->
-            <div class="history-toolbar">
-                <input type="text" class="history-search-input" id="history-search-input" placeholder="🔍 Filter by keyword, review text, topic, or error message..." oninput="handleHistoryFilterChange()">
-                <select class="history-filter-select" id="history-action-filter" onchange="handleHistoryFilterChange()">
-                    <option value="">All Action Types</option>
-                    <option value="review_analysis">Customer Review Analysis</option>
-                    <option value="topic_classification">Topic Classification</option>
-                    <option value="custom_decision">Custom Decision</option>
-                    <option value="benchmark_ttft">Benchmark TTFT</option>
-                </select>
-                <select class="history-filter-select" id="history-status-filter" onchange="handleHistoryFilterChange()">
-                    <option value="">All Statuses</option>
-                    <option value="success">Success Only</option>
-                    <option value="error">Error Only</option>
-                </select>
-                <button class="history-btn" onclick="loadHistoryData()" title="Refresh local history from database">
-                    🔄 Refresh
-                </button>
-                <button class="history-btn history-btn-danger" onclick="confirmClearHistory()" title="Purge local history database">
-                    🗑️ Clear History
-                </button>
+            <!-- Database Structure & Schema Explorer Accordion -->
+            <div class="structure-accordion" id="structure-accordion">
+                <div class="structure-header" onclick="toggleStructureView()" title="Click to view database schema and columns structure">
+                    <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                        <span style="font-size: 1.1rem;">📊</span>
+                        <strong style="color: #e2e8f0; font-size: 0.95rem;">Database Structure & Schema Explorer</strong>
+                        <span class="panel-badge" id="schema-table-badge" style="background: rgba(139, 92, 246, 0.25); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.4);">Table: request_logs</span>
+                        <span class="panel-badge" id="schema-engine-badge" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border-color: rgba(52, 211, 153, 0.4);">SQLite 3 WAL</span>
+                        <span class="panel-badge" id="schema-records-badge" style="background: rgba(14, 165, 233, 0.2); color: #7dd3fc; border-color: rgba(56, 189, 248, 0.4);">0 records</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.82rem;">
+                        <span id="structure-toggle-label">Show Schema</span>
+                        <span id="structure-chevron" style="display: inline-block; transition: transform 0.25s ease;">▼</span>
+                    </div>
+                </div>
+                <div class="structure-body" id="structure-body" style="display: none;">
+                    <div id="schema-meta-summary" style="display: flex; gap: 1.2rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.85rem; color: #cbd5e1; padding: 0.6rem 0.8rem; background: rgba(0,0,0,0.3); border-radius: 8px;">
+                        <!-- Rendered by JS -->
+                    </div>
+                    <div style="font-weight: 700; font-size: 0.78rem; color: #a78bfa; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Database Table Columns (14 Fields)</div>
+                    <div id="schema-columns-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.6rem; margin-bottom: 1rem;">
+                        <!-- Rendered by JS -->
+                    </div>
+                    <div style="font-weight: 700; font-size: 0.78rem; color: #a78bfa; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Configured Indexes</div>
+                    <div id="schema-indexes-list" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
             </div>
+
+            <!-- Interactive Quick-Filter Chips Bar -->
+            <div class="quick-chips-bar" id="quick-chips-bar">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">⚡ One-Click Quick Filters:</span>
+                    <span id="quick-chips-hint" style="font-size: 0.75rem; color: #64748b;">Click any chip to filter immediately</span>
+                </div>
+                <div id="chips-container" style="display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center;">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Dedicated Structural Column Filter Tool -->
+            <div class="struct-filter-bar" style="background: rgba(15, 15, 28, 0.85); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 12px; padding: 1rem 1.3rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 0.65rem; box-shadow: 0 4px 20px rgba(0,0,0,0.35);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.1rem;">🔬</span>
+                        <strong style="color: #c4b5fd; font-size: 0.92rem; text-transform: uppercase; letter-spacing: 0.5px;">Filter by Any Database Column:</strong>
+                        <span class="panel-badge" id="struct-filter-active-badge" style="display: none; background: rgba(168, 85, 247, 0.25); color: #d8b4fe; border-color: rgba(168, 85, 247, 0.5);">Active</span>
+                    </div>
+                    <span style="font-size: 0.78rem; color: #94a3b8;">Execute targeted queries against any of the 14 columns across the entire SQLite table structure</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) auto; gap: 0.65rem; align-items: flex-end;">
+                    <div class="filter-field" style="margin: 0;">
+                        <label class="filter-field-label" for="struct-filter-col" style="margin-bottom: 0.25rem;">Structural Column</label>
+                        <select class="history-input-control" id="struct-filter-col" onchange="handleStructColChange()">
+                            <option value="id"># ID (id: INTEGER)</option>
+                            <option value="timestamp">Timestamp (timestamp: TEXT)</option>
+                            <option value="action_type">Action Type (action_type: TEXT)</option>
+                            <option value="provider">Provider (provider: TEXT)</option>
+                            <option value="model">Model (model: TEXT)</option>
+                            <option value="endpoint">API Endpoint (endpoint: TEXT)</option>
+                            <option value="status">Status (status: TEXT)</option>
+                            <option value="ttft_ms">TTFT Latency (ttft_ms: REAL)</option>
+                            <option value="elapsed_ms">Total Latency (elapsed_ms: REAL)</option>
+                            <option value="is_mock">Mode (is_mock: INTEGER 0/1)</option>
+                            <option value="client_info">Client Info (client_info: TEXT)</option>
+                            <option value="error_message">Error Message (error_message: TEXT)</option>
+                            <option value="request_payload">Request Payload (request_payload: JSON)</option>
+                            <option value="response_payload">Response Payload (response_payload: JSON)</option>
+                        </select>
+                    </div>
+                    <div class="filter-field" style="margin: 0;">
+                        <label class="filter-field-label" for="struct-filter-op" style="margin-bottom: 0.25rem;">Filter Operator</label>
+                        <select class="history-input-control" id="struct-filter-op" onchange="handleStructOpChange()">
+                            <option value="contains">contains (Substring)</option>
+                            <option value="eq">equals (= Exact)</option>
+                            <option value="neq">not equals (!=)</option>
+                            <option value="starts_with">starts with</option>
+                            <option value="ends_with">ends with</option>
+                            <option value="gt">greater than (&gt;)</option>
+                            <option value="gte">greater or equal (&gt;=)</option>
+                            <option value="lt">less than (&lt;)</option>
+                            <option value="lte">less or equal (&lt;=)</option>
+                            <option value="is_not_null">is not empty</option>
+                            <option value="is_null">is empty / null</option>
+                        </select>
+                    </div>
+                    <div class="filter-field" style="grid-column: span 2; margin: 0; min-width: 220px;">
+                        <label class="filter-field-label" for="struct-filter-val" style="margin-bottom: 0.25rem;">Filter Target Value</label>
+                        <input type="text" class="history-input-control" id="struct-filter-val" placeholder="Enter target value..." onkeydown="if(event.key==='Enter') applyStructFilter()">
+                    </div>
+                    <div style="display: flex; gap: 0.4rem; padding-bottom: 2px;">
+                        <button class="history-btn" onclick="applyStructFilter()" style="background: var(--primary); color: #fff; border-color: var(--primary); font-weight: 700;">
+                            Apply Filter
+                        </button>
+                        <button class="history-btn" onclick="clearStructFilter()" title="Clear structural filter">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Multi-Field Filter Panel -->
+            <div class="history-filter-panel">
+                <!-- Search & Core Filters Row -->
+                <div class="filter-grid-row">
+                    <div class="filter-field" style="grid-column: span 2; min-width: 260px;">
+                        <label class="filter-field-label" for="history-search-input">🔍 Full-Text Payload Search</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="text" class="history-input-control" id="history-search-input" placeholder="Search prompts, reviews, topics, error messages, models..." oninput="handleHistoryFilterChange()" style="padding-right: 2rem;">
+                            <button id="clear-search-btn" onclick="clearSearchInput()" style="position: absolute; right: 8px; background: transparent; border: none; color: #94a3b8; cursor: pointer; font-size: 0.85rem; display: none;">✕</button>
+                        </div>
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-action-filter">Action Type</label>
+                        <select class="history-input-control" id="history-action-filter" onchange="handleHistoryFilterChange()">
+                            <option value="">All Actions (Any)</option>
+                            <option value="review_analysis">Review Analysis</option>
+                            <option value="topic_classification">Topic Classification</option>
+                            <option value="custom_decision">Custom Decision</option>
+                            <option value="benchmark_ttft">TTFT Benchmark</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-status-filter">Execution Status</label>
+                        <select class="history-input-control" id="history-status-filter" onchange="handleHistoryFilterChange()">
+                            <option value="">All Statuses</option>
+                            <option value="success">Success (OK) Only</option>
+                            <option value="error">Error (ERR) Only</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-mode-filter">Execution Mode</label>
+                        <select class="history-input-control" id="history-mode-filter" onchange="handleHistoryFilterChange()">
+                            <option value="">All Modes</option>
+                            <option value="live">Live API Only</option>
+                            <option value="mock">Offline Mock Only</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Secondary Filters Row: Provider, Model, Date Range, Latency, Sort, Page Size -->
+                <div class="filter-grid-row">
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-provider-filter">API Provider</label>
+                        <select class="history-input-control" id="history-provider-filter" onchange="handleHistoryFilterChange()">
+                            <option value="">All Providers</option>
+                            <option value="openrouter">OpenRouter</option>
+                            <option value="typesafe">TypeSafe</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-model-filter">Model</label>
+                        <select class="history-input-control" id="history-model-filter" onchange="handleHistoryFilterChange()">
+                            <option value="">All Models</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-date-preset">Date Range</label>
+                        <select class="history-input-control" id="history-date-preset" onchange="handleDatePresetChange()">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="custom">Custom Range...</option>
+                        </select>
+                    </div>
+                    <div class="filter-field" id="custom-date-start-field" style="display: none;">
+                        <label class="filter-field-label" for="history-date-start">From Date</label>
+                        <input type="date" class="history-input-control" id="history-date-start" onchange="handleHistoryFilterChange()">
+                    </div>
+                    <div class="filter-field" id="custom-date-end-field" style="display: none;">
+                        <label class="filter-field-label" for="history-date-end">To Date</label>
+                        <input type="date" class="history-input-control" id="history-date-end" onchange="handleHistoryFilterChange()">
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-latency-filter">Latency Filter</label>
+                        <select class="history-input-control" id="history-latency-filter" onchange="handleHistoryFilterChange()">
+                            <option value="">All Latencies</option>
+                            <option value="fast">&lt; 200 ms (Ultra Fast)</option>
+                            <option value="medium">200 – 500 ms (Standard)</option>
+                            <option value="slow">&gt; 500 ms (Long)</option>
+                            <option value="very_slow">&gt; 1000 ms (&gt; 1s)</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-sort-select">Sort By</label>
+                        <select class="history-input-control" id="history-sort-select" onchange="handleSortSelectChange()">
+                            <option value="id_desc">#ID (Newest First)</option>
+                            <option value="id_asc">#ID (Oldest First)</option>
+                            <option value="timestamp_desc">Timestamp (Newest First)</option>
+                            <option value="timestamp_asc">Timestamp (Oldest First)</option>
+                            <option value="elapsed_desc">Latency (Slowest First)</option>
+                            <option value="elapsed_asc">Latency (Fastest First)</option>
+                            <option value="ttft_desc">TTFT (Highest First)</option>
+                        </select>
+                    </div>
+                    <div class="filter-field">
+                        <label class="filter-field-label" for="history-limit-select">Show Requests</label>
+                        <select class="history-input-control" id="history-limit-select" onchange="handleLimitChange()">
+                            <option value="all" selected>All (Every Request in Database)</option>
+                            <option value="10">10 per page</option>
+                            <option value="25">25 per page</option>
+                            <option value="50">50 per page</option>
+                            <option value="100">100 per page</option>
+                            <option value="250">250 per page</option>
+                            <option value="500">500 per page</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Actions Row -->
+                <div class="filter-actions-row">
+                    <button class="history-btn" onclick="loadHistoryData()" title="Refresh records from SQLite database">
+                        🔄 Refresh
+                    </button>
+                    <button class="history-btn" onclick="resetAllHistoryFilters()" title="Reset all filters back to default">
+                        🧹 Reset Filters
+                    </button>
+                    <button class="history-btn" onclick="exportHistoryData('json')" title="Download filtered dataset as JSON">
+                        📥 Export JSON
+                    </button>
+                    <button class="history-btn" onclick="exportHistoryData('csv')" title="Download filtered dataset as CSV spreadsheet">
+                        📊 Export CSV
+                    </button>
+                    <button class="history-btn history-btn-danger" style="margin-left: auto;" onclick="confirmClearHistory()" title="Purge local history database">
+                        🗑️ Clear Database
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Filters & Summary Bar -->
+            <div class="active-filters-container" id="active-filters-container" style="display: none;">
+                <div id="active-filters-tags" style="display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;"></div>
+                <div id="history-results-summary" style="font-size: 0.85rem; color: #94a3b8; font-weight: 600;"></div>
+            </div>
+
+            <!-- Top Pagination Bar -->
+            <div class="pagination-bar" id="pagination-bar-top"></div>
 
             <!-- Request History Table Container -->
             <div class="history-table-container">
                 <table class="history-table">
                     <thead>
                         <tr>
-                            <th style="width: 60px;">#ID</th>
-                            <th style="width: 170px;">Timestamp</th>
-                            <th>Action Type</th>
-                            <th>Provider / Model</th>
-                            <th style="width: 110px;">TTFT</th>
-                            <th style="width: 120px;">Latency</th>
-                            <th style="width: 90px;">Mode</th>
-                            <th style="width: 100px;">Status</th>
-                            <th style="text-align: right; width: 140px;">Payloads</th>
+                            <th class="sortable" onclick="handleSortHeader('id')" style="width: 75px;" title="Sort by Record ID">
+                                #ID <span class="sort-indicator" id="sort-ind-id">▼</span>
+                            </th>
+                            <th class="sortable" onclick="handleSortHeader('timestamp')" style="width: 165px;" title="Sort by Timestamp">
+                                Timestamp <span class="sort-indicator" id="sort-ind-timestamp"></span>
+                            </th>
+                            <th class="sortable" onclick="handleSortHeader('action_type')" title="Sort by Action Type">
+                                Action Type <span class="sort-indicator" id="sort-ind-action_type"></span>
+                            </th>
+                            <th class="sortable" onclick="handleSortHeader('provider')" title="Sort by Provider & Model">
+                                Provider / Model <span class="sort-indicator" id="sort-ind-provider"></span>
+                            </th>
+                            <th class="sortable" onclick="handleSortHeader('elapsed_ms')" style="width: 105px;" title="Sort by Total Latency">
+                                Latency <span class="sort-indicator" id="sort-ind-elapsed_ms"></span>
+                            </th>
+                            <th class="sortable" onclick="handleSortHeader('ttft_ms')" style="width: 95px;" title="Sort by TTFT">
+                                TTFT <span class="sort-indicator" id="sort-ind-ttft_ms"></span>
+                            </th>
+                            <th class="sortable" onclick="handleSortHeader('is_mock')" style="width: 85px;" title="Sort by Mode">
+                                Mode <span class="sort-indicator" id="sort-ind-is_mock"></span>
+                            </th>
+                            <th class="sortable" onclick="handleSortHeader('status')" style="width: 85px;" title="Sort by Status">
+                                Status <span class="sort-indicator" id="sort-ind-status"></span>
+                            </th>
+                            <th style="min-width: 180px;">Payload Excerpt</th>
+                            <th style="text-align: right; width: 140px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="history-table-body">
@@ -2283,10 +2847,14 @@
                 </table>
                 <div id="history-empty-message" style="display: none; padding: 3rem 1rem; text-align: center; color: var(--text-muted);">
                     <div style="font-size: 2.2rem; margin-bottom: 0.8rem;">📜</div>
-                    <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;">No Requests Recorded in Database</div>
-                    <div style="font-size: 0.88rem; max-width: 480px; margin: 0 auto; line-height: 1.5;">Run customer review evaluations, topic classifications, custom playground queries, or TTFT benchmarks to automatically track them on your personal device.</div>
+                    <div style="font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem;" id="history-empty-title">No Requests Found</div>
+                    <div style="font-size: 0.88rem; max-width: 520px; margin: 0 auto 1.2rem auto; line-height: 1.5;" id="history-empty-desc">No requests match your current filter criteria across the SQLite database.</div>
+                    <button class="history-btn" onclick="resetAllHistoryFilters()" style="margin: 0 auto;">🧹 Reset All Filters</button>
                 </div>
             </div>
+
+            <!-- Bottom Pagination Bar -->
+            <div class="pagination-bar" id="pagination-bar-bottom" style="margin-top: 1rem;"></div>
         </div>
     </div>
 
@@ -2631,7 +3199,18 @@
             populateHubCards(hubModules);
             populateHubDropdowns();
             fetchServerStatus();
-            loadHistoryData();
+
+            // Direct database navigation routing & deep-link support
+            const path = (window.location.pathname || '').toLowerCase();
+            const hash = (window.location.hash || '').toLowerCase();
+            const searchParams = new URLSearchParams(window.location.search);
+            const tabParam = searchParams.get('tab');
+
+            if (path.includes('/database') || path.includes('/db') || path.includes('/history') || path.includes('/explorer') || hash === '#history' || hash === '#database' || tabParam === 'history') {
+                switchTab('history');
+            } else {
+                loadHistoryData();
+            }
         });
 
         // Tab Switching
@@ -3503,30 +4082,723 @@
         }
 
         // ====================================================================
-        // Request History & Local Storage Database Logic
+        // Request History & Local Storage Database Explorer Logic
         // ====================================================================
         let historyItems = [];
+        let historyCurrentPage = 1;
+        let historyLimit = 'all';
+        let historySortBy = 'id';
+        let historySortOrder = 'desc';
+        let historyTotalMatching = 0;
+        let historyTotalRecords = 0;
+        let historyTotalPages = 1;
+        let historyFilterOptions = {};
+        let historySchemaInfo = null;
         let historyFilterTimeout = null;
+        let structureExpanded = false;
+
+        function showToast(message) {
+            let toast = document.getElementById('toast-notify');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'toast-notify';
+                toast.className = 'toast-notify';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        function toggleStructureView() {
+            structureExpanded = !structureExpanded;
+            const body = document.getElementById('structure-body');
+            const chevron = document.getElementById('structure-chevron');
+            const label = document.getElementById('structure-toggle-label');
+            if (body) body.style.display = structureExpanded ? 'block' : 'none';
+            if (chevron) chevron.style.transform = structureExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+            if (label) label.textContent = structureExpanded ? 'Hide Schema' : 'Show Schema';
+        }
+
+        function selectStructuralColumn(colName) {
+            const colSelect = document.getElementById('struct-filter-col');
+            if (colSelect) {
+                colSelect.value = colName;
+                handleStructColChange();
+            }
+            const valInput = document.getElementById('struct-filter-val');
+            if (valInput) valInput.focus();
+            showToast(`Selected column: ${colName}`);
+        }
+
+        function handleStructColChange() {
+            const col = document.getElementById('struct-filter-col')?.value;
+            const valInput = document.getElementById('struct-filter-val');
+            if (valInput) {
+                if (col === 'id') valInput.placeholder = 'e.g. 1, 2, 3...';
+                else if (col === 'elapsed_ms' || col === 'ttft_ms') valInput.placeholder = 'e.g. 250 (ms)';
+                else if (col === 'is_mock') valInput.placeholder = '0 (live) or 1 (mock)';
+                else if (col === 'status') valInput.placeholder = 'success or error';
+                else if (col === 'action_type') valInput.placeholder = 'review_analysis, topic_classification...';
+                else if (col === 'provider') valInput.placeholder = 'openrouter or typesafe';
+                else valInput.placeholder = `Enter target ${col} value...`;
+            }
+        }
+
+        function handleStructOpChange() {
+            const op = document.getElementById('struct-filter-op')?.value;
+            const valInput = document.getElementById('struct-filter-val');
+            if (valInput) {
+                if (op === 'is_null' || op === 'is_not_null') {
+                    valInput.disabled = true;
+                    valInput.placeholder = `(No value needed for '${op}')`;
+                } else {
+                    valInput.disabled = false;
+                    handleStructColChange();
+                }
+            }
+        }
+
+        function applyStructFilter() {
+            historyCurrentPage = 1;
+            const badge = document.getElementById('struct-filter-active-badge');
+            const val = document.getElementById('struct-filter-val')?.value.trim();
+            const op = document.getElementById('struct-filter-op')?.value;
+            if (badge) {
+                badge.style.display = (val || op === 'is_null' || op === 'is_not_null') ? 'inline-block' : 'none';
+            }
+            loadHistoryData();
+        }
+
+        function clearStructFilter() {
+            const valInput = document.getElementById('struct-filter-val');
+            if (valInput) {
+                valInput.value = '';
+                valInput.disabled = false;
+            }
+            const opSelect = document.getElementById('struct-filter-op');
+            if (opSelect) opSelect.value = 'contains';
+            const badge = document.getElementById('struct-filter-active-badge');
+            if (badge) badge.style.display = 'none';
+            historyCurrentPage = 1;
+            loadHistoryData();
+        }
+
+        function renderSchemaStructure(schema) {
+            if (!schema) return;
+            const summaryEl = document.getElementById('schema-meta-summary');
+            if (summaryEl) {
+                summaryEl.innerHTML = `
+                    <div><strong>Database File:</strong> <code style="color: #34d399;">${escapeHtml(schema.db_filename || 'jevtools.db')}</code> (${escapeHtml(schema.db_size_kb || 0)} KB)</div>
+                    <div><strong>Storage Path:</strong> <code style="color: #94a3b8;">${escapeHtml(schema.db_path || '')}</code></div>
+                    <div><strong>Journal Mode:</strong> <span style="color: #a78bfa; font-weight: 700;">${escapeHtml((schema.journal_mode || 'wal').toUpperCase())}</span></div>
+                    <div><strong>Page Size:</strong> ${escapeHtml(schema.page_size || 4096)} bytes</div>
+                    <div><strong>Total Database Records:</strong> <strong style="color: #38bdf8;">${escapeHtml(schema.total_records || 0)}</strong></div>
+                `;
+            }
+
+            const recBadge = document.getElementById('schema-records-badge');
+            if (recBadge) recBadge.textContent = `${schema.total_records || 0} records`;
+
+            const colGrid = document.getElementById('schema-columns-grid');
+            if (colGrid && schema.columns) {
+                colGrid.innerHTML = schema.columns.map(col => {
+                    const pkBadge = col.primary_key ? `<span style="background: rgba(139, 92, 246, 0.4); color: #fff; padding: 1px 4px; border-radius: 4px; font-size: 0.65rem;">PRIMARY KEY</span>` : '';
+                    const notnullBadge = col.notnull ? `<span style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; padding: 1px 4px; border-radius: 4px; font-size: 0.65rem;">NOT NULL</span>` : '';
+                    const profileInfo = `${col.non_null_count !== undefined ? col.non_null_count : 0} values (${col.null_count || 0} nulls)`;
+                    const distinctStr = col.distinct_count !== null && col.distinct_count !== undefined ? `${col.distinct_count} distinct` : '';
+                    const sampleStr = col.sample_values && col.sample_values.length ? `Samples: ${escapeHtml(col.sample_values.join(', '))}` : '';
+
+                    return `
+                        <div class="schema-col-card" onclick="selectStructuralColumn('${escapeHtml(col.name)}')" title="Click to filter by column '${escapeHtml(col.name)}'" style="cursor: pointer; transition: all 0.2s ease;">
+                            <div class="schema-col-name">
+                                <span style="display: flex; align-items: center; gap: 4px;">
+                                    <span style="color: var(--primary);">🔎</span>
+                                    <strong>${escapeHtml(col.name)}</strong>
+                                </span>
+                                <div style="display: flex; gap: 3px;">${pkBadge}${notnullBadge}</div>
+                            </div>
+                            <div class="schema-col-type" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span>${escapeHtml(col.type)}</span>
+                                <span style="font-size: 0.7rem; color: #94a3b8;">${distinctStr}</span>
+                            </div>
+                            <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">
+                                ${profileInfo}
+                            </div>
+                            ${sampleStr ? `<div style="font-size: 0.65rem; color: #a78bfa; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px;" title="${sampleStr}">${sampleStr}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const idxList = document.getElementById('schema-indexes-list');
+            if (idxList && schema.indexes) {
+                idxList.innerHTML = schema.indexes.map(idx => {
+                    const cols = (idx.columns || []).map(c => escapeHtml(c)).join(', ');
+                    return `
+                        <span style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.78rem; font-family: var(--font-mono); color: #93c5fd;">
+                            <strong>${escapeHtml(idx.name)}</strong> (${cols})
+                        </span>
+                    `;
+                }).join('');
+            }
+        }
+
+        function renderQuickFilterChips(options) {
+            const container = document.getElementById('chips-container');
+            if (!container) return;
+
+            const curAction = document.getElementById('history-action-filter')?.value || '';
+            const curMode = document.getElementById('history-mode-filter')?.value || '';
+            const curStatus = document.getElementById('history-status-filter')?.value || '';
+            const curProvider = document.getElementById('history-provider-filter')?.value || '';
+
+            const chips = [];
+
+            // All chip
+            const isAll = !curAction && !curMode && !curStatus && !curProvider;
+            chips.push(`
+                <button class="filter-chip ${isAll ? 'active' : ''}" onclick="resetAllHistoryFilters()">
+                    <span>✨ All Requests</span>
+                    <span class="chip-count">${escapeHtml(options?.total_count || historyTotalRecords || 0)}</span>
+                </button>
+            `);
+
+            // Actions
+            if (options?.action_types) {
+                options.action_types.forEach(act => {
+                    let label = act.name;
+                    if (act.name === 'review_analysis') label = 'Customer Reviews';
+                    else if (act.name === 'topic_classification') label = 'Topic Classification';
+                    else if (act.name === 'custom_decision') label = 'Custom Decisions';
+                    else if (act.name === 'benchmark_ttft') label = 'TTFT Benchmarks';
+
+                    const isActive = curAction === act.name;
+                    chips.push(`
+                        <button class="filter-chip ${isActive ? 'active' : ''}" onclick="applyQuickFilter('action', '${escapeHtml(act.name)}')">
+                            <span>${escapeHtml(label)}</span>
+                            <span class="chip-count">${escapeHtml(act.count)}</span>
+                        </button>
+                    `);
+                });
+            }
+
+            // Modes
+            if (options?.modes) {
+                options.modes.forEach(m => {
+                    const isActive = curMode === m.name;
+                    const label = m.name === 'live' ? '🟢 LIVE API' : '⚡ MOCK MODE';
+                    chips.push(`
+                        <button class="filter-chip ${isActive ? 'active' : ''}" onclick="applyQuickFilter('mode', '${escapeHtml(m.name)}')">
+                            <span>${escapeHtml(label)}</span>
+                            <span class="chip-count">${escapeHtml(m.count)}</span>
+                        </button>
+                    `);
+                });
+            }
+
+            // Statuses
+            if (options?.statuses) {
+                options.statuses.forEach(st => {
+                    const isActive = curStatus === st.name;
+                    const label = st.name === 'success' ? '● SUCCESS' : '● ERROR';
+                    chips.push(`
+                        <button class="filter-chip ${isActive ? 'active' : ''}" onclick="applyQuickFilter('status', '${escapeHtml(st.name)}')">
+                            <span>${escapeHtml(label)}</span>
+                            <span class="chip-count">${escapeHtml(st.count)}</span>
+                        </button>
+                    `);
+                });
+            }
+
+            container.innerHTML = chips.join('');
+        }
+
+        function applyQuickFilter(type, value) {
+            if (type === 'action') {
+                const el = document.getElementById('history-action-filter');
+                if (el) el.value = (el.value === value) ? '' : value;
+            } else if (type === 'mode') {
+                const el = document.getElementById('history-mode-filter');
+                if (el) el.value = (el.value === value) ? '' : value;
+            } else if (type === 'status') {
+                const el = document.getElementById('history-status-filter');
+                if (el) el.value = (el.value === value) ? '' : value;
+            } else if (type === 'provider') {
+                const el = document.getElementById('history-provider-filter');
+                if (el) el.value = (el.value === value) ? '' : value;
+            }
+            historyCurrentPage = 1;
+            loadHistoryData();
+        }
+
+        function clearSearchInput() {
+            const input = document.getElementById('history-search-input');
+            if (input) {
+                input.value = '';
+                const btn = document.getElementById('clear-search-btn');
+                if (btn) btn.style.display = 'none';
+                historyCurrentPage = 1;
+                loadHistoryData();
+            }
+        }
+
+        function handleDatePresetChange() {
+            const preset = document.getElementById('history-date-preset')?.value || 'all';
+            const startField = document.getElementById('custom-date-start-field');
+            const endField = document.getElementById('custom-date-end-field');
+            if (startField && endField) {
+                const showCustom = preset === 'custom';
+                startField.style.display = showCustom ? 'flex' : 'none';
+                endField.style.display = showCustom ? 'flex' : 'none';
+            }
+            historyCurrentPage = 1;
+            loadHistoryData();
+        }
+
+        function handleHistoryFilterChange() {
+            const searchVal = document.getElementById('history-search-input')?.value || '';
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (clearBtn) clearBtn.style.display = searchVal ? 'block' : 'none';
+
+            historyCurrentPage = 1;
+            clearTimeout(historyFilterTimeout);
+            historyFilterTimeout = setTimeout(loadHistoryData, 250);
+        }
+
+        function handleSortSelectChange() {
+            const val = document.getElementById('history-sort-select')?.value || 'id_desc';
+            const parts = val.split('_');
+            historySortOrder = parts.pop() || 'desc';
+            historySortBy = parts.join('_') || 'id';
+            updateSortIndicators();
+            historyCurrentPage = 1;
+            loadHistoryData();
+        }
+
+        function handleLimitChange() {
+            const val = document.getElementById('history-limit-select')?.value || '25';
+            historyLimit = (val === 'all') ? 'all' : (parseInt(val, 10) || 25);
+            historyCurrentPage = 1;
+            loadHistoryData();
+        }
+
+        function handleSortHeader(col) {
+            if (historySortBy === col) {
+                historySortOrder = (historySortOrder === 'asc') ? 'desc' : 'asc';
+            } else {
+                historySortBy = col;
+                historySortOrder = (col === 'id' || col === 'timestamp' || col === 'elapsed_ms' || col === 'ttft_ms') ? 'desc' : 'asc';
+            }
+
+            const select = document.getElementById('history-sort-select');
+            if (select) {
+                const compositeVal = `${historySortBy}_${historySortOrder}`;
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === compositeVal) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            updateSortIndicators();
+            loadHistoryData();
+        }
+
+        function updateSortIndicators() {
+            const cols = ['id', 'timestamp', 'action_type', 'provider', 'elapsed_ms', 'ttft_ms', 'is_mock', 'status'];
+            cols.forEach(c => {
+                const el = document.getElementById(`sort-ind-${c}`);
+                if (el) {
+                    if (historySortBy === c) {
+                        el.textContent = historySortOrder === 'asc' ? '▲' : '▼';
+                    } else {
+                        el.textContent = '';
+                    }
+                }
+            });
+        }
+
+        function resetAllHistoryFilters() {
+            const searchInput = document.getElementById('history-search-input');
+            if (searchInput) searchInput.value = '';
+            const clearBtn = document.getElementById('clear-search-btn');
+            if (clearBtn) clearBtn.style.display = 'none';
+
+            const actionSelect = document.getElementById('history-action-filter');
+            if (actionSelect) actionSelect.value = '';
+
+            const statusSelect = document.getElementById('history-status-filter');
+            if (statusSelect) statusSelect.value = '';
+
+            const modeSelect = document.getElementById('history-mode-filter');
+            if (modeSelect) modeSelect.value = '';
+
+            const provSelect = document.getElementById('history-provider-filter');
+            if (provSelect) provSelect.value = '';
+
+            const modelSelect = document.getElementById('history-model-filter');
+            if (modelSelect) modelSelect.value = '';
+
+            const datePreset = document.getElementById('history-date-preset');
+            if (datePreset) datePreset.value = 'all';
+
+            const startField = document.getElementById('custom-date-start-field');
+            if (startField) startField.style.display = 'none';
+            const startInput = document.getElementById('history-date-start');
+            if (startInput) startInput.value = '';
+
+            const endField = document.getElementById('custom-date-end-field');
+            if (endField) endField.style.display = 'none';
+            const endInput = document.getElementById('history-date-end');
+            if (endInput) endInput.value = '';
+
+            const latSelect = document.getElementById('history-latency-filter');
+            if (latSelect) latSelect.value = '';
+
+            const sortSelect = document.getElementById('history-sort-select');
+            if (sortSelect) sortSelect.value = 'id_desc';
+            historySortBy = 'id';
+            historySortOrder = 'desc';
+
+            const limitSelect = document.getElementById('history-limit-select');
+            if (limitSelect) limitSelect.value = 'all';
+            historyLimit = 'all';
+
+            const sVal = document.getElementById('struct-filter-val');
+            if (sVal) { sVal.value = ''; sVal.disabled = false; }
+            const sBadge = document.getElementById('struct-filter-active-badge');
+            if (sBadge) sBadge.style.display = 'none';
+
+            historyCurrentPage = 1;
+            updateSortIndicators();
+            loadHistoryData();
+        }
+
+        function clearSpecificFilter(key) {
+            if (key === 'search') clearSearchInput();
+            else if (key === 'struct') {
+                clearStructFilter();
+                return;
+            } else if (key === 'action') {
+                const el = document.getElementById('history-action-filter');
+                if (el) el.value = '';
+            } else if (key === 'status') {
+                const el = document.getElementById('history-status-filter');
+                if (el) el.value = '';
+            } else if (key === 'mode') {
+                const el = document.getElementById('history-mode-filter');
+                if (el) el.value = '';
+            } else if (key === 'provider') {
+                const el = document.getElementById('history-provider-filter');
+                if (el) el.value = '';
+            } else if (key === 'model') {
+                const el = document.getElementById('history-model-filter');
+                if (el) el.value = '';
+            } else if (key === 'date') {
+                const el = document.getElementById('history-date-preset');
+                if (el) el.value = 'all';
+                handleDatePresetChange();
+                return;
+            } else if (key === 'latency') {
+                const el = document.getElementById('history-latency-filter');
+                if (el) el.value = '';
+            }
+            historyCurrentPage = 1;
+            loadHistoryData();
+        }
+
+        function renderActiveFilterBadges() {
+            const container = document.getElementById('active-filters-container');
+            const tagsContainer = document.getElementById('active-filters-tags');
+            const summaryEl = document.getElementById('history-results-summary');
+            if (!container || !tagsContainer) return;
+
+            const searchVal = document.getElementById('history-search-input')?.value.trim();
+            const actionVal = document.getElementById('history-action-filter')?.value;
+            const statusVal = document.getElementById('history-status-filter')?.value;
+            const modeVal = document.getElementById('history-mode-filter')?.value;
+            const provVal = document.getElementById('history-provider-filter')?.value;
+            const modelVal = document.getElementById('history-model-filter')?.value;
+            const datePreset = document.getElementById('history-date-preset')?.value;
+            const latVal = document.getElementById('history-latency-filter')?.value;
+            const structCol = document.getElementById('struct-filter-col')?.value;
+            const structOp = document.getElementById('struct-filter-op')?.value;
+            const structVal = document.getElementById('struct-filter-val')?.value.trim();
+
+            const tags = [];
+            if (structVal || structOp === 'is_null' || structOp === 'is_not_null') {
+                const displayVal = (structOp === 'is_null' || structOp === 'is_not_null') ? '' : ` "${escapeHtml(structVal)}"`;
+                tags.push(`<span class="active-filter-badge" style="background: rgba(168, 85, 247, 0.25); border-color: rgba(168, 85, 247, 0.5); color: #e9d5ff;">🔬 Column: [${escapeHtml(structCol)}] ${escapeHtml(structOp)}${displayVal} <button onclick="clearSpecificFilter('struct')" title="Remove column filter">✕</button></span>`);
+            }
+            if (searchVal) tags.push(`<span class="active-filter-badge">🔍 Search: "${escapeHtml(searchVal)}" <button onclick="clearSpecificFilter('search')" title="Remove search filter">✕</button></span>`);
+            if (actionVal) tags.push(`<span class="active-filter-badge">Action: ${escapeHtml(actionVal)} <button onclick="clearSpecificFilter('action')" title="Remove action filter">✕</button></span>`);
+            if (statusVal) tags.push(`<span class="active-filter-badge">Status: ${escapeHtml(statusVal.toUpperCase())} <button onclick="clearSpecificFilter('status')" title="Remove status filter">✕</button></span>`);
+            if (modeVal) tags.push(`<span class="active-filter-badge">Mode: ${escapeHtml(modeVal.toUpperCase())} <button onclick="clearSpecificFilter('mode')" title="Remove mode filter">✕</button></span>`);
+            if (provVal) tags.push(`<span class="active-filter-badge">Provider: ${escapeHtml(provVal)} <button onclick="clearSpecificFilter('provider')" title="Remove provider filter">✕</button></span>`);
+            if (modelVal) tags.push(`<span class="active-filter-badge">Model: ${escapeHtml(modelVal)} <button onclick="clearSpecificFilter('model')" title="Remove model filter">✕</button></span>`);
+            if (datePreset && datePreset !== 'all') tags.push(`<span class="active-filter-badge">Date: ${escapeHtml(datePreset)} <button onclick="clearSpecificFilter('date')" title="Remove date filter">✕</button></span>`);
+            if (latVal) tags.push(`<span class="active-filter-badge">Latency: ${escapeHtml(latVal)} <button onclick="clearSpecificFilter('latency')" title="Remove latency filter">✕</button></span>`);
+
+            if (tags.length > 0) {
+                container.style.display = 'flex';
+                tagsContainer.innerHTML = tags.join('');
+            } else {
+                container.style.display = 'none';
+                tagsContainer.innerHTML = '';
+            }
+
+            if (summaryEl) {
+                if (historyTotalMatching === 0) {
+                    summaryEl.innerHTML = `Showing <strong>0</strong> matching requests (Database Total: ${escapeHtml(historyTotalRecords)})`;
+                } else if (historyLimit === 'all' || historyLimit <= 0) {
+                    summaryEl.innerHTML = `Showing all <strong>${escapeHtml(historyTotalMatching)}</strong> matching requests (Database Total: ${escapeHtml(historyTotalRecords)})`;
+                } else {
+                    const startIdx = (historyCurrentPage - 1) * historyLimit + 1;
+                    const endIdx = Math.min(historyCurrentPage * historyLimit, historyTotalMatching);
+                    summaryEl.innerHTML = `Showing <strong>${startIdx}–${endIdx}</strong> of <strong>${escapeHtml(historyTotalMatching)}</strong> matching requests (Database Total: ${escapeHtml(historyTotalRecords)})`;
+                }
+            }
+        }
+
+        function renderPaginationControls() {
+            const topBar = document.getElementById('pagination-bar-top');
+            const bottomBar = document.getElementById('pagination-bar-bottom');
+            if (!topBar && !bottomBar) return;
+
+            if (historyLimit === 'all' || historyLimit <= 0 || historyTotalPages <= 1) {
+                const markup = `
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">
+                        Showing all <strong>${escapeHtml(historyTotalMatching)}</strong> request(s) on one page.
+                    </div>
+                `;
+                if (topBar) topBar.innerHTML = markup;
+                if (bottomBar) bottomBar.innerHTML = markup;
+                return;
+            }
+
+            const isFirst = historyCurrentPage <= 1;
+            const isLast = historyCurrentPage >= historyTotalPages;
+
+            let pageButtons = '';
+            const maxVisible = 5;
+            let startPage = Math.max(1, historyCurrentPage - 2);
+            let endPage = Math.min(historyTotalPages, startPage + maxVisible - 1);
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+
+            if (startPage > 1) {
+                pageButtons += `<button class="page-btn" onclick="goToPage(1)">1</button>`;
+                if (startPage > 2) pageButtons += `<span style="color: var(--text-muted); padding: 0 4px;">…</span>`;
+            }
+
+            for (let p = startPage; p <= endPage; p++) {
+                const activeClass = p === historyCurrentPage ? 'active' : '';
+                pageButtons += `<button class="page-btn ${activeClass}" onclick="goToPage(${p})">${p}</button>`;
+            }
+
+            if (endPage < historyTotalPages) {
+                if (endPage < historyTotalPages - 1) pageButtons += `<span style="color: var(--text-muted); padding: 0 4px;">…</span>`;
+                pageButtons += `<button class="page-btn" onclick="goToPage(${historyTotalPages})">${historyTotalPages}</button>`;
+            }
+
+            const html = `
+                <div class="pagination-nav">
+                    <button class="page-btn" onclick="goToPage(1)" ${isFirst ? 'disabled' : ''} title="First Page">« First</button>
+                    <button class="page-btn" onclick="goToPage(${historyCurrentPage - 1})" ${isFirst ? 'disabled' : ''} title="Previous Page">‹ Prev</button>
+                    ${pageButtons}
+                    <button class="page-btn" onclick="goToPage(${historyCurrentPage + 1})" ${isLast ? 'disabled' : ''} title="Next Page">Next ›</button>
+                    <button class="page-btn" onclick="goToPage(${historyTotalPages})" ${isLast ? 'disabled' : ''} title="Last Page">Last »</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.6rem; color: #94a3b8; font-size: 0.82rem;">
+                    <span>Page <strong>${historyCurrentPage}</strong> of <strong>${historyTotalPages}</strong></span>
+                    <span>•</span>
+                    <span>Jump to:</span>
+                    <input type="number" min="1" max="${historyTotalPages}" value="${historyCurrentPage}" onchange="goToPage(parseInt(this.value, 10))" style="width: 52px; background: rgba(0,0,0,0.4); border: 1px solid var(--card-border); color: #fff; padding: 2px 6px; border-radius: 4px; text-align: center; font-size: 0.8rem;">
+                </div>
+            `;
+
+            if (topBar) topBar.innerHTML = html;
+            if (bottomBar) bottomBar.innerHTML = html;
+        }
+
+        function goToPage(pageNum) {
+            if (isNaN(pageNum) || pageNum < 1) pageNum = 1;
+            if (pageNum > historyTotalPages) pageNum = historyTotalPages;
+            if (pageNum === historyCurrentPage) return;
+            historyCurrentPage = pageNum;
+            loadHistoryData();
+        }
+
+        function exportHistoryData(format) {
+            const search = document.getElementById('history-search-input')?.value.trim() || '';
+            const actionType = document.getElementById('history-action-filter')?.value || '';
+            const status = document.getElementById('history-status-filter')?.value || '';
+            const mode = document.getElementById('history-mode-filter')?.value || '';
+            const provider = document.getElementById('history-provider-filter')?.value || '';
+            const model = document.getElementById('history-model-filter')?.value || '';
+            const latency = document.getElementById('history-latency-filter')?.value || '';
+
+            let url = `/api/history/export?format=${encodeURIComponent(format)}`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (actionType) url += `&action_type=${encodeURIComponent(actionType)}`;
+            if (status) url += `&status=${encodeURIComponent(status)}`;
+            if (mode) url += `&mode=${encodeURIComponent(mode)}`;
+            if (provider) url += `&provider=${encodeURIComponent(provider)}`;
+            if (model) url += `&model=${encodeURIComponent(model)}`;
+            if (latency === 'fast') url += `&max_latency=200`;
+            else if (latency === 'medium') url += `&min_latency=200&max_latency=500`;
+            else if (latency === 'slow') url += `&min_latency=500`;
+            else if (latency === 'very_slow') url += `&min_latency=1000`;
+
+            // Structural column filter
+            const structCol = document.getElementById('struct-filter-col')?.value;
+            const structOp = document.getElementById('struct-filter-op')?.value;
+            const structVal = document.getElementById('struct-filter-val')?.value.trim();
+            if (structVal || structOp === 'is_null' || structOp === 'is_not_null') {
+                url += `&column=${encodeURIComponent(structCol)}&column_op=${encodeURIComponent(structOp)}&column_val=${encodeURIComponent(structVal)}`;
+            }
+
+            url += `&sort_by=${encodeURIComponent(historySortBy)}&sort_order=${encodeURIComponent(historySortOrder)}`;
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `jevtools_history_${format}_${Date.now()}.${format}`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast(`Exporting filtered history as ${format.toUpperCase()}...`);
+        }
+
+        function copyItemJson(id) {
+            const item = historyItems.find(it => it.id === id);
+            if (!item) return;
+            const text = JSON.stringify(item, null, 2);
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Copied request #${id} JSON to clipboard!`);
+            }).catch(err => {
+                console.error('Failed to copy JSON:', err);
+            });
+        }
+
+        function copyPayloadModal(type) {
+            const preId = (type === 'req') ? 'pm-req-code' : 'pm-resp-code';
+            const text = document.getElementById(preId)?.textContent || '';
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`Copied ${type === 'req' ? 'request' : 'response'} payload to clipboard!`);
+            });
+        }
 
         async function loadHistoryData() {
             const search = document.getElementById('history-search-input')?.value.trim() || '';
             const actionType = document.getElementById('history-action-filter')?.value || '';
             const status = document.getElementById('history-status-filter')?.value || '';
+            const mode = document.getElementById('history-mode-filter')?.value || '';
+            const provider = document.getElementById('history-provider-filter')?.value || '';
+            const model = document.getElementById('history-model-filter')?.value || '';
+            const datePreset = document.getElementById('history-date-preset')?.value || 'all';
+            const latency = document.getElementById('history-latency-filter')?.value || '';
 
-            let url = `/api/history?limit=100`;
+            let limitParam = historyLimit;
+            let url = `/api/history?limit=${encodeURIComponent(limitParam)}&page=${encodeURIComponent(historyCurrentPage)}`;
+            url += `&sort_by=${encodeURIComponent(historySortBy)}&sort_order=${encodeURIComponent(historySortOrder)}`;
+
             if (search) url += `&search=${encodeURIComponent(search)}`;
             if (actionType) url += `&action_type=${encodeURIComponent(actionType)}`;
             if (status) url += `&status=${encodeURIComponent(status)}`;
+            if (mode) url += `&mode=${encodeURIComponent(mode)}`;
+            if (provider) url += `&provider=${encodeURIComponent(provider)}`;
+            if (model) url += `&model=${encodeURIComponent(model)}`;
+
+            // Structural column filter
+            const sCol = document.getElementById('struct-filter-col')?.value;
+            const sOp = document.getElementById('struct-filter-op')?.value;
+            const sVal = document.getElementById('struct-filter-val')?.value.trim();
+            if (sVal || sOp === 'is_null' || sOp === 'is_not_null') {
+                url += `&column=${encodeURIComponent(sCol)}&column_op=${encodeURIComponent(sOp)}&column_val=${encodeURIComponent(sVal)}`;
+            }
+
+            // Date filtering
+            if (datePreset === 'today') {
+                const today = new Date().toISOString().split('T')[0];
+                url += `&start_date=${encodeURIComponent(today)}`;
+            } else if (datePreset === '24h') {
+                const d = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+                url += `&start_date=${encodeURIComponent(d)}`;
+            } else if (datePreset === '7d') {
+                const d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
+                url += `&start_date=${encodeURIComponent(d)}`;
+            } else if (datePreset === '30d') {
+                const d = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
+                url += `&start_date=${encodeURIComponent(d)}`;
+            } else if (datePreset === 'custom') {
+                const sDate = document.getElementById('history-date-start')?.value;
+                const eDate = document.getElementById('history-date-end')?.value;
+                if (sDate) url += `&start_date=${encodeURIComponent(sDate)}`;
+                if (eDate) url += `&end_date=${encodeURIComponent(eDate)}`;
+            }
+
+            // Latency filtering
+            if (latency === 'fast') url += `&max_latency=200`;
+            else if (latency === 'medium') url += `&min_latency=200&max_latency=500`;
+            else if (latency === 'slow') url += `&min_latency=500`;
+            else if (latency === 'very_slow') url += `&min_latency=1000`;
 
             try {
                 const res = await fetch(url);
                 if (!res.ok) return;
                 const data = await res.json();
                 historyItems = data.items || [];
+                historyTotalMatching = data.total_matching !== undefined ? data.total_matching : (data.count || 0);
+                historyTotalRecords = data.total_records !== undefined ? data.total_records : historyTotalMatching;
+                historyTotalPages = data.total_pages !== undefined ? data.total_pages : 1;
+                historyFilterOptions = data.filter_options || {};
+                historySchemaInfo = data.schema || null;
+
+                // Sync model options if available
+                if (historyFilterOptions.models) {
+                    const modelSelect = document.getElementById('history-model-filter');
+                    if (modelSelect && modelSelect.options.length <= 1) {
+                        historyFilterOptions.models.forEach(m => {
+                            if (m.name) {
+                                const opt = document.createElement('option');
+                                opt.value = m.name;
+                                opt.textContent = `${m.name} (${m.count})`;
+                                modelSelect.appendChild(opt);
+                            }
+                        });
+                    }
+                }
+
+                // Render all subcomponents
                 renderHistoryUI(data);
+                renderActiveFilterBadges();
+                renderPaginationControls();
+                renderQuickFilterChips(historyFilterOptions);
+                renderSchemaStructure(historySchemaInfo);
             } catch (err) {
                 console.warn('Failed to load request history:', err);
             }
+        }
+
+        function extractPayloadSnippet(item) {
+            if (!item) return '--';
+            const req = item.request_payload;
+            if (req) {
+                if (req.review) return `Review: "${req.review.slice(0, 48)}..."`;
+                if (req.paragraph) return `Text: "${req.paragraph.slice(0, 48)}..."`;
+                if (req.state) {
+                    const str = typeof req.state === 'string' ? req.state : JSON.stringify(req.state);
+                    return `State: ${str.slice(0, 48)}...`;
+                }
+                if (req.runs) return `Benchmark: ${req.runs} runs`;
+            }
+            if (item.error_message) return `Error: ${item.error_message.slice(0, 48)}...`;
+            return '--';
         }
 
         function renderHistoryUI(data) {
@@ -3567,7 +4839,18 @@
 
             if (items.length === 0) {
                 tbody.innerHTML = '';
-                if (emptyMsg) emptyMsg.style.display = 'block';
+                if (emptyMsg) {
+                    emptyMsg.style.display = 'block';
+                    const emptyTitle = document.getElementById('history-empty-title');
+                    const emptyDesc = document.getElementById('history-empty-desc');
+                    if (total === 0) {
+                        if (emptyTitle) emptyTitle.textContent = 'No Requests Recorded in Database';
+                        if (emptyDesc) emptyDesc.textContent = 'Run review evaluations, topic classifications, or benchmarks to track interactions locally in jevtools.db.';
+                    } else {
+                        if (emptyTitle) emptyTitle.textContent = 'No Matching Requests';
+                        if (emptyDesc) emptyDesc.textContent = 'No requests matched your active filters. Try clearing or broadening your search parameters.';
+                    }
+                }
                 return;
             }
 
@@ -3592,39 +4875,45 @@
                 }
 
                 const modeTag = item.is_mock
-                    ? `<span style="color: var(--accent); font-weight: 700; font-size: 0.78rem;">MOCK</span>`
-                    : `<span style="color: #34d399; font-weight: 700; font-size: 0.78rem;">LIVE</span>`;
+                    ? `<span style="color: var(--accent); font-weight: 700; font-size: 0.78rem; cursor: pointer;" onclick="applyQuickFilter('mode', 'mock')" title="Click to filter by mock">MOCK</span>`
+                    : `<span style="color: #34d399; font-weight: 700; font-size: 0.78rem; cursor: pointer;" onclick="applyQuickFilter('mode', 'live')" title="Click to filter by live">LIVE</span>`;
 
                 const statusTag = item.status === 'success'
-                    ? `<span class="badge-status-ok">● OK</span>`
-                    : `<span class="badge-status-err">● ERR</span>`;
+                    ? `<span class="badge-status-ok" style="cursor: pointer;" onclick="applyQuickFilter('status', 'success')">● OK</span>`
+                    : `<span class="badge-status-err" style="cursor: pointer;" onclick="applyQuickFilter('status', 'error')">● ERR</span>`;
 
                 const ttftStr = item.ttft_ms ? `${Math.round(item.ttft_ms)} ms` : '--';
                 const latStr = item.elapsed_ms ? `${Math.round(item.elapsed_ms)} ms` : '--';
                 const providerModel = `${escapeHtml(item.provider || 'openrouter')} / ${escapeHtml(item.model || 'default')}`;
                 const safeId = typeof item.id === 'number' ? item.id : parseInt(item.id, 10) || 0;
+                const snippet = extractPayloadSnippet(item);
 
                 return `
                     <tr>
                         <td style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">#${escapeHtml(item.id)}</td>
-                        <td style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(dateStr)}</td>
-                        <td><span class="badge-action ${escapeHtml(actionBadgeClass)}">${escapeHtml(actionLabel)}</span></td>
-                        <td style="font-size: 0.82rem; color: #cbd5e1; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(providerModel)}">${providerModel}</td>
-                        <td style="font-family: var(--font-mono);">${escapeHtml(ttftStr)}</td>
-                        <td style="font-family: var(--font-mono);">${escapeHtml(latStr)}</td>
+                        <td style="font-size: 0.78rem; color: var(--text-muted);">${escapeHtml(dateStr)}</td>
+                        <td>
+                            <span class="badge-action ${escapeHtml(actionBadgeClass)}" style="cursor: pointer;" onclick="applyQuickFilter('action', '${escapeHtml(item.action_type)}')" title="Click to filter by ${escapeHtml(actionLabel)}">
+                                ${escapeHtml(actionLabel)}
+                            </span>
+                        </td>
+                        <td style="font-size: 0.8rem; color: #cbd5e1; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(providerModel)}">
+                            ${providerModel}
+                        </td>
+                        <td style="font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600;">${escapeHtml(latStr)}</td>
+                        <td style="font-family: var(--font-mono); font-size: 0.82rem; color: #94a3b8;">${escapeHtml(ttftStr)}</td>
                         <td>${modeTag}</td>
                         <td>${statusTag}</td>
+                        <td class="payload-snippet" title="${escapeHtml(snippet)}">${escapeHtml(snippet)}</td>
                         <td style="text-align: right;">
-                            <button class="btn-inspect" onclick="inspectPayload(${safeId})">🔍 Inspect</button>
+                            <div style="display: inline-flex; gap: 0.35rem; align-items: center;">
+                                <button class="btn-copy-mini" onclick="copyItemJson(${safeId})" title="Copy record JSON">📋</button>
+                                <button class="btn-inspect" onclick="inspectPayload(${safeId})" title="View full payload">🔍 Inspect</button>
+                            </div>
                         </td>
                     </tr>
                 `;
             }).join('');
-        }
-
-        function handleHistoryFilterChange() {
-            clearTimeout(historyFilterTimeout);
-            historyFilterTimeout = setTimeout(loadHistoryData, 250);
         }
 
         async function inspectPayload(id) {
@@ -3690,6 +4979,7 @@
             try {
                 const res = await fetch('/api/history', { method: 'DELETE' });
                 const data = await res.json();
+                showToast(`Cleared ${data.cleared || 0} interaction logs from database.`);
                 loadHistoryData();
             } catch (err) {
                 alert('Failed to clear database: ' + err);

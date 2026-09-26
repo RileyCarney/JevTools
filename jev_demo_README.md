@@ -130,13 +130,25 @@ py jev_demo.py --mock
 Every evaluation sent through the CLI or Web Cockpit is automatically recorded in a local SQLite database (`jevtools.db`):
 - **Stored Data:** Timestamp, client identifier (`cli`, `web_ui`), action type (`analyze_review`, `classify_topic`, `custom_decision`, `openrouter_ttft`), execution mode (`live` vs `mock`), full request payload (state text, questions, criteria), full response payload (answers, probabilities, composite score, routing action), status (`ok` or `error`), TTFT, and elapsed inference latency.
 - **Privacy & Gitignore:** The database file `jevtools.db` is strictly listed in `.gitignore`. Your prompts, user data, customer reviews, and evaluation results stay exclusively on your personal device and are never committed to Git.
-- **Inspect History:**
+- **Inspect History & Database Structure:**
   ```powershell
-  # Display formatted history table and summary metrics (no API key required)
+  # Display formatted history table (default: recent 25 requests)
   py jev_demo.py --history
 
-  # Output full database records as structured JSON
-  py jev_demo.py --history --json
+  # Show every request across the entire database without caps
+  py jev_demo.py --history --all
+
+  # Filter across any column: action, status, mode, endpoint, or payload search
+  py jev_demo.py --history --filter-action review_analysis --filter-status success
+  py jev_demo.py --history --filter-endpoint openrouter
+  py jev_demo.py --history --filter-mode mock --limit 100
+  py jev_demo.py --history --filter-search "refund"
+
+  # Inspect SQLite database schema, columns, datatypes, profiling, and indexes
+  py jev_demo.py --db-schema
+
+  # Output full matching database records as structured JSON
+  py jev_demo.py --history --all --json
   ```
 - **Clear Database:**
   ```powershell
@@ -259,8 +271,12 @@ Demonstrates **Multi-Dimensional Semantic Extraction & Routing**: classifying pa
 usage: jev_demo.py [-h] [--api-key KEY] [--provider {openrouter,typesafe}]
                    [--model MODEL] [--endpoint ENDPOINT]
                    [--demo {reviews,topics,all}] [--review REVIEW]
-                   [--product PRODUCT] [--topic TOPIC] [--mock] [--json]
-                   [--history] [--clear-history]
+                   [--product PRODUCT] [--topic TOPIC] [--mock] [--benchmark]
+                   [--history] [--limit LIMIT] [--all]
+                   [--filter-action FILTER_ACTION]
+                   [--filter-status FILTER_STATUS] [--filter-mode FILTER_MODE]
+                   [--filter-search FILTER_SEARCH] [--db-schema]
+                   [--clear-history] [--json]
 
 Jev demo: customer review analysis + topic classification via OpenRouter / TypeSafe
 
@@ -270,19 +286,30 @@ options:
                         OPENROUTER_API_KEY or TYPESAFE_API_KEY env var, then
                         an interactive secure prompt.
   --provider {openrouter,typesafe}
-                        Explicitly select provider. Auto-detected from key prefix if omitted.
-  --model MODEL         Override model name (~typesafe/jev-latest, jev-latest).
+                        Explicitly select provider: 'openrouter' or 'typesafe'. Auto-detected from key if omitted.
+  --model MODEL         Override model name (e.g. ~typesafe/jev-latest, jev-latest).
   --endpoint ENDPOINT   Override decision API endpoint URL.
   --demo {reviews,topics,all}
                         Which benchmark demo to run: 'reviews', 'topics', or 'all' (default: all).
   --review REVIEW       Custom customer review text to evaluate immediately.
   --product PRODUCT     Product name for custom review evaluation (default: Wireless Earbuds Pro).
   --topic TOPIC         Custom paragraph text to classify immediately.
-  --mock                Run in offline mock mode to test formatting and policy
-                        logic without making API calls.
-  --json                Output structured JSON results instead of human-readable text.
+  --mock                Run in offline mock mode to test formatting and policy logic without making API calls.
+  --benchmark, --ttft   Run live benchmark against OpenRouter API to test TTFT and latency metrics.
   --history             View personal device request/response history table and storage metrics.
+  --limit LIMIT         Limit number of requests displayed from database (default: 25).
+  --all                 Show every request in the database without pagination truncation.
+  --filter-action FILTER_ACTION
+                        Filter database history by action type (review_analysis, topic_classification, custom_decision, benchmark_ttft).
+  --filter-status FILTER_STATUS
+                        Filter database history by status (success or error).
+  --filter-mode FILTER_MODE
+                        Filter database history by execution mode (live or mock).
+  --filter-search FILTER_SEARCH
+                        Search keyword across payloads and error messages in the database.
+  --db-schema           Inspect and display the SQLite database structure, column definitions, and indexes.
   --clear-history       Clear all stored interaction records from the local database.
+  --json                Output structured JSON results instead of human-readable text.
 ```
 
 ---

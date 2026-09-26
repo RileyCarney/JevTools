@@ -57,6 +57,10 @@ try:
 except ImportError:
     sys.exit("requests is not installed.\nRun:  pip install requests\n")
 
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+if CURRENT_DIR not in sys.path:
+    sys.path.insert(0, CURRENT_DIR)
+
 import database
 
 
@@ -1488,7 +1492,54 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--history",
         action="store_true",
-        help="View recent requests and responses stored in the local SQLite database.",
+        help="View request and response history stored in the local SQLite database.",
+    )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=25,
+        help="Limit number of requests displayed from database (default: 25). Use --all to show all.",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Show every request in the database without pagination truncation.",
+    )
+    parser.add_argument(
+        "--filter-action",
+        "--action-type",
+        dest="filter_action",
+        default=None,
+        help="Filter database history by action type (review_analysis, topic_classification, custom_decision, benchmark_ttft).",
+    )
+    parser.add_argument(
+        "--filter-status",
+        dest="filter_status",
+        default=None,
+        help="Filter database history by status (success or error).",
+    )
+    parser.add_argument(
+        "--filter-mode",
+        dest="filter_mode",
+        default=None,
+        help="Filter database history by execution mode (live or mock).",
+    )
+    parser.add_argument(
+        "--filter-search",
+        dest="filter_search",
+        default=None,
+        help="Search keyword across payloads and error messages in the database.",
+    )
+    parser.add_argument(
+        "--filter-endpoint",
+        dest="filter_endpoint",
+        default=None,
+        help="Filter database history by API endpoint substring.",
+    )
+    parser.add_argument(
+        "--db-schema",
+        action="store_true",
+        help="Inspect and display the SQLite database structure, column definitions, and indexes.",
     )
     parser.add_argument(
         "--clear-history",
@@ -1568,11 +1619,81 @@ def main() -> None:
         print(f"\n[OK] Cleared {count} interaction logs from local database ({database.get_default_db_path()}).")
         return
 
-    if getattr(args, "history", False):
-        stats = database.get_stats()
-        logs = database.get_history(limit=25)
+    if getattr(args, "db_schema", False):
+        schema: database.SchemaInfo = database.get_schema_info()
         if args.json:
-            print(json.dumps({"stats": stats, "history": logs}, indent=2))
+            print(json.dumps(schema, indent=2))
+            return
+        print("\n" + "=" * 64)
+        print("          JEVTOOLS - SQLITE DATABASE STRUCTURE & SCHEMA         ")
+        print("=" * 64)
+        print(f"  Table Name    : {schema['table_name']}")
+        print(f"  Database File : {schema['db_filename']} ({schema['db_size_kb']} KB)")
+        print(f"  Storage Path  : {schema['db_path']}")
+        print(f"  Journal Mode  : {schema['journal_mode'].upper()} (Write-Ahead Logging)")
+        print(f"  Total Records : {schema['total_records']}")
+        print("-" * 64)
+        print("  COLUMNS DEFINITION:")
+        for col in schema["columns"]:
+            pk = " [PK]" if col["primary_key"] else ""
+            req = " NOT NULL" if col["notnull"] else ""
+            profile_parts: list[str] = [f"{col.get('non_null_count', 0)} values"]
+            if col.get("distinct_count") is not None:
+                profile_parts.append(f"{col['distinct_count']} distinct")
+            profile = f"({', '.join(profile_parts)})"
+            print(f"    - {col['name']:<18} : {col['type']:<8}{pk}{req}  {profile}")
+        print("-" * 64)
+        print("  INDEXES:")
+        for idx in schema["indexes"]:
+            cols = ", ".join(idx["columns"])
+            uniq = "UNIQUE " if idx["unique"] else ""
+            print(f"    - {idx['name']:<28} : {uniq}({cols})")
+        print("=" * 64)
+        return
+
+    if getattr(args, "history", False):
+        stats: database.DatabaseStats = database.get_stats()
+        action_filter = cast(Optional[str], getattr(args, "filter_action", None))
+        status_filter = cast(Optional[str], getattr(args, "filter_status", None))
+        search_filter = cast(Optional[str], getattr(args, "filter_search", None))
+        endpoint_filter = cast(Optional[str], getattr(args, "filter_endpoint", None))
+        raw_mode = cast(Optional[str], getattr(args, "filter_mode", None))
+        is_mock_filter: Optional[bool] = None
+        if raw_mode:
+            if raw_mode.lower() in ("live", "0", "false"):
+                is_mock_filter = False
+            elif raw_mode.lower() in ("mock", "1", "true"):
+                is_mock_filter = True
+
+        show_all: bool = bool(getattr(args, "all", False))
+        limit_val: Optional[int] = None if show_all else int(getattr(args, "limit", 25))
+
+        total_matching: int = database.count_history(
+            action_type=action_filter,
+            status=status_filter,
+            search=search_filter,
+            endpoint=endpoint_filter,
+            is_mock=is_mock_filter,
+        )
+        logs: list[database.RequestLog] = database.get_history(
+            limit=limit_val,
+            action_type=action_filter,
+            status=status_filter,
+            search=search_filter,
+            endpoint=endpoint_filter,
+            is_mock=is_mock_filter,
+            allow_unlimited=show_all,
+        )
+        filter_options: database.FilterOptions = database.get_filter_options()
+
+        if args.json:
+            print(json.dumps({
+                "stats": stats,
+                "total_matching": total_matching,
+                "count": len(logs),
+                "history": logs,
+                "filter_options": filter_options,
+            }, indent=2))
             return
 
         print("\n" + "=" * 64)
@@ -1580,19 +1701,31 @@ def main() -> None:
         print("=" * 64)
         print(f"  Database Path   : {stats['db_path']}")
         print(f"  Database Size   : {stats['db_size_kb']} KB ({stats['db_size_bytes']} bytes)")
-        print(f"  Total Requests  : {stats['total_requests']}")
+        print(f"  Total In DB     : {stats['total_requests']}")
+        print(f"  Total Matching  : {total_matching}")
         print(f"  Success / Error : {stats['success_count']} / {stats['error_count']}")
         print(f"  Live / Mock     : {stats['live_count']} / {stats['mock_count']}")
         print(f"  Avg TTFT        : {stats['avg_ttft_ms']:.1f} ms")
         print(f"  Avg Latency     : {stats['avg_latency_ms']:.1f} ms")
+        if action_filter or status_filter or search_filter or raw_mode:
+            print("-" * 64)
+            print("  ACTIVE FILTERS:")
+            if action_filter:
+                print(f"    - Action Type : {action_filter}")
+            if status_filter:
+                print(f"    - Status      : {status_filter}")
+            if raw_mode:
+                print(f"    - Mode        : {raw_mode.upper()}")
+            if search_filter:
+                print(f"    - Search      : {search_filter}")
         print("=" * 64)
 
         if not logs:
-            print("  No interaction logs recorded yet.")
+            print("  No interaction logs matching your criteria.")
             print("=" * 64)
             return
 
-        print(f"  Showing {len(logs)} most recent interaction(s):\n")
+        print(f"  Showing {len(logs)} of {total_matching} matching interaction(s):\n")
         for item in logs:
             status_tag = "[OK]" if item["status"] == "success" else "[ERR]"
             mode_tag = "MOCK" if item["is_mock"] else "LIVE"

@@ -310,6 +310,289 @@ class TestDatabaseModule(unittest.TestCase):
         except FileNotFoundError:
             pass
 
+    def test_extended_filtering_and_counting(self) -> None:
+        """Verify filtering by provider, model, is_mock, latency, and count_history."""
+        database.log_interaction(
+            action_type="review_analysis",
+            request_payload={"item": "headphones"},
+            provider="openrouter",
+            model="meta-llama/llama-3.1-8b-instruct",
+            is_mock=True,
+            elapsed_ms=150.0,
+            status="success",
+            client_info="web_ui",
+            db_path=self.test_db_path,
+        )
+        database.log_interaction(
+            action_type="topic_classification",
+            request_payload={"text": "artificial intelligence"},
+            provider="typesafe",
+            model="~typesafe/jev-latest",
+            is_mock=False,
+            elapsed_ms=450.0,
+            status="success",
+            client_info="cli",
+            db_path=self.test_db_path,
+        )
+        database.log_interaction(
+            action_type="custom_decision",
+            request_payload={"state": "billing_issue"},
+            provider="openrouter",
+            model="meta-llama/llama-3.1-8b-instruct",
+            is_mock=False,
+            elapsed_ms=800.0,
+            status="error",
+            error_message="Gateway timeout",
+            client_info="web_ui",
+            db_path=self.test_db_path,
+        )
+
+        # Count total
+        self.assertEqual(database.count_history(db_path=self.test_db_path), 3)
+
+        # Filter by provider
+        openrouter_items = database.get_history(provider="openrouter", db_path=self.test_db_path)
+        self.assertEqual(len(openrouter_items), 2)
+        self.assertEqual(database.count_history(provider="openrouter", db_path=self.test_db_path), 2)
+
+        typesafe_items = database.get_history(provider="typesafe", db_path=self.test_db_path)
+        self.assertEqual(len(typesafe_items), 1)
+
+        # Filter by is_mock
+        mock_items = database.get_history(is_mock=True, db_path=self.test_db_path)
+        self.assertEqual(len(mock_items), 1)
+        self.assertEqual(mock_items[0]["action_type"], "review_analysis")
+
+        live_items = database.get_history(is_mock=False, db_path=self.test_db_path)
+        self.assertEqual(len(live_items), 2)
+
+        # Filter by latency range
+        fast_items = database.get_history(max_latency=300.0, db_path=self.test_db_path)
+        self.assertEqual(len(fast_items), 1)
+        self.assertEqual(fast_items[0]["elapsed_ms"], 150.0)
+
+        slow_items = database.get_history(min_latency=500.0, db_path=self.test_db_path)
+        self.assertEqual(len(slow_items), 1)
+        self.assertEqual(slow_items[0]["elapsed_ms"], 800.0)
+
+        # Filter by client_info
+        cli_items = database.get_history(client_info="cli", db_path=self.test_db_path)
+        self.assertEqual(len(cli_items), 1)
+        self.assertEqual(cli_items[0]["provider"], "typesafe")
+
+    def test_custom_sorting_and_unlimited_query(self) -> None:
+        """Verify sorting by various columns and allow_unlimited parameter."""
+        for i in range(1, 15):
+            database.log_interaction(
+                action_type="benchmark_ttft",
+                request_payload={"run": i},
+                elapsed_ms=float(i * 50),
+                ttft_ms=float(i * 20),
+                db_path=self.test_db_path,
+            )
+
+        # Sort by elapsed_ms ascending
+        asc_items = database.get_history(sort_by="elapsed_ms", sort_order="ASC", db_path=self.test_db_path)
+        self.assertEqual(asc_items[0]["elapsed_ms"], 50.0)
+        self.assertEqual(asc_items[-1]["elapsed_ms"], 700.0)
+
+        # Sort by elapsed_ms descending
+        desc_items = database.get_history(sort_by="elapsed_ms", sort_order="DESC", db_path=self.test_db_path)
+        self.assertEqual(desc_items[0]["elapsed_ms"], 700.0)
+        self.assertEqual(desc_items[-1]["elapsed_ms"], 50.0)
+
+        # Unlimited query
+        all_items = database.get_history(allow_unlimited=True, db_path=self.test_db_path)
+        self.assertEqual(len(all_items), 14)
+
+    def test_get_filter_options(self) -> None:
+        """Verify filter options summary returns dynamic metadata and counts."""
+        database.log_interaction(
+            action_type="review_analysis",
+            request_payload={},
+            provider="openrouter",
+            model="model-a",
+            status="success",
+            is_mock=True,
+            client_info="web_ui",
+            db_path=self.test_db_path,
+        )
+        database.log_interaction(
+            action_type="topic_classification",
+            request_payload={},
+            provider="typesafe",
+            model="model-b",
+            status="error",
+            is_mock=False,
+            client_info="python_sdk",
+            db_path=self.test_db_path,
+        )
+
+        options = database.get_filter_options(db_path=self.test_db_path)
+        self.assertEqual(options["total_count"], 2)
+
+        action_names = [a["name"] for a in options["action_types"]]
+        self.assertIn("review_analysis", action_names)
+        self.assertIn("topic_classification", action_names)
+
+        provider_names = [p["name"] for p in options["providers"]]
+        self.assertIn("openrouter", provider_names)
+        self.assertIn("typesafe", provider_names)
+
+        model_names = [m["name"] for m in options["models"]]
+        self.assertIn("model-a", model_names)
+        self.assertIn("model-b", model_names)
+
+        client_names = [c["name"] for c in options["client_infos"]]
+        self.assertIn("web_ui", client_names)
+        self.assertIn("python_sdk", client_names)
+
+    def test_get_schema_info(self) -> None:
+        """Verify SQLite schema inspector returns columns, indexes, and table stats."""
+        schema = database.get_schema_info(db_path=self.test_db_path)
+        self.assertEqual(schema["table_name"], "request_logs")
+        self.assertGreater(len(schema["columns"]), 10)
+
+        col_names = [c["name"] for c in schema["columns"]]
+        self.assertIn("id", col_names)
+        self.assertIn("timestamp", col_names)
+        self.assertIn("action_type", col_names)
+        self.assertIn("provider", col_names)
+        self.assertIn("model", col_names)
+        self.assertIn("endpoint", col_names)
+        self.assertIn("status", col_names)
+        self.assertIn("ttft_ms", col_names)
+        self.assertIn("elapsed_ms", col_names)
+        self.assertIn("is_mock", col_names)
+        self.assertIn("request_payload", col_names)
+        self.assertIn("response_payload", col_names)
+        self.assertIn("error_message", col_names)
+        self.assertIn("client_info", col_names)
+
+        self.assertIn("journal_mode", schema)
+        self.assertIn("indexes", schema)
+        index_names = [idx["name"] for idx in schema["indexes"]]
+        self.assertIn("idx_request_logs_timestamp", index_names)
+
+    def test_structural_column_filtering(self) -> None:
+        """Verify filtering across every structural column and arbitrary column_filters."""
+        id1 = database.log_interaction(
+            action_type="review_analysis",
+            request_payload={"p": 1},
+            provider="openrouter",
+            model="or-model",
+            endpoint="https://openrouter.ai/api/v1/decisions",
+            status="success",
+            ttft_ms=150.0,
+            elapsed_ms=200.0,
+            is_mock=False,
+            client_info="cli_tool",
+            db_path=self.test_db_path,
+        )
+        id2 = database.log_interaction(
+            action_type="topic_classification",
+            request_payload={"p": 2},
+            provider="typesafe",
+            model="ts-model",
+            endpoint="https://api.typesafe.ai/v1/systemone",
+            status="error",
+            ttft_ms=300.0,
+            elapsed_ms=450.0,
+            is_mock=True,
+            error_message="Gateway timeout on upstream node",
+            client_info="web_ui",
+            db_path=self.test_db_path,
+        )
+
+        # 1. Filter by endpoint
+        ts_items = database.get_history(endpoint="typesafe.ai", db_path=self.test_db_path)
+        self.assertEqual(len(ts_items), 1)
+        self.assertEqual(ts_items[0]["id"], id2)
+
+        # 2. Filter by TTFT range
+        fast_ttft = database.get_history(max_ttft=200.0, db_path=self.test_db_path)
+        self.assertEqual(len(fast_ttft), 1)
+        self.assertEqual(fast_ttft[0]["id"], id1)
+
+        slow_ttft = database.get_history(min_ttft=250.0, db_path=self.test_db_path)
+        self.assertEqual(len(slow_ttft), 1)
+        self.assertEqual(slow_ttft[0]["id"], id2)
+
+        # 3. Filter by ID and ID bounds
+        exact_id = database.get_history(id=id1, db_path=self.test_db_path)
+        self.assertEqual(len(exact_id), 1)
+        self.assertEqual(exact_id[0]["id"], id1)
+
+        id_range = database.get_history(min_id=id2, max_id=id2, db_path=self.test_db_path)
+        self.assertEqual(len(id_range), 1)
+        self.assertEqual(id_range[0]["id"], id2)
+
+        # 4. Filter by error status and error search
+        err_items = database.get_history(has_error=True, db_path=self.test_db_path)
+        self.assertEqual(len(err_items), 1)
+        self.assertEqual(err_items[0]["id"], id2)
+
+        ok_items = database.get_history(has_error=False, db_path=self.test_db_path)
+        self.assertEqual(len(ok_items), 1)
+        self.assertEqual(ok_items[0]["id"], id1)
+
+        err_search = database.get_history(error_contains="timeout", db_path=self.test_db_path)
+        self.assertEqual(len(err_search), 1)
+        self.assertEqual(err_search[0]["id"], id2)
+
+        # 5. Generic structural column_filters (gte operator)
+        cf_gte = database.get_history(
+            column_filters=[{"column": "elapsed_ms", "operator": "gte", "value": 300}],
+            db_path=self.test_db_path,
+        )
+        self.assertEqual(len(cf_gte), 1)
+        self.assertEqual(cf_gte[0]["id"], id2)
+
+        # 6. Generic structural column_filters (eq operator on provider)
+        cf_eq = database.get_history(
+            column_filters=[{"column": "provider", "operator": "eq", "value": "openrouter"}],
+            db_path=self.test_db_path,
+        )
+        self.assertEqual(len(cf_eq), 1)
+        self.assertEqual(cf_eq[0]["id"], id1)
+
+        # 7. Count matches exactly
+        self.assertEqual(database.count_history(endpoint="typesafe.ai", db_path=self.test_db_path), 1)
+        self.assertEqual(database.count_history(has_error=True, db_path=self.test_db_path), 1)
+
+    def test_enhanced_schema_profiling(self) -> None:
+        """Verify get_schema_info returns all_tables, structure map, and column profile metrics."""
+        database.log_interaction(
+            action_type="review_analysis",
+            request_payload={"test": True},
+            status="success",
+            endpoint="https://openrouter.ai",
+            db_path=self.test_db_path,
+        )
+        database.log_interaction(
+            action_type="topic_classification",
+            request_payload={"test": True},
+            status="error",
+            error_message="HTTP 500",
+            endpoint="https://api.typesafe.ai",
+            db_path=self.test_db_path,
+        )
+
+        schema = database.get_schema_info(db_path=self.test_db_path)
+        self.assertIn("all_tables", schema)
+        self.assertIn("request_logs", schema["all_tables"])
+        self.assertIn("structure", schema)
+        self.assertEqual(schema["total_records"], 2)
+
+        col_struct = schema["structure"]
+        self.assertIn("error_message", col_struct)
+        self.assertEqual(col_struct["error_message"]["non_null_count"], 1)
+        self.assertEqual(col_struct["error_message"]["null_count"], 1)
+
+        self.assertIn("endpoint", col_struct)
+        self.assertEqual(col_struct["endpoint"]["non_null_count"], 2)
+        self.assertEqual(col_struct["endpoint"]["distinct_count"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()
