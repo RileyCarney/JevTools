@@ -3,8 +3,8 @@
 **Author:** Riley Carney and the website documentation at TypeSafe AI Research Group  
 **Repository:** [RileyCarney/JevTools](https://github.com/RileyCarney/JevTools)  
 **Date:** September 2026  
-**Version:** 2.1 — Comprehensive Formal Mathematical Framework & Reference Implementation Edition 
-**GUID:** a302324cb2fcffed9deef41588d6d64af9909821
+**Version:** 2.1 — Comprehensive Formal Mathematical Framework & Reference Implementation Edition              
+**GUID:** a302324cb2fcffed9deef41588d6d64af9909821                                                             
 **Status:** Working Paper
 
 ---
