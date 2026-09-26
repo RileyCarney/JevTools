@@ -1,9 +1,15 @@
-﻿# Mathematical Foundations of Jev: A Micro-Architectural Framework for Structured Semantic Decision Problems
+## UNOFFICIAL DRAFT PLEASE DO NOT USE THIS DOCUMENT THE MATH ISN'T VALID
+ 
+ # Mathematical Foundations of Jev: A Micro-Architectural Framework for Structured Semantic Decision Problems
 
 **Author:** Riley Carney and the TypeSafe AI Research Group  
 **Repository:** [RileyCarney/JevTools](https://github.com/RileyCarney/JevTools)  
 **Date:** September 2026  
+<<<<<<< HEAD
 **Version:** 2.1 — Comprehensive Formal Mathematical Framework & Reference Implementation Edition     
+=======
+**Version:** 2.1 — Comprehensive Formal Mathematical Framework & Reference Implementation Edition  
+>>>>>>> a302324cb2fcffed9deef41588d6d64af9909821
 **Status:** Working Paper
 
 ---
