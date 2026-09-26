@@ -2,7 +2,7 @@
 
 # Mathematical Foundations of Jev: A Micro-Architectural Framework for Structured Semantic Decision Problems
 
-**Author:** JevTools Knowledge Base  
+**Author:** Riley Carney
 **Repository:** [RileyCarney/JevTools](https://github.com/RileyCarney/JevTools)  
 **Date:** September 2026  
 **Version:** 2.0 — PhD Review Revision  
