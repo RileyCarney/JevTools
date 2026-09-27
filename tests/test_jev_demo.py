@@ -72,12 +72,55 @@ class TestJevDemoProviderConfig(unittest.TestCase):
         prov1, ep1, mdl1 = jev_demo.get_provider_config("sk-or-v1-testkey")
         self.assertEqual(prov1, "openrouter")
         self.assertIn("openrouter.ai", ep1)
-        self.assertIn("jev", mdl1.lower())
+        self.assertEqual(mdl1, jev_demo.OPENROUTER_DEFAULT_MODEL)
 
         prov2, ep2, mdl2 = jev_demo.get_provider_config("ts-testkey")
         self.assertEqual(prov2, "typesafe")
         self.assertIn("typesafe.ai", ep2)
-        self.assertIn("jev", mdl2.lower())
+        self.assertEqual(mdl2, jev_demo.TYPESAFE_DEFAULT_MODEL)
+
+    def test_sanitize_model_for_provider(self):
+        # TypeSafe tests
+        # Unknown/bogus typesafe/jev-v1 must sanitize to jev-latest
+        self.assertEqual(jev_demo.sanitize_model_for_provider("typesafe/jev-v1", "typesafe"), "jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("jev-v1", "typesafe"), "jev-latest")
+        # Stripping OpenRouter prefixes for TypeSafe
+        self.assertEqual(jev_demo.sanitize_model_for_provider("~typesafe/jev-latest", "typesafe"), "jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("typesafe/jev-latest", "typesafe"), "jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("typesafe/jev-1.13", "typesafe"), "jev-1.13")
+        # Native TypeSafe models
+        self.assertEqual(jev_demo.sanitize_model_for_provider("jev-latest", "typesafe"), "jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("jev-1.13", "typesafe"), "jev-1.13")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("jev-1.13.0", "typesafe"), "jev-1.13.0")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("jev-preview", "typesafe"), "jev-preview")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("", "typesafe"), "jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider(None, "typesafe"), "jev-latest")
+
+        # OpenRouter tests
+        self.assertEqual(jev_demo.sanitize_model_for_provider("typesafe/jev-v1", "openrouter"), "~typesafe/jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("jev-latest", "openrouter"), "~typesafe/jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("jev-1.13", "openrouter"), "typesafe/jev-1.13")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("~typesafe/jev-latest", "openrouter"), "~typesafe/jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("typesafe/jev-latest", "openrouter"), "typesafe/jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("typesafe/jev-router", "openrouter"), "typesafe/jev-router")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("openrouter/auto", "openrouter"), "openrouter/auto")
+        self.assertEqual(jev_demo.sanitize_model_for_provider("", "openrouter"), "~typesafe/jev-latest")
+        self.assertEqual(jev_demo.sanitize_model_for_provider(None, "openrouter"), "~typesafe/jev-latest")
+
+    def test_provider_models_dictionary(self):
+        self.assertIn("typesafe", jev_demo.PROVIDER_MODELS)
+        self.assertIn("openrouter", jev_demo.PROVIDER_MODELS)
+
+        typesafe_ids = [m["id"] for m in jev_demo.PROVIDER_MODELS["typesafe"]]
+        self.assertIn("jev-latest", typesafe_ids)
+        self.assertIn("jev-1.13", typesafe_ids)
+        self.assertNotIn("typesafe/jev-v1", typesafe_ids)
+
+        openrouter_ids = [m["id"] for m in jev_demo.PROVIDER_MODELS["openrouter"]]
+        self.assertIn("~typesafe/jev-latest", openrouter_ids)
+        self.assertIn("typesafe/jev-latest", openrouter_ids)
+        self.assertNotIn("typesafe/jev-v1", openrouter_ids)
+
 
     def test_endpoint_validation_allowlist(self):
         # Valid approved endpoints

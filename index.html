@@ -2915,8 +2915,10 @@
             <div class="wf-bar-item wf-model-item">
                 <label class="wf-bar-label" for="engine-model-select">Model:</label>
                 <select class="wf-bar-select" id="engine-model-select" onchange="handleModelSelectChange(this.value)" title="Select Active Jev Model">
-                    <option value="~typesafe/jev-latest">~typesafe/jev-latest</option>
-                    <option value="typesafe/jev-v1">typesafe/jev-v1</option>
+                    <option value="~typesafe/jev-latest">~typesafe/jev-latest (Recommended)</option>
+                    <option value="typesafe/jev-latest">typesafe/jev-latest</option>
+                    <option value="typesafe/jev-1.13">typesafe/jev-1.13</option>
+                    <option value="typesafe/jev-router">typesafe/jev-router (Adaptive)</option>
                     <option value="openrouter/auto">openrouter/auto</option>
                 </select>
                 <strong id="bar-model" style="display: none;">~typesafe/jev-latest</strong>
@@ -3816,15 +3818,26 @@
             <p class="dialog-desc">Keys are kept strictly in server memory during the active session and are never exposed in client bundles.</p>
 
             <div class="form-group">
-                <label class="form-label">Provider Gateway</label>
-                <select class="form-select" id="cfg-provider">
+                <label class="form-label" for="cfg-provider">Provider Gateway</label>
+                <select class="form-select" id="cfg-provider" onchange="handleConfigProviderChange(this.value)">
                     <option value="openrouter">OpenRouter (Alpha Decisions API)</option>
                     <option value="typesafe">TypeSafe Direct API</option>
                 </select>
             </div>
 
             <div class="form-group">
-                <label class="form-label">API Key (sk-or-v1-... or ts-...)</label>
+                <label class="form-label" for="cfg-model">Model</label>
+                <select class="form-select" id="cfg-model">
+                    <option value="~typesafe/jev-latest">~typesafe/jev-latest (Recommended)</option>
+                    <option value="typesafe/jev-latest">typesafe/jev-latest</option>
+                    <option value="typesafe/jev-1.13">typesafe/jev-1.13</option>
+                    <option value="typesafe/jev-router">typesafe/jev-router (Adaptive)</option>
+                    <option value="openrouter/auto">openrouter/auto</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" id="cfg-api-key-label" for="cfg-api-key">API Key (sk-or-v1-... or ts-...)</label>
                 <input type="password" class="form-input" id="cfg-api-key" placeholder="Paste your API key here">
             </div>
 
@@ -4009,15 +4022,76 @@
             setTheme(themes[currentThemeIndex].id);
         }
 
+        const PROVIDER_MODELS = {
+            typesafe: [
+                { id: "jev-latest", name: "jev-latest (Latest, Recommended)", desc: "TypeSafe System One flagship model" },
+                { id: "jev-1.13", name: "jev-1.13 (Production Stable)", desc: "TypeSafe System One v1.13 stable release" },
+                { id: "jev-1.13.0", name: "jev-1.13.0 (Pinned)", desc: "TypeSafe System One v1.13.0 patch release" },
+                { id: "jev-preview", name: "jev-preview (Preview Track)", desc: "TypeSafe System One preview track" }
+            ],
+            openrouter: [
+                { id: "~typesafe/jev-latest", name: "~typesafe/jev-latest (Recommended)", desc: "OpenRouter auto-redirect to latest Jev" },
+                { id: "typesafe/jev-latest", name: "typesafe/jev-latest", desc: "OpenRouter TypeSafe Jev latest" },
+                { id: "typesafe/jev-1.13", name: "typesafe/jev-1.13", desc: "OpenRouter TypeSafe Jev v1.13" },
+                { id: "typesafe/jev-router", name: "typesafe/jev-router (Adaptive)", desc: "OpenRouter adaptive Jev routing" },
+                { id: "openrouter/auto", name: "openrouter/auto", desc: "OpenRouter automatic decision routing" }
+            ]
+        };
+
+        let currentActiveProvider = "openrouter";
+        let currentActiveModel = "~typesafe/jev-latest";
+        let currentIsMock = true;
+        let serverAvailableModels = PROVIDER_MODELS;
+
+        function populateModelSelect(selectEl, provider, selectedModel, modelsMap) {
+            if (!selectEl) return;
+            const prov = (provider || "openrouter").toLowerCase();
+            const models = (modelsMap && modelsMap[prov]) || PROVIDER_MODELS[prov] || [];
+            selectEl.innerHTML = '';
+            let matched = false;
+            models.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m.id;
+                opt.textContent = m.name || m.id;
+                if (m.id === selectedModel) {
+                    opt.selected = true;
+                    matched = true;
+                }
+                selectEl.appendChild(opt);
+            });
+            if (selectedModel && !matched) {
+                const customOpt = document.createElement('option');
+                customOpt.value = selectedModel;
+                customOpt.textContent = `${selectedModel} (Custom)`;
+                customOpt.selected = true;
+                selectEl.appendChild(customOpt);
+            }
+        }
+
         async function handleProviderSelectChange(provider) {
+            const prov = (provider || "openrouter").toLowerCase();
+            const models = (serverAvailableModels && serverAvailableModels[prov]) || PROVIDER_MODELS[prov] || [];
+            const defaultModel = models.length > 0 ? models[0].id : (prov === 'typesafe' ? 'jev-latest' : '~typesafe/jev-latest');
+
+            // Optimistically update the dropdown UI immediately
+            populateModelSelect(document.getElementById('engine-model-select'), prov, defaultModel, serverAvailableModels);
+            const barModel = document.getElementById('bar-model');
+            if (barModel) barModel.textContent = defaultModel;
+            const barProv = document.getElementById('bar-provider');
+            if (barProv) barProv.textContent = prov.toUpperCase();
+
             try {
                 const res = await fetch('/api/config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ provider: provider })
+                    body: JSON.stringify({ provider: prov, model: defaultModel })
                 });
                 if (res.ok) {
-                    showToast(`Inference Engine switched to ${provider.toUpperCase()}`);
+                    const data = await res.json();
+                    if (data.available_models) serverAvailableModels = data.available_models;
+                    currentActiveProvider = data.provider || prov;
+                    currentActiveModel = data.model || defaultModel;
+                    showToast(`Inference Engine switched to ${currentActiveProvider.toUpperCase()} (${currentActiveModel})`);
                     fetchServerStatus();
                 }
             } catch (err) {
@@ -4033,7 +4107,11 @@
                     body: JSON.stringify({ model: model })
                 });
                 if (res.ok) {
-                    showToast(`Model switched to ${model}`);
+                    const data = await res.json();
+                    currentActiveModel = data.model || model;
+                    const barModel = document.getElementById('bar-model');
+                    if (barModel) barModel.textContent = currentActiveModel;
+                    showToast(`Model switched to ${currentActiveModel}`);
                     fetchServerStatus();
                 }
             } catch (err) {
@@ -4482,17 +4560,27 @@
                 if (!res.ok) return;
                 const data = await res.json();
 
-                // Provider sync
-                const barProv = document.getElementById('bar-provider');
-                if (barProv) barProv.textContent = data.provider.toUpperCase();
-                const engSelect = document.getElementById('engine-provider-select');
-                if (engSelect && data.provider) engSelect.value = data.provider.toLowerCase();
+                // Available models sync
+                if (data.available_models) {
+                    serverAvailableModels = data.available_models;
+                }
 
-                // Model sync
+                // Provider sync
+                const prov = (data.provider || 'openrouter').toLowerCase();
+                currentActiveProvider = prov;
+                const barProv = document.getElementById('bar-provider');
+                if (barProv) barProv.textContent = prov.toUpperCase();
+                const engSelect = document.getElementById('engine-provider-select');
+                if (engSelect && data.provider) engSelect.value = prov;
+
+                // Model sync with provider-aware options
+                currentActiveModel = data.model || (prov === 'typesafe' ? 'jev-latest' : '~typesafe/jev-latest');
                 const barMdl = document.getElementById('bar-model');
-                if (barMdl) barMdl.textContent = data.model;
+                if (barMdl) barMdl.textContent = currentActiveModel;
                 const mdlSelect = document.getElementById('engine-model-select');
-                if (mdlSelect && data.model) mdlSelect.value = data.model;
+                if (mdlSelect) populateModelSelect(mdlSelect, prov, currentActiveModel, serverAvailableModels);
+
+                currentIsMock = !!data.mock;
 
                 // API Key sync
                 const barKey = document.getElementById('bar-key');
@@ -5034,14 +5122,43 @@
 
         // Config Modal
         const configModal = document.getElementById('config-modal-overlay');
+
+        function handleConfigProviderChange(provider) {
+            const prov = (provider || "openrouter").toLowerCase();
+            const models = (serverAvailableModels && serverAvailableModels[prov]) || PROVIDER_MODELS[prov] || [];
+            const defaultModel = models.length > 0 ? models[0].id : (prov === 'typesafe' ? 'jev-latest' : '~typesafe/jev-latest');
+            populateModelSelect(document.getElementById('cfg-model'), prov, defaultModel, serverAvailableModels);
+            const keyLabel = document.getElementById('cfg-api-key-label');
+            const keyInput = document.getElementById('cfg-api-key');
+            if (prov === 'typesafe') {
+                if (keyLabel) keyLabel.textContent = 'TypeSafe API Key (ts-...)';
+                if (keyInput) keyInput.placeholder = 'ts-xxxxxxxxxxxx';
+            } else {
+                if (keyLabel) keyLabel.textContent = 'OpenRouter API Key (sk-or-v1-...)';
+                if (keyInput) keyInput.placeholder = 'sk-or-v1-xxxxxxxxxxxx';
+            }
+        }
+
         function openConfigModal() {
+            const provSelect = document.getElementById('cfg-provider');
+            if (provSelect) provSelect.value = currentActiveProvider;
+            handleConfigProviderChange(currentActiveProvider);
+            const modelSelect = document.getElementById('cfg-model');
+            if (modelSelect) modelSelect.value = currentActiveModel;
+            const modeSelect = document.getElementById('cfg-mode');
+            if (modeSelect) modeSelect.value = currentIsMock ? 'mock' : 'live';
+            const keyInput = document.getElementById('cfg-api-key');
+            if (keyInput) keyInput.value = '';
             configModal.classList.add('active');
         }
+
         function closeConfigModal() {
             configModal.classList.remove('active');
         }
+
         async function saveConfig() {
             const prov = document.getElementById('cfg-provider').value;
+            const mdl = document.getElementById('cfg-model') ? document.getElementById('cfg-model').value : undefined;
             const key = document.getElementById('cfg-api-key').value.trim();
             const mode = document.getElementById('cfg-mode').value;
 
@@ -5049,6 +5166,7 @@
                 provider: prov,
                 mock: mode === 'mock'
             };
+            if (mdl) payload.model = mdl;
             if (key) payload.api_key = key;
 
             try {
@@ -5058,6 +5176,12 @@
                     body: JSON.stringify(payload)
                 });
                 if (!res.ok) throw new Error('Failed to update config');
+                const data = await res.json();
+                if (data.available_models) serverAvailableModels = data.available_models;
+                currentActiveProvider = data.provider || prov;
+                currentActiveModel = data.model || mdl || '';
+                currentIsMock = !!data.mock;
+                showToast(`Settings saved: ${currentActiveProvider.toUpperCase()} (${currentActiveModel})`);
                 fetchServerStatus();
                 closeConfigModal();
             } catch (e) {

@@ -79,9 +79,8 @@ _HTTP_REFERER = os.environ.get("OPENROUTER_REFERER", "https://github.com/RileyCa
 _OPENROUTER_TITLE = os.environ.get("OPENROUTER_TITLE", "JevTools Demo")
 
 # Actual tested performance metrics interacting with OpenRouter API
-OPENROUTER_TESTED_LATENCY_MS = 287.0
-OPENROUTER_TESTED_TTFT_MS = 286.9
-
+OPENROUTER_TESTED_LATENCY_MS = 300.0
+OPENROUTER_TESTED_TTFT_MS = 300.0
 
 
 def _find_env_file() -> None:
@@ -137,6 +136,69 @@ def validate_endpoint(url: str, provider: str) -> str:
 
 _validate_endpoint = validate_endpoint
 
+# Canonical models supported by each provider
+PROVIDER_MODELS: dict[str, list[dict[str, str]]] = {
+    "typesafe": [
+        {"id": "jev-latest", "name": "jev-latest (Latest, Recommended)", "description": "TypeSafe System One flagship model"},
+        {"id": "jev-1.13", "name": "jev-1.13 (Production Stable)", "description": "TypeSafe System One v1.13 stable release"},
+        {"id": "jev-1.13.0", "name": "jev-1.13.0 (Pinned)", "description": "TypeSafe System One v1.13.0 patch release"},
+        {"id": "jev-preview", "name": "jev-preview (Preview Track)", "description": "TypeSafe System One preview track"},
+    ],
+    "openrouter": [
+        {"id": "~typesafe/jev-latest", "name": "~typesafe/jev-latest (Recommended)", "description": "OpenRouter auto-redirect to latest Jev"},
+        {"id": "typesafe/jev-latest", "name": "typesafe/jev-latest", "description": "OpenRouter TypeSafe Jev latest"},
+        {"id": "typesafe/jev-1.13", "name": "typesafe/jev-1.13", "description": "OpenRouter TypeSafe Jev v1.13"},
+        {"id": "typesafe/jev-router", "name": "typesafe/jev-router (Adaptive)", "description": "OpenRouter adaptive Jev routing"},
+        {"id": "openrouter/auto", "name": "openrouter/auto", "description": "OpenRouter automatic decision routing"},
+    ],
+}
+
+TYPESAFE_MODELS: list[str] = [m["id"] for m in PROVIDER_MODELS["typesafe"]]
+OPENROUTER_MODELS: list[str] = [m["id"] for m in PROVIDER_MODELS["openrouter"]]
+
+
+def sanitize_model_for_provider(model: Optional[str], provider: str) -> str:
+    """
+    Ensure the model string is valid for the specified provider.
+    Translates cross-provider prefixes (e.g. stripping ~typesafe/ or typesafe/ for TypeSafe direct API,
+    or adding OpenRouter namespaces when routing via OpenRouter), maps unknown/legacy model aliases
+    like 'typesafe/jev-v1' to 'jev-latest', and falls back to provider defaults.
+    """
+    prov = (provider or "").strip().lower()
+    raw = (model or "").strip()
+
+    if prov == "typesafe":
+        if not raw:
+            return TYPESAFE_DEFAULT_MODEL
+        m = raw
+        if m in ("typesafe/jev-v1", "jev-v1"):
+            return TYPESAFE_DEFAULT_MODEL
+        if m.startswith("~typesafe/"):
+            m = m[len("~typesafe/"):]
+        elif m.startswith("typesafe/"):
+            m = m[len("typesafe/"):]
+
+        if m in ("jev-v1", "auto", "openrouter/auto"):
+            return TYPESAFE_DEFAULT_MODEL
+        if m in TYPESAFE_MODELS:
+            return m
+        return m or TYPESAFE_DEFAULT_MODEL
+
+    # OpenRouter
+    if not raw:
+        return OPENROUTER_DEFAULT_MODEL
+    if raw in ("typesafe/jev-v1", "jev-v1"):
+        return OPENROUTER_DEFAULT_MODEL
+    if raw == "jev-latest":
+        return OPENROUTER_DEFAULT_MODEL
+    if raw in ("jev-1.13", "jev-1.13.0"):
+        return "typesafe/jev-1.13"
+    if raw == "jev-preview":
+        return OPENROUTER_DEFAULT_MODEL
+    if raw in OPENROUTER_MODELS:
+        return raw
+    return raw
+
 
 def get_provider_config(
     api_key: str,
@@ -160,12 +222,13 @@ def get_provider_config(
 
     if prov == "typesafe":
         ep = endpoint or os.environ.get("JEV_API_URL", TYPESAFE_API_URL)
-        mdl = model or os.environ.get("JEV_MODEL", TYPESAFE_DEFAULT_MODEL)
+        chosen_model = model or os.environ.get("JEV_MODEL", TYPESAFE_DEFAULT_MODEL)
     else:
         prov = "openrouter"
         ep = endpoint or os.environ.get("JEV_API_URL", OPENROUTER_API_URL)
-        mdl = model or os.environ.get("JEV_MODEL", OPENROUTER_DEFAULT_MODEL)
+        chosen_model = model or os.environ.get("JEV_MODEL", OPENROUTER_DEFAULT_MODEL)
 
+    mdl = sanitize_model_for_provider(chosen_model, prov)
     ep = validate_endpoint(ep, prov)
     return prov, ep, mdl
 
@@ -572,12 +635,14 @@ def call_jev_with_metrics(
             "mock": True,
         }
         if log_to_db:
+            effective_prov = (provider or "openrouter").strip().lower()
+            default_mdl = TYPESAFE_DEFAULT_MODEL if effective_prov == "typesafe" else OPENROUTER_DEFAULT_MODEL
             database.log_interaction(
                 action_type=action_type,
                 request_payload={"state": state, "questions": questions},
                 response_payload={"answers": answers, "metrics": metrics},
-                provider=provider or "openrouter",
-                model=model or OPENROUTER_DEFAULT_MODEL,
+                provider=effective_prov,
+                model=model or default_mdl,
                 endpoint="[OFFLINE MOCK]",
                 status="success",
                 ttft_ms=ttft_ms,
@@ -622,11 +687,17 @@ def call_jev_with_metrics(
             if not resp.ok:
                 try:
                     err_data: dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
-                    err_msg = (
-                        err_data.get("error", {}).get("message")
-                        or err_data.get("message")
-                        or str(err_data)
-                    )
+                    err_detail = err_data.get("detail")
+                    if isinstance(err_detail, dict) and "message" in err_detail:
+                        err_msg = err_detail["message"]
+                    elif isinstance(err_detail, str):
+                        err_msg = err_detail
+                    else:
+                        err_msg = (
+                            err_data.get("error", {}).get("message")
+                            if isinstance(err_data.get("error"), dict)
+                            else err_data.get("message") or str(err_data)
+                        )
                 except Exception:
                     err_msg = raw_bytes.decode("utf-8", errors="replace").strip() or f"HTTP {resp.status_code}"
                 raise RuntimeError(f"{prov.title()} API error (HTTP {resp.status_code}): {err_msg}")

@@ -413,6 +413,8 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     "reviews_count": len(jev_demo.REVIEW_CASES),
                     "topics_count": len(jev_demo.TOPIC_CASES),
                 },
+                "available_models": jev_demo.PROVIDER_MODELS,
+                "provider_models": jev_demo.PROVIDER_MODELS.get(prov, []),
             }
             self._send_json_response(data)
             return
@@ -721,7 +723,8 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             return
 
         if path == "/api/config":
-            # Update session key, mock mode, or provider
+            # Update session key, mock mode, provider, or model
+            prev_provider = RUNTIME_STATE["provider"]
             if "api_key" in body:
                 key = str(body["api_key"]).strip()
                 if key:
@@ -729,7 +732,14 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             if "mock" in body:
                 RUNTIME_STATE["mock"] = bool(body["mock"])
             if "provider" in body:
-                RUNTIME_STATE["provider"] = str(body["provider"]).strip()
+                new_prov = str(body["provider"]).strip().lower()
+                RUNTIME_STATE["provider"] = new_prov
+                if new_prov != prev_provider and "model" not in body:
+                    RUNTIME_STATE["model"] = (
+                        jev_demo.TYPESAFE_DEFAULT_MODEL
+                        if new_prov == "typesafe"
+                        else jev_demo.OPENROUTER_DEFAULT_MODEL
+                    )
             if "model" in body:
                 RUNTIME_STATE["model"] = str(body["model"]).strip()
 
@@ -747,8 +757,11 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "mock": RUNTIME_STATE["mock"],
                 "provider": prov,
                 "model": mdl,
+                "endpoint": ep if not RUNTIME_STATE["mock"] else "[OFFLINE MOCK]",
                 "api_key_masked": jev_demo.mask_key(RUNTIME_STATE["api_key"]),
                 "has_real_key": bool(RUNTIME_STATE["api_key"] and not RUNTIME_STATE["api_key"].startswith("mock-")),
+                "available_models": jev_demo.PROVIDER_MODELS,
+                "provider_models": jev_demo.PROVIDER_MODELS.get(prov, []),
             })
             return
 

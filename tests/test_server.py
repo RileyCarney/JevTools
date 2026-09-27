@@ -589,6 +589,50 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertEqual(post_body["items"][0]["action_type"], "topic_classification")
         self.assertIn("schema", post_body)
 
+    def test_provider_models_status_and_switching(self):
+        """Verify that provider model lists are returned and switching providers updates models correctly."""
+        # 1. Check /api/status models metadata
+        status, body = self._get("/api/status")
+        self.assertEqual(status, 200)
+        self.assertIn("available_models", body)
+        self.assertIn("typesafe", body["available_models"])
+        self.assertIn("openrouter", body["available_models"])
+        self.assertIn("provider_models", body)
+
+        # 2. Switch provider to TypeSafe
+        c_status, c_body = self._post("/api/config", {"provider": "typesafe"})
+        self.assertEqual(c_status, 200)
+        self.assertEqual(c_body["provider"], "typesafe")
+        self.assertEqual(c_body["model"], "jev-latest")
+        typesafe_ids = [m["id"] for m in c_body["provider_models"]]
+        self.assertIn("jev-latest", typesafe_ids)
+        self.assertIn("jev-1.13", typesafe_ids)
+        self.assertNotIn("typesafe/jev-v1", typesafe_ids)
+
+        # 3. Switching with invalid/legacy model string 'typesafe/jev-v1' sanitizes safely
+        c2_status, c2_body = self._post("/api/config", {"provider": "typesafe", "model": "typesafe/jev-v1"})
+        self.assertEqual(c2_status, 200)
+        self.assertEqual(c2_body["provider"], "typesafe")
+        self.assertEqual(c2_body["model"], "jev-latest")
+
+        # 4. Switch provider back to OpenRouter
+        c3_status, c3_body = self._post("/api/config", {"provider": "openrouter"})
+        self.assertEqual(c3_status, 200)
+        self.assertEqual(c3_body["provider"], "openrouter")
+        self.assertEqual(c3_body["model"], "~typesafe/jev-latest")
+        openrouter_ids = [m["id"] for m in c3_body["provider_models"]]
+        self.assertIn("~typesafe/jev-latest", openrouter_ids)
+        self.assertIn("typesafe/jev-latest", openrouter_ids)
+        self.assertNotIn("typesafe/jev-v1", openrouter_ids)
+
+    def test_index_html_has_no_unknown_typesafe_model(self):
+        """Ensure the broken typesafe/jev-v1 model string does not appear in index.html."""
+        index_path = os.path.join(PARENT_DIR, "index.html")
+        with open(index_path, "r", encoding="utf-8") as f:
+            html = f.read()
+        self.assertNotIn("typesafe/jev-v1", html, "Unknown model typesafe/jev-v1 must not be present in index.html")
+        self.assertIn("jev-latest", html)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
