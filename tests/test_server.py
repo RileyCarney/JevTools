@@ -639,6 +639,55 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertNotIn("typesafe/jev-v1", html, "Unknown model typesafe/jev-v1 must not be present in index.html")
         self.assertIn("jev-latest", html)
 
+    def test_status_endpoint_returns_true_average_latency_across_requests(self):
+        """Verify that /api/status calculates and returns the true average latency of requests."""
+        # 1. Clear history first
+        self._delete("/api/history")
+
+        # 2. When empty, status returns baseline tested latency (287 ms)
+        status, body_empty = self._get("/api/status")
+        self.assertEqual(status, 200)
+        self.assertEqual(body_empty["tested_inference_latency_ms"], 287.0)
+        self.assertEqual(body_empty["tested_inference_latency_str"], "287 ms")
+        self.assertEqual(body_empty["total_requests"], 0)
+
+        # 3. Perform review analysis request
+        post_status, post_body = self._post("/api/analyze-review", {
+            "review": "Very clear sound and comfortable fit.",
+            "product": "Earbuds"
+        })
+        self.assertEqual(post_status, 200)
+        self.assertIn("avg_latency_ms", post_body)
+        self.assertIn("avg_latency_str", post_body)
+        self.assertGreater(post_body["avg_latency_ms"], 0)
+
+        # 4. Perform topic classification request
+        t_status, t_body = self._post("/api/classify-topic", {
+            "paragraph": "Semiconductor manufacturing technology updates."
+        })
+        self.assertEqual(t_status, 200)
+        self.assertIn("avg_latency_ms", t_body)
+
+        # 5. Check /api/status reflects true average latency of the requests made
+        stat_status, stat_body = self._get("/api/status")
+        self.assertEqual(stat_status, 200)
+        self.assertGreater(stat_body["total_requests"], 0)
+        self.assertIn("avg_latency_ms", stat_body)
+        self.assertIn("avg_latency_str", stat_body)
+
+        # The true average from database must match
+        h_status, h_body = self._get("/api/history/stats")
+        self.assertEqual(h_status, 200)
+        self.assertAlmostEqual(stat_body["avg_latency_ms"], h_body["avg_latency_ms"], places=2)
+        self.assertEqual(stat_body["tested_inference_latency_ms"], stat_body["avg_latency_ms"])
+
+        # 6. Clear history and verify latency resets to baseline 287 ms
+        self._delete("/api/history")
+        reset_status, reset_body = self._get("/api/status")
+        self.assertEqual(reset_status, 200)
+        self.assertEqual(reset_body["tested_inference_latency_ms"], 287.0)
+        self.assertEqual(reset_body["tested_inference_latency_str"], "287 ms")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

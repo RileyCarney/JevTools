@@ -104,6 +104,17 @@ def init_server_state(cli_key: str | None = None, force_mock: bool = False) -> N
 _init_server_state = init_server_state
 
 
+def get_current_avg_latency() -> float:
+    """Return the true average inference latency of recorded requests, falling back to baseline tested latency."""
+    try:
+        stats = database.get_stats()
+        if stats.get("total_requests", 0) > 0 and (stats.get("avg_latency_ms") or 0) > 0:
+            return float(stats["avg_latency_ms"])
+    except Exception:
+        pass
+    return float(jev_demo.OPENROUTER_TESTED_LATENCY_MS)
+
+
 class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
     """HTTP request handler supporting both static dashboard assets and Jev REST APIs."""
 
@@ -376,6 +387,15 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 model=RUNTIME_STATE["model"],
                 endpoint=RUNTIME_STATE["endpoint"],
             )
+            db_stats = database.get_stats()
+            has_requests = db_stats.get("total_requests", 0) > 0 and (db_stats.get("avg_latency_ms") or 0) > 0
+            if has_requests:
+                avg_lat = float(db_stats["avg_latency_ms"])
+            else:
+                avg_lat = float(jev_demo.OPENROUTER_TESTED_LATENCY_MS)
+
+            lat_str = f"{round(avg_lat)} ms" if avg_lat >= 1 else f"{avg_lat:.1f} ms"
+
             data: dict[str, Any] = {
                 "status": "online",
                 "mock": RUNTIME_STATE["mock"],
@@ -384,8 +404,11 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "endpoint": ep if not RUNTIME_STATE["mock"] else "[OFFLINE MOCK]",
                 "api_key_masked": jev_demo.mask_key(RUNTIME_STATE["api_key"]),
                 "has_real_key": bool(RUNTIME_STATE["api_key"] and not RUNTIME_STATE["api_key"].startswith("mock-")),
-                "tested_inference_latency_ms": RUNTIME_STATE["tested_latency_ms"],
-                "tested_inference_latency_str": f"{round(RUNTIME_STATE['tested_latency_ms'])} ms",
+                "tested_inference_latency_ms": avg_lat,
+                "tested_inference_latency_str": lat_str,
+                "avg_latency_ms": avg_lat,
+                "avg_latency_str": lat_str,
+                "total_requests": db_stats.get("total_requests", 0),
                 "benchmarks": {
                     "reviews_count": len(jev_demo.REVIEW_CASES),
                     "topics_count": len(jev_demo.TOPIC_CASES),
@@ -401,6 +424,9 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             stats = jev_demo.measure_openrouter_latency(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
             if stats.get("avg_latency_ms"):
                 RUNTIME_STATE["tested_latency_ms"] = float(stats["avg_latency_ms"])
+            avg_lat = get_current_avg_latency()
+            stats["current_avg_latency_ms"] = avg_lat
+            stats["current_avg_latency_str"] = f"{round(avg_lat)} ms" if avg_lat >= 1 else f"{avg_lat:.1f} ms"
             self._send_json_response(stats)
             return
 
@@ -733,6 +759,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/history/clear":
             count = database.clear_history()
+            RUNTIME_STATE["tested_latency_ms"] = float(jev_demo.OPENROUTER_TESTED_LATENCY_MS)
             self._send_json_response({
                 "message": f"Successfully cleared {count} interaction logs",
                 "cleared": count,
@@ -761,7 +788,11 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     endpoint=RUNTIME_STATE["endpoint"],
                     client_info="web_ui",
                 )
-                self._send_json_response(result.to_dict())
+                res_dict = result.to_dict()
+                avg_lat = get_current_avg_latency()
+                res_dict["avg_latency_ms"] = avg_lat
+                res_dict["avg_latency_str"] = f"{round(avg_lat)} ms" if avg_lat >= 1 else f"{avg_lat:.1f} ms"
+                self._send_json_response(res_dict)
             except Exception as exc:
                 self._send_json_error(f"Review analysis failed: {exc}", status=500)
             return
@@ -785,7 +816,11 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     endpoint=RUNTIME_STATE["endpoint"],
                     client_info="web_ui",
                 )
-                self._send_json_response(result.to_dict())
+                res_dict = result.to_dict()
+                avg_lat = get_current_avg_latency()
+                res_dict["avg_latency_ms"] = avg_lat
+                res_dict["avg_latency_str"] = f"{round(avg_lat)} ms" if avg_lat >= 1 else f"{avg_lat:.1f} ms"
+                self._send_json_response(res_dict)
             except Exception as exc:
                 self._send_json_error(f"Topic classification failed: {exc}", status=500)
             return
@@ -816,6 +851,9 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     endpoint=RUNTIME_STATE["endpoint"],
                     client_info="web_ui",
                 )
+                avg_lat = get_current_avg_latency()
+                res["avg_latency_ms"] = avg_lat
+                res["avg_latency_str"] = f"{round(avg_lat)} ms" if avg_lat >= 1 else f"{avg_lat:.1f} ms"
                 self._send_json_response(res)
             except Exception as exc:
                 self._send_json_error(f"Custom evaluation failed: {exc}", status=500)
@@ -830,6 +868,9 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             stats = jev_demo.measure_openrouter_latency(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
             if stats.get("avg_latency_ms"):
                 RUNTIME_STATE["tested_latency_ms"] = float(stats["avg_latency_ms"])
+            avg_lat = get_current_avg_latency()
+            stats["current_avg_latency_ms"] = avg_lat
+            stats["current_avg_latency_str"] = f"{round(avg_lat)} ms" if avg_lat >= 1 else f"{avg_lat:.1f} ms"
             self._send_json_response(stats)
             return
 
@@ -841,6 +882,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == "/api/history":
             count = database.clear_history()
+            RUNTIME_STATE["tested_latency_ms"] = float(jev_demo.OPENROUTER_TESTED_LATENCY_MS)
             self._send_json_response({
                 "message": f"Successfully cleared {count} interaction logs",
                 "cleared": count,

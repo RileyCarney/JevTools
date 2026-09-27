@@ -4121,12 +4121,14 @@
                     if (lblEl) lblEl.textContent = `Inference Latency`;
                     if (tagEl) tagEl.textContent = '✓ Measured';
                     showToast(`Latency Benchmark: ${lat} ms`);
+                    loadHistoryData();
+                    fetchServerStatus();
                 } else {
-                    if (valEl) valEl.textContent = '287 ms';
+                    fetchServerStatus();
                     if (tagEl) tagEl.textContent = '⚡ Benchmark';
                 }
             } catch (err) {
-                if (valEl) valEl.textContent = '287 ms';
+                fetchServerStatus();
                 if (tagEl) tagEl.textContent = '⚡ Benchmark';
             }
         }
@@ -4603,9 +4605,10 @@
                 }
 
                 // Latency sync
-                if (data.tested_inference_latency_str) {
+                const latencyDisplay = data.avg_latency_str || data.tested_inference_latency_str;
+                if (latencyDisplay) {
                     const statValEl = document.getElementById('stat-latency-val');
-                    if (statValEl) statValEl.textContent = data.tested_inference_latency_str;
+                    if (statValEl) statValEl.textContent = latencyDisplay;
                 }
                 // Benchmarks count sync
                 if (data.benchmarks) {
@@ -4686,6 +4689,10 @@
                 if (data.error) throw new Error(data.error);
 
                 renderReviewResults(data);
+                if (data.avg_latency_str) {
+                    const statValEl = document.getElementById('stat-latency-val');
+                    if (statValEl) statValEl.textContent = data.avg_latency_str;
+                }
                 loadHistoryData();
             } catch (err) {
                 alert('Evaluation Error: ' + err.message);
@@ -4796,6 +4803,10 @@
                 if (data.error) throw new Error(data.error);
 
                 renderTopicResults(data);
+                if (data.avg_latency_str) {
+                    const statValEl = document.getElementById('stat-latency-val');
+                    if (statValEl) statValEl.textContent = data.avg_latency_str;
+                }
                 loadHistoryData();
             } catch (err) {
                 alert('Classification Error: ' + err.message);
@@ -4926,6 +4937,10 @@
                 document.getElementById('custom-output-pre').textContent = JSON.stringify(data, null, 2);
                 if (data.metadata?.elapsed_ms) {
                     document.getElementById('custom-elapsed-badge').textContent = `Latency: ${Math.round(data.metadata.elapsed_ms)} ms`;
+                }
+                if (data.avg_latency_str) {
+                    const statValEl = document.getElementById('stat-latency-val');
+                    if (statValEl) statValEl.textContent = data.avg_latency_str;
                 }
                 loadHistoryData();
             } catch (err) {
@@ -6195,6 +6210,15 @@
             const latEl = document.getElementById('hist-avg-latency');
             if (latEl) latEl.textContent = `${Math.round(stats.avg_latency_ms || 0)} ms`;
 
+            const mainLatEl = document.getElementById('stat-latency-val');
+            if (mainLatEl && stats.avg_latency_ms !== undefined) {
+                if (stats.total_requests > 0 && stats.avg_latency_ms > 0) {
+                    mainLatEl.textContent = stats.avg_latency_ms >= 1 ? `${Math.round(stats.avg_latency_ms)} ms` : `${stats.avg_latency_ms.toFixed(1)} ms`;
+                } else {
+                    mainLatEl.textContent = '287 ms';
+                }
+            }
+
             const fileBadge = document.getElementById('hist-db-file-badge');
             if (fileBadge && stats.db_filename) fileBadge.textContent = stats.db_filename;
 
@@ -6347,6 +6371,7 @@
                 const data = await res.json();
                 showToast(`Cleared ${data.cleared || 0} interaction logs from database.`);
                 loadHistoryData();
+                fetchServerStatus();
             } catch (err) {
                 alert('Failed to clear database: ' + err);
             }

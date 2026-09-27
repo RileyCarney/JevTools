@@ -623,9 +623,8 @@ def call_jev_with_metrics(
     start_time = time.perf_counter()
     if mock:
         answers = _mock_jev_response(state, questions)
-        # Generate realistic elapsed latency for mock execution
-        # Calibrated against actual tested OpenRouter API performance
-        elapsed_ms = round(OPENROUTER_TESTED_LATENCY_MS, 2)
+        total_elapsed_ms = (time.perf_counter() - start_time) * 1000
+        elapsed_ms = max(0.1, round(total_elapsed_ms, 2))
         metrics: dict[str, Any] = {
             "elapsed_ms": elapsed_ms,
             "mock": True,
