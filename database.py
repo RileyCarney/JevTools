@@ -5,7 +5,7 @@ database.py - Personal device SQLite database for tracking requests and response
 Provides zero-dependency, local-first request/response audit logging and persistence:
   - Tracks all outgoing requests sent to Jev / TypeSafe / OpenRouter
   - Tracks all incoming responses, decisions, probabilities, and errors
-  - Measures and persists TTFT (Time To First Token) and total inference latency
+  - Measures and persists total inference latency
   - Stores data locally on the user's personal device in a gitignored SQLite database
   - Provides thread-safe connection pooling, WAL mode, queries, and analytics
 """

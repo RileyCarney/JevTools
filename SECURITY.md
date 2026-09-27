@@ -1,6 +1,6 @@
 # Security Policy & Architecture Guide
 
-JevTools is an open-source reference implementation, local-first web cockpit, and knowledge toolkit for **Jev (TypeSafe System One)** and the **OpenRouter Alpha Decisions API**.
+JevTools is an open-source reference implementation, local-first web dashboard, and knowledge toolkit for **Jev (TypeSafe System One)** and the **OpenRouter Alpha Decisions API**.
 
 This document outlines the project's security architecture, supported versions, responsible vulnerability disclosure process, threat model, and a comprehensive chronological history of all security enhancements and safeguards implemented in the codebase—including exact code snippets, published dates, and branch links.
 

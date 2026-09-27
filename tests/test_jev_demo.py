@@ -240,48 +240,47 @@ class TestJevDemoCLI(unittest.TestCase):
         self.assertIn("primary_topic", data)
 
 
-class TestJevDemoTTFT(unittest.TestCase):
-    """Test Time To First Token (TTFT) and inference latency generation."""
+class TestJevDemoLatency(unittest.TestCase):
+    """Test inference latency generation and measurement."""
 
     def test_tested_constants(self):
         self.assertEqual(jev_demo.OPENROUTER_TESTED_LATENCY_MS, 287.0)
-        self.assertEqual(jev_demo.OPENROUTER_TESTED_TTFT_MS, 286.9)
+        self.assertFalse(hasattr(jev_demo, "OPENROUTER_TESTED_TTFT_MS"))
 
-    def test_review_analysis_generates_ttft(self):
+    def test_review_analysis_generates_latency(self):
         rev = jev_demo.REVIEW_CASES[0][0]
         prod = jev_demo.REVIEW_CASES[0][1]
         res = jev_demo.analyze_review("mock", rev, prod, mock=True)
-        self.assertGreater(res.ttft_ms, 0)
+        self.assertFalse(hasattr(res, "ttft_ms"))
         self.assertGreater(res.elapsed_ms, 0)
         d = res.to_dict()
-        self.assertIn("ttft_ms", d)
+        self.assertNotIn("ttft_ms", d)
         self.assertIn("elapsed_ms", d)
 
-    def test_topic_classification_generates_ttft(self):
+    def test_topic_classification_generates_latency(self):
         para = jev_demo.TOPIC_CASES[0]
         res = jev_demo.classify_topic("mock", para, mock=True)
-        self.assertGreater(res.ttft_ms, 0)
+        self.assertFalse(hasattr(res, "ttft_ms"))
         self.assertGreater(res.elapsed_ms, 0)
         d = res.to_dict()
-        self.assertIn("ttft_ms", d)
+        self.assertNotIn("ttft_ms", d)
         self.assertIn("elapsed_ms", d)
 
-    def test_custom_decision_generates_ttft(self):
+    def test_custom_decision_generates_latency(self):
         state = {"test": 123}
         questions: dict[str, Any] = {"is_valid": {"type": "noul", "instructions": "Is this valid?"}}
         res = jev_demo.evaluate_custom_decision("mock", state, questions, mock=True)
         self.assertIn("metadata", res)
-        self.assertIn("ttft_ms", res["metadata"])
+        self.assertNotIn("ttft_ms", res["metadata"])
         self.assertIn("elapsed_ms", res["metadata"])
-        self.assertGreater(res["metadata"]["ttft_ms"], 0)
+        self.assertGreater(res["metadata"]["elapsed_ms"], 0)
 
-    def test_openrouter_api_ttft_benchmark(self):
-        """Interacts with OpenRouter API and verifies TTFT and latency measurements."""
-        stats = jev_demo.measure_openrouter_ttft(runs=1)
-        self.assertIn("avg_ttft_ms", stats)
+    def test_openrouter_api_latency_benchmark(self):
+        """Interacts with OpenRouter API and verifies latency measurements."""
+        stats = jev_demo.measure_openrouter_latency(runs=1)
+        self.assertNotIn("avg_ttft_ms", stats)
         self.assertIn("avg_latency_ms", stats)
         self.assertIn("results", stats)
-        self.assertGreater(stats["avg_ttft_ms"], 0)
         self.assertGreater(stats["avg_latency_ms"], 0)
         self.assertEqual(len(stats["results"]), 1)
 
@@ -289,9 +288,9 @@ class TestJevDemoTTFT(unittest.TestCase):
         cmd = [sys.executable, os.path.join(PARENT_DIR, "jev_demo.py"), "--benchmark", "--json"]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         data = json.loads(result.stdout)
-        self.assertIn("avg_ttft_ms", data)
+        self.assertNotIn("avg_ttft_ms", data)
         self.assertIn("avg_latency_ms", data)
-        self.assertGreater(data["avg_ttft_ms"], 0)
+        self.assertGreater(data["avg_latency_ms"], 0)
 
 
 class TestJevDemoHistoryCLI(unittest.TestCase):

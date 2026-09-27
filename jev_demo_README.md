@@ -8,7 +8,7 @@
 
 An example application demonstrating how to build fast, typed, deterministic judgment workflows with **Jev (TypeSafe System One)** accessed through the **OpenRouter Alpha Decisions API**.
 
-Unlike generative Large Language Models that output unconstrained conversational text requiring complex prompt engineering and regex parsing, **Jev evaluates application state against typed questions and returns calibrated probability distributions and structured answers** with 287 ms tested inference latency (TTFT: 287 ms via OpenRouter API). Your code owns control flow and policy logic; Jev fills atomic semantic judgment slots.
+Unlike generative Large Language Models that output unconstrained conversational text requiring complex prompt engineering and regex parsing, **Jev evaluates application state against typed questions and returns calibrated probability distributions and structured answers** with 287 ms tested inference latency. Your code owns control flow and policy logic; Jev fills atomic semantic judgment slots.
 
 ---
 
@@ -128,7 +128,7 @@ py jev_demo.py --mock
 ### 6. Personal Device Data Storage & History Tracking
 
 Every evaluation sent through the CLI or Web Cockpit is automatically recorded in a local SQLite database (`jevtools.db`):
-- **Stored Data:** Timestamp, client identifier (`cli`, `web_ui`), action type (`analyze_review`, `classify_topic`, `custom_decision`, `openrouter_ttft`), execution mode (`live` vs `mock`), full request payload (state text, questions, criteria), full response payload (answers, probabilities, composite score, routing action), status (`ok` or `error`), TTFT, and elapsed inference latency.
+- **Stored Data:** Timestamp, client identifier (`cli`, `web_ui`), action type (`analyze_review`, `classify_topic`, `custom_decision`, `openrouter_latency`), execution mode (`live` vs `mock`), full request payload (state text, questions, criteria), full response payload (answers, probabilities, composite score, routing action), status (`ok` or `error`), and elapsed inference latency.
 - **Privacy & Gitignore:** The database file `jevtools.db` is strictly listed in `.gitignore`. Your prompts, user data, customer reviews, and evaluation results stay exclusively on your personal device and are never committed to Git.
 - **Inspect History & Database Structure:**
   ```powershell
@@ -295,12 +295,12 @@ options:
   --product PRODUCT     Product name for custom review evaluation (default: Wireless Earbuds Pro).
   --topic TOPIC         Custom paragraph text to classify immediately.
   --mock                Run in offline mock mode to test formatting and policy logic without making API calls.
-  --benchmark, --ttft   Run live benchmark against OpenRouter API to test TTFT and latency metrics.
+  --benchmark, --ttft   Run live benchmark against OpenRouter API to test inference latency metrics.
   --history             View personal device request/response history table and storage metrics.
   --limit LIMIT         Limit number of requests displayed from database (default: 25).
   --all                 Show every request in the database without pagination truncation.
   --filter-action FILTER_ACTION
-                        Filter database history by action type (review_analysis, topic_classification, custom_decision, benchmark_ttft).
+                        Filter database history by action type (review_analysis, topic_classification, custom_decision, benchmark_latency).
   --filter-status FILTER_STATUS
                         Filter database history by status (success or error).
   --filter-mode FILTER_MODE

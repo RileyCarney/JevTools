@@ -6,7 +6,7 @@
 
 # JevTools
 
-A toolkit, knowledge base, web cockpit, and reference implementation for building AI applications with **Jev (TypeSafe System One)** via **OpenRouter Alpha Decisions** and **TypeSafe Direct API**.
+A toolkit, knowledge base, web dashboard, and reference implementation for building AI applications with **Jev (TypeSafe System One)** via **OpenRouter Alpha Decisions** and **TypeSafe Direct API**.
 
 ---
 
@@ -14,7 +14,7 @@ A toolkit, knowledge base, web cockpit, and reference implementation for buildin
 
 **Jev** is a sub-second "System One" decision model built by TypeSafe AI. It acts as an automated semantic router, scorer, and verifier in software systems:
 
-- **Fast:** 287 ms actual tested inference latency (TTFT: 287 ms via OpenRouter API).
+- **Fast:** 300 ms actual tested inference latency.
 - **Typed:** Returns structured types (`choice`, `score`, `noul`) with calibrated probability distributions.
 - **Control Inversion:** Code owns application workflow and control flow; Jev evaluates state and fills typed judgment slots without free-form text parsing.
 
@@ -91,13 +91,13 @@ py jev_demo.py
 
 ## Personal Device Storage & Privacy
 
-All outgoing requests (prompt inputs, application state, typed questions) and incoming responses (answers, composite scores, action decisions, TTFT, and inference latencies) are automatically tracked in a local SQLite database (`jevtools.db`).
+All outgoing requests (prompt inputs, application state, typed questions) and incoming responses (answers, composite scores, action decisions, and inference latencies) are automatically tracked in a local SQLite database (`jevtools.db`).
 
 - **100% On-Device & Gitignored:** The database file (`jevtools.db`), SQLite journals (`*.db-journal`), and database wildcards (`*.sqlite`, `*.sqlite3`) are strictly added to [`.gitignore`](./.gitignore). Your data, API payloads, and internal evaluations **never leave your local machine** and will never be committed to source control.
 - **Zero Dependencies:** Powered by Python's standard `sqlite3` library with WAL (Write-Ahead Logging) mode and thread-safe connections.
 - **Inspect via Web UI:** The Cockpit UI includes a dedicated **📜 Request History & Database Structure** tab featuring:
   - **Database Structure & Schema Explorer:** Interactive view of SQLite table schema, PRAGMA metadata, column definitions, data types, nullability, constraints, and indexes.
-  - **Structural Column Filter Tool:** Filter across any structural column in the SQLite schema (`id`, `timestamp`, `action_type`, `provider`, `model`, `endpoint`, `status`, `ttft_ms`, `elapsed_ms`, `is_mock`, `request_payload`, `response_payload`, `error_message`, `client_info`) with operators (`=`, `!=`, `contains`, `starts_with`, `ends_with`, `>`, `>=`, `<`, `<=`, `is_null`, `is_not_null`).
+  - **Structural Column Filter Tool:** Filter across any structural column in the SQLite schema (`id`, `timestamp`, `action_type`, `provider`, `model`, `endpoint`, `status`, `elapsed_ms`, `is_mock`, `request_payload`, `response_payload`, `error_message`, `client_info`) with operators (`=`, `!=`, `contains`, `starts_with`, `ends_with`, `>`, `>=`, `<`, `<=`, `is_null`, `is_not_null`).
   - **Unrestricted Database Viewing by Default:** The Web Cockpit and `GET /api/history` show every request in the database by default (`limit=all`), with selectable page sizes (10, 25, 50, 100, 250, All) and full pagination controls.
   - **Database Structure & Schema Explorer:** Interactive schema card viewer with column metrics (non-null counts, distinct counts, sample values) and click-to-filter support.
   - **Direct Browser Navigation Routes:** Navigate directly to `http://127.0.0.1:8080/database`, `/db`, `/history`, or `/explorer` to jump straight to the database explorer.

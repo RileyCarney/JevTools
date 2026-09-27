@@ -222,52 +222,58 @@ class TestServerEndpoints(unittest.TestCase):
         self.assertEqual(status, 400)
         self.assertIn("error", body)
 
-    def test_status_endpoint_returns_ttft_and_latency(self):
+    def test_status_endpoint_returns_latency(self):
         status, body = self._get("/api/status")
         self.assertEqual(status, 200)
         self.assertIn("tested_inference_latency_ms", body)
-        self.assertIn("tested_ttft_ms", body)
+        self.assertNotIn("tested_ttft_ms", body)
         self.assertIn("tested_inference_latency_str", body)
+        self.assertNotIn("tested_ttft_str", body)
         self.assertTrue(body["tested_inference_latency_str"].endswith(" ms"))
         self.assertGreater(body["tested_inference_latency_ms"], 0)
-        self.assertGreater(body["tested_ttft_ms"], 0)
 
-    def test_benchmark_ttft_endpoint(self):
-        status, body = self._get("/api/benchmark-ttft")
+    def test_benchmark_latency_endpoint(self):
+        status, body = self._get("/api/benchmark-latency")
         self.assertEqual(status, 200)
-        self.assertIn("avg_ttft_ms", body)
+        self.assertNotIn("avg_ttft_ms", body)
         self.assertIn("avg_latency_ms", body)
-        self.assertGreater(body["avg_ttft_ms"], 0)
+        self.assertGreater(body["avg_latency_ms"], 0)
 
-    def test_analyze_review_endpoint_returns_ttft(self):
+        # Test backwards compatibility alias endpoint
+        status_alias, body_alias = self._get("/api/benchmark-ttft")
+        self.assertEqual(status_alias, 200)
+        self.assertNotIn("avg_ttft_ms", body_alias)
+        self.assertIn("avg_latency_ms", body_alias)
+
+    def test_analyze_review_endpoint_returns_latency(self):
         status, body = self._post("/api/analyze-review", {
             "review": "Fantastic battery life and great build quality.",
             "product": "Test Earbuds"
         })
         self.assertEqual(status, 200)
-        self.assertIn("ttft_ms", body)
+        self.assertNotIn("ttft_ms", body)
         self.assertIn("elapsed_ms", body)
-        self.assertGreater(body["ttft_ms"], 0)
+        self.assertGreater(body["elapsed_ms"], 0)
 
-    def test_classify_topic_endpoint_returns_ttft(self):
+    def test_classify_topic_endpoint_returns_latency(self):
         status, body = self._post("/api/classify-topic", {
             "paragraph": "Researchers have discovered new water ice formations beneath Martian polar caps."
         })
         self.assertEqual(status, 200)
-        self.assertIn("ttft_ms", body)
+        self.assertNotIn("ttft_ms", body)
         self.assertIn("elapsed_ms", body)
-        self.assertGreater(body["ttft_ms"], 0)
+        self.assertGreater(body["elapsed_ms"], 0)
 
-    def test_custom_decision_endpoint_returns_ttft(self):
+    def test_custom_decision_endpoint_returns_latency(self):
         status, body = self._post("/api/custom-decision", {
             "state": {"ticket": "123"},
             "questions": {"is_urgent": {"type": "noul", "instructions": "Is it urgent?"}}
         })
         self.assertEqual(status, 200)
         self.assertIn("metadata", body)
-        self.assertIn("ttft_ms", body["metadata"])
+        self.assertNotIn("ttft_ms", body["metadata"])
         self.assertIn("elapsed_ms", body["metadata"])
-        self.assertGreater(body["metadata"]["ttft_ms"], 0)
+        self.assertGreater(body["metadata"]["elapsed_ms"], 0)
 
     def test_history_endpoints_and_stats(self):
         # Clear first
@@ -484,9 +490,9 @@ class TestServerEndpoints(unittest.TestCase):
     def test_benchmark_runs_parameter_cap(self):
         """Verify that benchmark runs parameter is capped at MAX_BENCHMARK_RUNS (VUL-005)."""
         from unittest.mock import patch
-        with patch.object(server.jev_demo, "measure_openrouter_ttft") as mock_measure:
-            mock_measure.return_value = {"avg_ttft_ms": 120.0, "avg_latency_ms": 250.0, "runs": 10}
-            status, _ = self._post("/api/benchmark-ttft", {"runs": 99999})
+        with patch.object(server.jev_demo, "measure_openrouter_latency") as mock_measure:
+            mock_measure.return_value = {"avg_latency_ms": 250.0, "runs": 10}
+            status, _ = self._post("/api/benchmark-latency", {"runs": 99999})
             self.assertEqual(status, 200)
             mock_measure.assert_called_once()
             _, kwargs = mock_measure.call_args

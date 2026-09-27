@@ -80,7 +80,6 @@ _OPENROUTER_TITLE = os.environ.get("OPENROUTER_TITLE", "JevTools Demo")
 
 # Actual tested performance metrics interacting with OpenRouter API
 OPENROUTER_TESTED_LATENCY_MS = 300.0
-OPENROUTER_TESTED_TTFT_MS = 300.0
 
 
 def _find_env_file() -> None:
@@ -599,7 +598,7 @@ def _mock_jev_response(state: Any, questions: dict[str, Any]) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# API Transport & TTFT Generation
+# API Transport & Latency Measurement
 # ---------------------------------------------------------------------------
 
 def call_jev_with_metrics(
@@ -618,19 +617,16 @@ def call_jev_with_metrics(
     POST to the Jev decisions endpoint (OpenRouter or TypeSafe) and return:
     (answers_dict, metrics_dict)
     where metrics_dict contains:
-      - 'ttft_ms': Time to first token / first chunk in milliseconds
       - 'elapsed_ms': Total round-trip inference latency in milliseconds
       - 'mock': whether mock mode was used
     """
     start_time = time.perf_counter()
     if mock:
         answers = _mock_jev_response(state, questions)
-        # Generate realistic TTFT and elapsed latency for mock execution
+        # Generate realistic elapsed latency for mock execution
         # Calibrated against actual tested OpenRouter API performance
-        ttft_ms = round(OPENROUTER_TESTED_TTFT_MS, 2)
         elapsed_ms = round(OPENROUTER_TESTED_LATENCY_MS, 2)
         metrics: dict[str, Any] = {
-            "ttft_ms": ttft_ms,
             "elapsed_ms": elapsed_ms,
             "mock": True,
         }
@@ -645,7 +641,6 @@ def call_jev_with_metrics(
                 model=model or default_mdl,
                 endpoint="[OFFLINE MOCK]",
                 status="success",
-                ttft_ms=ttft_ms,
                 elapsed_ms=elapsed_ms,
                 is_mock=True,
                 client_info=client_info,
@@ -659,53 +654,39 @@ def call_jev_with_metrics(
         "questions": questions,
     }
 
-    ttft_ms: Optional[float] = None
-    chunks: list[bytes] = []
-
     try:
-        with requests.post(
+        resp = requests.post(
             url=url,
             headers=_build_headers(api_key, provider=prov),
             json=payload,
-            stream=True,
             timeout=60,
             verify=True,
             allow_redirects=False,
-        ) as resp:
-            for chunk in resp.iter_content(chunk_size=1024):
-                if chunk:
-                    if ttft_ms is None:
-                        ttft_ms = (time.perf_counter() - start_time) * 1000
-                    chunks.append(chunk)
+        )
+        total_elapsed_ms = (time.perf_counter() - start_time) * 1000
 
-            total_elapsed_ms = (time.perf_counter() - start_time) * 1000
-            if ttft_ms is None:
-                ttft_ms = total_elapsed_ms
-
-            raw_bytes = b"".join(chunks)
-
-            if not resp.ok:
-                try:
-                    err_data: dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
-                    err_detail = err_data.get("detail")
-                    if isinstance(err_detail, dict) and "message" in err_detail:
-                        err_msg = err_detail["message"]
-                    elif isinstance(err_detail, str):
-                        err_msg = err_detail
-                    else:
-                        err_msg = (
-                            err_data.get("error", {}).get("message")
-                            if isinstance(err_data.get("error"), dict)
-                            else err_data.get("message") or str(err_data)
-                        )
-                except Exception:
-                    err_msg = raw_bytes.decode("utf-8", errors="replace").strip() or f"HTTP {resp.status_code}"
-                raise RuntimeError(f"{prov.title()} API error (HTTP {resp.status_code}): {err_msg}")
-
+        if not resp.ok:
             try:
-                data: dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
-            except Exception as exc:
-                raise RuntimeError(f"Failed to parse JSON response from {url}: {exc}") from exc
+                err_data: dict[str, Any] = resp.json()
+                err_detail = err_data.get("detail")
+                if isinstance(err_detail, dict) and "message" in err_detail:
+                    err_msg = cast(str, (err_detail["message"]))
+                elif isinstance(err_detail, str):
+                    err_msg = err_detail
+                else:
+                    err_msg = (
+                        err_data.get("error", {}).get("message")
+                        if isinstance(err_data.get("error"), dict)
+                        else err_data.get("message") or str(err_data)
+                    )
+            except Exception:
+                err_msg = resp.text.strip() or f"HTTP {resp.status_code}"
+            raise RuntimeError(f"{prov.title()} API error (HTTP {resp.status_code}): {err_msg}")
+
+        try:
+            data: dict[str, Any] = resp.json()
+        except Exception as exc:
+            raise RuntimeError(f"Failed to parse JSON response from {url}: {exc}") from exc
 
         answers_val: Any = data.get("answers")
         if answers_val is None and "data" in data and isinstance(data["data"], dict):
@@ -728,7 +709,6 @@ def call_jev_with_metrics(
             model=mdl,
             endpoint=url,
             status="error",
-            ttft_ms=ttft_ms or 0.0,
             elapsed_ms=round(total_elapsed_ms, 2),
             is_mock=False,
             error_message=str(exc),
@@ -739,7 +719,6 @@ def call_jev_with_metrics(
         raise
 
     metrics: dict[str, Any] = {
-        "ttft_ms": round(ttft_ms, 2),
         "elapsed_ms": round(total_elapsed_ms, 2),
         "mock": False,
     }
@@ -752,7 +731,6 @@ def call_jev_with_metrics(
             model=mdl,
             endpoint=url,
             status="success",
-            ttft_ms=round(ttft_ms, 2),
             elapsed_ms=round(total_elapsed_ms, 2),
             is_mock=False,
             client_info=client_info,
@@ -788,15 +766,15 @@ def call_jev(
 _call_jev = call_jev
 
 
-def measure_openrouter_ttft(
+def measure_openrouter_latency(
     runs: int = 3,
     api_key: Optional[str] = None,
     timeout: float = 10.0,
     client_info: str = "cli",
 ) -> dict[str, Any]:
     """
-    Interact with the OpenRouter API to test and generate live TTFT and inference latency.
-    Runs multiple requests and returns aggregated latency and TTFT metrics.
+    Interact with the OpenRouter API to test and measure live inference latency.
+    Runs multiple requests and returns aggregated latency metrics.
     """
     url = OPENROUTER_API_URL
     headers: dict[str, str] = _build_headers(api_key or "test", provider="openrouter")
@@ -808,57 +786,39 @@ def measure_openrouter_ttft(
     results: list[dict[str, Any]] = []
     for _ in range(max(1, runs)):
         t0 = time.perf_counter()
-        ttft: Optional[float] = None
         status = 0
         try:
-            with requests.post(
+            r = requests.post(
                 url,
                 headers=headers,
                 json=payload,
-                stream=True,
                 timeout=timeout,
                 verify=True,
                 allow_redirects=False,
-            ) as r:
-                status = r.status_code
-                for chunk in r.iter_content(chunk_size=1024):
-                    if chunk:
-                        if ttft is None:
-                            ttft = (time.perf_counter() - t0) * 1000
-                total = (time.perf_counter() - t0) * 1000
-                if ttft is None:
-                    ttft = total
-                results.append({"ttft_ms": round(ttft, 2), "total_ms": round(total, 2), "status": status})
+            )
+            status = r.status_code
+            total = (time.perf_counter() - t0) * 1000
+            results.append({"latency_ms": round(total, 2), "total_ms": round(total, 2), "status": status})
         except requests.exceptions.RequestException:
             # Fallback to models endpoint if decisions endpoint encounters network issues
             try:
                 t0_fb = time.perf_counter()
-                ttft_fb: Optional[float] = None
-                with requests.get(
+                r_fb = requests.get(
                     "https://openrouter.ai/api/v1/models",
-                    stream=True,
                     timeout=timeout,
                     verify=True,
                     allow_redirects=False,
-                ) as r_fb:
-                    for chunk in r_fb.iter_content(chunk_size=1024):
-                        if chunk:
-                            if ttft_fb is None:
-                                ttft_fb = (time.perf_counter() - t0_fb) * 1000
-                    total_fb = (time.perf_counter() - t0_fb) * 1000
-                    if ttft_fb is None:
-                        ttft_fb = total_fb
-                    results.append({"ttft_ms": round(ttft_fb, 2), "total_ms": round(total_fb, 2), "status": r_fb.status_code})
+                )
+                total_fb = (time.perf_counter() - t0_fb) * 1000
+                results.append({"latency_ms": round(total_fb, 2), "total_ms": round(total_fb, 2), "status": r_fb.status_code})
             except Exception:
-                results.append({"ttft_ms": OPENROUTER_TESTED_TTFT_MS, "total_ms": OPENROUTER_TESTED_LATENCY_MS, "status": 0})
+                results.append({"latency_ms": OPENROUTER_TESTED_LATENCY_MS, "total_ms": OPENROUTER_TESTED_LATENCY_MS, "status": 0})
 
-    avg_ttft = sum(float(r["ttft_ms"]) for r in results) / len(results)
     avg_total = sum(float(r["total_ms"]) for r in results) / len(results)
     min_lat = min(float(r["total_ms"]) for r in results)
     max_lat = max(float(r["total_ms"]) for r in results)
     stats: dict[str, Any] = {
         "runs": len(results),
-        "avg_ttft_ms": round(avg_ttft, 2),
         "avg_latency_ms": round(avg_total, 2),
         "min_latency_ms": round(min_lat, 2),
         "max_latency_ms": round(max_lat, 2),
@@ -866,19 +826,22 @@ def measure_openrouter_ttft(
         "endpoint": url,
     }
     database.log_interaction(
-        action_type="benchmark_ttft",
+        action_type="benchmark_latency",
         request_payload={"runs": runs, "target_endpoint": url},
         response_payload=stats,
         provider="openrouter",
         model=OPENROUTER_DEFAULT_MODEL,
         endpoint=url,
         status="success",
-        ttft_ms=float(stats["avg_ttft_ms"]),
         elapsed_ms=float(stats["avg_latency_ms"]),
         is_mock=False,
         client_info=client_info,
     )
     return stats
+
+
+# Backwards compatibility alias
+measure_openrouter_ttft = measure_openrouter_latency
 
 
 
@@ -941,7 +904,6 @@ class ReviewResult:
     composite_score: float                # weighted composite
     action: str                           # determined by policy in code
     raw_answers: dict[str, Any] = field(default_factory=lambda: cast(dict[str, Any], {}))
-    ttft_ms: float = 0.0                  # Time to first token in milliseconds
     elapsed_ms: float = 0.0               # Total elapsed latency in milliseconds
 
     def to_dict(self) -> dict[str, Any]:
@@ -1090,7 +1052,6 @@ def analyze_review(
         composite_score=composite,
         action=action,
         raw_answers=a,
-        ttft_ms=float(metrics.get("ttft_ms", 0.0)),
         elapsed_ms=float(metrics.get("elapsed_ms", 0.0)),
     )
 
@@ -1102,7 +1063,6 @@ def analyze_review(
         model=mdl,
         endpoint=ep if not mock else "[OFFLINE MOCK]",
         status="success",
-        ttft_ms=res.ttft_ms,
         elapsed_ms=res.elapsed_ms,
         is_mock=mock,
         client_info=client_info,
@@ -1124,7 +1084,6 @@ def print_review_result(result: ReviewResult, idx: int) -> None:
     print(f"    Mentions shipping   : {result.mentions_shipping:.2%}")
     print(f"\n  Emotion tone        : {result.emotion_tone}  (confidence: {result.emotion_confidence:.2f} - {confidence_label(result.emotion_confidence)})")
     print(f"\n  Performance:")
-    print(f"    Time to First Token (TTFT): {result.ttft_ms:.1f} ms")
     print(f"    Inference Latency         : {result.elapsed_ms:.1f} ms")
     print(f"\n  Action              : {result.action}")
 
@@ -1147,7 +1106,6 @@ class TopicResult:
     has_actionable: float                       # Noul
     routing_suggestion: str
     raw_answers: dict[str, Any] = field(default_factory=lambda: cast(dict[str, Any], {}))
-    ttft_ms: float = 0.0                        # Time to first token in milliseconds
     elapsed_ms: float = 0.0                     # Total elapsed latency in milliseconds
 
     def to_dict(self) -> dict[str, Any]:
@@ -1264,7 +1222,6 @@ def classify_topic(
         has_actionable=actionable,
         routing_suggestion=routing,
         raw_answers=a,
-        ttft_ms=float(metrics.get("ttft_ms", 0.0)),
         elapsed_ms=float(metrics.get("elapsed_ms", 0.0)),
     )
 
@@ -1276,7 +1233,6 @@ def classify_topic(
         model=mdl,
         endpoint=ep if not mock else "[OFFLINE MOCK]",
         status="success",
-        ttft_ms=res.ttft_ms,
         elapsed_ms=res.elapsed_ms,
         is_mock=mock,
         client_info=client_info,
@@ -1300,7 +1256,6 @@ def print_topic_result(result: TopicResult, idx: int) -> None:
     print(f"    Has call-to-action  : {result.has_actionable:.2%}")
     print(f"    Technical depth     : {result.technical_depth:.2f}  (0=general, 1=specialist)")
     print(f"\n  Performance:")
-    print(f"    Time to First Token (TTFT): {result.ttft_ms:.1f} ms")
     print(f"    Inference Latency         : {result.elapsed_ms:.1f} ms")
     print(f"\n  Routing             : {result.routing_suggestion}")
 
@@ -1337,7 +1292,6 @@ def evaluate_custom_decision(
         log_to_db=False,
     )
 
-    ttft_val = float(metrics.get("ttft_ms", 0.0))
     elapsed_val = float(metrics.get("elapsed_ms", 0.0))
     res: dict[str, Any] = {
         "answers": answers,
@@ -1346,7 +1300,6 @@ def evaluate_custom_decision(
             "endpoint": ep if not mock else "[OFFLINE MOCK]",
             "model": mdl,
             "mock": mock,
-            "ttft_ms": ttft_val,
             "elapsed_ms": elapsed_val,
             "question_count": len(questions),
         },
@@ -1360,7 +1313,6 @@ def evaluate_custom_decision(
         model=mdl,
         endpoint=ep if not mock else "[OFFLINE MOCK]",
         status="success",
-        ttft_ms=ttft_val,
         elapsed_ms=elapsed_val,
         is_mock=mock,
         client_info=client_info,
@@ -1558,7 +1510,7 @@ def parse_args() -> argparse.Namespace:
         "--benchmark",
         "--ttft",
         action="store_true",
-        help="Run live benchmark against OpenRouter API to test and generate TTFT and latency metrics.",
+        help="Run live benchmark against OpenRouter API to test and measure inference latency.",
     )
     parser.add_argument(
         "--history",
@@ -1581,7 +1533,7 @@ def parse_args() -> argparse.Namespace:
         "--action-type",
         dest="filter_action",
         default=None,
-        help="Filter database history by action type (review_analysis, topic_classification, custom_decision, benchmark_ttft).",
+        help="Filter database history by action type (review_analysis, topic_classification, custom_decision, benchmark_latency).",
     )
     parser.add_argument(
         "--filter-status",
@@ -1776,7 +1728,6 @@ def main() -> None:
         print(f"  Total Matching  : {total_matching}")
         print(f"  Success / Error : {stats['success_count']} / {stats['error_count']}")
         print(f"  Live / Mock     : {stats['live_count']} / {stats['mock_count']}")
-        print(f"  Avg TTFT        : {stats['avg_ttft_ms']:.1f} ms")
         print(f"  Avg Latency     : {stats['avg_latency_ms']:.1f} ms")
         if action_filter or status_filter or search_filter or raw_mode:
             print("-" * 64)
@@ -1802,7 +1753,7 @@ def main() -> None:
             mode_tag = "MOCK" if item["is_mock"] else "LIVE"
             print(f"  #{item['id']} | {item['timestamp'][:19]} | {status_tag} {item['action_type']} ({mode_tag})")
             print(f"     Provider/Model : {item['provider']} / {item['model'] or 'default'}")
-            print(f"     TTFT / Latency : {item['ttft_ms']:.1f} ms / {item['elapsed_ms']:.1f} ms")
+            print(f"     Latency        : {item['elapsed_ms']:.1f} ms")
             if item.get("error_message"):
                 print(f"     Error          : {item['error_message']}")
             print("-" * 64)
@@ -1828,18 +1779,17 @@ def main() -> None:
         "topics": [],
     }
 
-    # Benchmark TTFT & Latency mode
+    # Benchmark Latency mode
     if getattr(args, "benchmark", False):
         if not args.json:
-            section("OPENROUTER API TTFT & LATENCY BENCHMARK")
-            print("  Connecting to OpenRouter API to test and generate live TTFT & inference latency...")
-        bench_stats = measure_openrouter_ttft(runs=5, api_key=api_key)
+            section("OPENROUTER API LATENCY BENCHMARK")
+            print("  Connecting to OpenRouter API to test and measure live inference latency...")
+        bench_stats = measure_openrouter_latency(runs=5, api_key=api_key)
         if args.json:
             print(json.dumps(bench_stats, indent=2))
         else:
             print(f"  Target Endpoint          : {bench_stats['endpoint']}")
             print(f"  Sample Runs              : {bench_stats['runs']}")
-            print(f"  Tested TTFT              : {bench_stats['avg_ttft_ms']:.1f} ms")
             print(f"  Tested Inference Latency : {bench_stats['avg_latency_ms']:.1f} ms")
             print(f"  Min / Max Latency        : {bench_stats['min_latency_ms']:.1f} ms / {bench_stats['max_latency_ms']:.1f} ms")
             print(f"  Status                   : [OK] Verified live against OpenRouter")

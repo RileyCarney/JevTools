@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-server.py - Localhost Web Dashboard Server for JevTools System One Cockpit.
+server.py - Localhost Web Dashboard Server for JevTools.
 
 Serves the interactive cyber/dark UI on http://localhost:8089 (or next available port),
 provides REST API endpoints connecting directly to jev_demo.py, and opens the browser.
@@ -62,7 +62,6 @@ class RuntimeState(TypedDict):
     model: str
     endpoint: str
     tested_latency_ms: float
-    tested_ttft_ms: float
 
 
 # Server runtime state
@@ -73,7 +72,6 @@ RUNTIME_STATE: RuntimeState = {
     "model": jev_demo.OPENROUTER_DEFAULT_MODEL,
     "endpoint": jev_demo.OPENROUTER_API_URL,
     "tested_latency_ms": float(jev_demo.OPENROUTER_TESTED_LATENCY_MS),
-    "tested_ttft_ms": float(jev_demo.OPENROUTER_TESTED_TTFT_MS),
 }
 
 
@@ -258,23 +256,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             except ValueError:
                 pass
 
-        # TTFT bounds
-        min_ttft: Optional[float] = None
-        raw_min_ttft = query_params.get("min_ttft", [None])[0]
-        if raw_min_ttft:
-            try:
-                min_ttft = float(raw_min_ttft)
-            except ValueError:
-                pass
-
-        max_ttft: Optional[float] = None
-        raw_max_ttft = query_params.get("max_ttft", [None])[0]
-        if raw_max_ttft:
-            try:
-                max_ttft = float(raw_max_ttft)
-            except ValueError:
-                pass
-
         # ID filtering
         filter_id: Optional[int] = None
         raw_id = query_params.get("id_exact", [None])[0]
@@ -343,8 +324,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             "end_date": end_date.strip() if end_date else None,
             "min_latency": min_lat,
             "max_latency": max_lat,
-            "min_ttft": min_ttft,
-            "max_ttft": max_ttft,
             "id": filter_id,
             "min_id": min_id,
             "max_id": max_id,
@@ -406,9 +385,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "api_key_masked": jev_demo.mask_key(RUNTIME_STATE["api_key"]),
                 "has_real_key": bool(RUNTIME_STATE["api_key"] and not RUNTIME_STATE["api_key"].startswith("mock-")),
                 "tested_inference_latency_ms": RUNTIME_STATE["tested_latency_ms"],
-                "tested_ttft_ms": RUNTIME_STATE["tested_ttft_ms"],
                 "tested_inference_latency_str": f"{round(RUNTIME_STATE['tested_latency_ms'])} ms",
-                "tested_ttft_str": f"{round(RUNTIME_STATE['tested_ttft_ms'])} ms",
                 "benchmarks": {
                     "reviews_count": len(jev_demo.REVIEW_CASES),
                     "topics_count": len(jev_demo.TOPIC_CASES),
@@ -419,13 +396,11 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json_response(data)
             return
 
-        if path == "/api/benchmark-ttft":
+        if path in ("/api/benchmark-latency", "/api/benchmark-ttft"):
             runs = 3
-            stats = jev_demo.measure_openrouter_ttft(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
+            stats = jev_demo.measure_openrouter_latency(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
             if stats.get("avg_latency_ms"):
                 RUNTIME_STATE["tested_latency_ms"] = float(stats["avg_latency_ms"])
-            if stats.get("avg_ttft_ms"):
-                RUNTIME_STATE["tested_ttft_ms"] = float(stats["avg_ttft_ms"])
             self._send_json_response(stats)
             return
 
@@ -482,8 +457,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 end_date=filters["end_date"],
                 min_latency=filters["min_latency"],
                 max_latency=filters["max_latency"],
-                min_ttft=filters["min_ttft"],
-                max_ttft=filters["max_ttft"],
                 id=filters["id"],
                 min_id=filters["min_id"],
                 max_id=filters["max_id"],
@@ -507,8 +480,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 end_date=filters["end_date"],
                 min_latency=filters["min_latency"],
                 max_latency=filters["max_latency"],
-                min_ttft=filters["min_ttft"],
-                max_ttft=filters["max_ttft"],
                 id=filters["id"],
                 min_id=filters["min_id"],
                 max_id=filters["max_id"],
@@ -572,8 +543,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 end_date=filters["end_date"],
                 min_latency=filters["min_latency"],
                 max_latency=filters["max_latency"],
-                min_ttft=filters["min_ttft"],
-                max_ttft=filters["max_ttft"],
                 id=filters["id"],
                 min_id=filters["min_id"],
                 max_id=filters["max_id"],
@@ -606,7 +575,7 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
             writer = csv.writer(output)
             writer.writerow([
                 "id", "timestamp", "action_type", "provider", "model", "endpoint",
-                "status", "ttft_ms", "elapsed_ms", "is_mock", "client_info",
+                "status", "elapsed_ms", "is_mock", "client_info",
                 "error_message", "request_payload", "response_payload"
             ])
             for it in items:
@@ -620,7 +589,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                     it.get("model"),
                     it.get("endpoint"),
                     it.get("status"),
-                    it.get("ttft_ms"),
                     it.get("elapsed_ms"),
                     1 if it.get("is_mock") else 0,
                     it.get("client_info"),
@@ -669,8 +637,6 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "end_date": str(body.get("end_date", "")).strip() or None,
                 "min_latency": float(body["min_latency"]) if body.get("min_latency") is not None else None,
                 "max_latency": float(body["max_latency"]) if body.get("max_latency") is not None else None,
-                "min_ttft": float(body["min_ttft"]) if body.get("min_ttft") is not None else None,
-                "max_ttft": float(body["max_ttft"]) if body.get("max_ttft") is not None else None,
                 "id": int(body["id"]) if body.get("id") is not None else None,
                 "min_id": int(body["min_id"]) if body.get("min_id") is not None else None,
                 "max_id": int(body["max_id"]) if body.get("max_id") is not None else None,
@@ -855,17 +821,15 @@ class JevDashboardRequestHandler(http.server.SimpleHTTPRequestHandler):
                 self._send_json_error(f"Custom evaluation failed: {exc}", status=500)
             return
 
-        if path == "/api/benchmark-ttft":
+        if path in ("/api/benchmark-latency", "/api/benchmark-ttft"):
             raw_runs = body.get("runs")
             try:
                 runs = max(1, min(MAX_BENCHMARK_RUNS, int(raw_runs))) if raw_runs is not None else 3
             except (ValueError, TypeError):
                 runs = 3
-            stats = jev_demo.measure_openrouter_ttft(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
+            stats = jev_demo.measure_openrouter_latency(runs=runs, api_key=RUNTIME_STATE["api_key"], client_info="web_ui")
             if stats.get("avg_latency_ms"):
                 RUNTIME_STATE["tested_latency_ms"] = float(stats["avg_latency_ms"])
-            if stats.get("avg_ttft_ms"):
-                RUNTIME_STATE["tested_ttft_ms"] = float(stats["avg_ttft_ms"])
             self._send_json_response(stats)
             return
 
@@ -897,7 +861,7 @@ _LocalhostTCPServer = LocalhostTCPServer
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="JevTools System One Localhost Web Dashboard Server")
+    parser = argparse.ArgumentParser(description="JevTools Localhost Web Dashboard Server")
     parser.add_argument("--port", type=int, default=DEFAULT_PORT, help=f"Port to serve dashboard on (default: {DEFAULT_PORT})")
     parser.add_argument("--no-browser", action="store_true", help="Do not automatically open the browser")
     parser.add_argument("--mock", action="store_true", help="Force offline mock mode without making live API requests")
@@ -918,7 +882,7 @@ def main() -> None:
             with LocalhostTCPServer(("127.0.0.1", port), handler) as httpd:
                 url = f"http://localhost:{port}/index.html"
                 print("=" * 64)
-                print(" [>] JevTools System One Cockpit Active")
+                print(" [>] JevTools Active")
                 print("=" * 64)
                 print(f" URL             : {url}")
                 print(f" Root Directory  : {CURRENT_DIR}")

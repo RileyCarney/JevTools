@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JevTools // System One Cockpit</title>
+    <title>JevTools</title>
 
     <!-- Brand Favicons & App Icons -->
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
@@ -12,7 +12,7 @@
     <link rel="shortcut icon" href="assets/favicon.ico">
 
     <!-- OpenGraph & Twitter Social Preview matching GitHub Repository Banner -->
-    <meta property="og:title" content="JevTools // System One Cockpit">
+    <meta property="og:title" content="JevTools">
     <meta property="og:description" content="Sub-second typed semantic judgments & calibrated probability distributions via OpenRouter and TypeSafe System One.">
     <meta property="og:image" content="https://repository-images.githubusercontent.com/1379027574/d9770636-5e32-4332-a030-72d119b8227f">
     <meta property="og:type" content="website">
@@ -2271,7 +2271,7 @@
         }
 
         /* -------------------------------------------------------------
-           ROW 2: Cockpit Controls & Engine Status Bar
+           ROW 2: Controls & Engine Status Bar
            Wireframe: [Tool/Engine Selector] | [Model: Dropdown] | [API Key Status] | [● Live API Active]
            ------------------------------------------------------------- */
         .wf-control-bar {
@@ -2862,13 +2862,12 @@
         <!-- Wireframe: (O) [App Logo]               [GitHub] | [LinkedIn] | [Theme Switch] | [Key] -->
         <header class="wf-header">
             <div class="wf-header-left">
-                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="wf-app-logo-link" title="JevTools // System One Cockpit">
+                <a href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener noreferrer" class="wf-app-logo-link" title="JevTools">
                     <div class="wf-logo-orb">
                         <img src="assets/favicon.svg" alt="App Logo" class="wf-logo-img">
                     </div>
                     <div class="wf-brand-meta">
-                        <div class="wf-brand-name">JevTools <span style="font-size:0.75rem; color:var(--accent); font-weight:800; letter-spacing:1px;">JEVTOOLS</span></div>
-                        <div class="wf-brand-badge">System One Cockpit</div>
+                        <div class="wf-brand-name">JevTools</div>
                     </div>
                 </a>
             </div>
@@ -2954,13 +2953,13 @@
         -->
         <div class="wf-metrics-row">
             <!-- Card 1: [XXX ms / (Latency)] -->
-            <div class="wf-card wf-latency-box stat-card" id="stat-latency-card" onclick="runBenchmarkTTFT()" title="Click to Benchmark OpenRouter TTFT & Latency">
+            <div class="wf-card wf-latency-box stat-card" id="stat-latency-card" onclick="runBenchmarkLatency()" title="Click to Benchmark OpenRouter Latency">
                 <div class="wf-card-meta">
                     <span class="wf-card-sublabel">LATENCY</span>
                     <span class="wf-tag-pulse" id="benchmark-status-tag">⚡ Benchmark</span>
                 </div>
                 <div class="stat-val" id="stat-latency-val">287 ms</div>
-                <div class="wf-latency-lbl stat-lbl" id="stat-latency-lbl">Inference Latency (TTFT ~287 ms)</div>
+                <div class="wf-latency-lbl stat-lbl" id="stat-latency-lbl">Inference Latency</div>
             </div>
 
             <!-- Card 2: [Primitive / (Mode / Tab)] -->
@@ -3073,8 +3072,7 @@
                     <div class="panel-header">
                         <div class="panel-title"><span>📊</span> Decision Evaluation & Signals</div>
                         <div style="display: flex; gap: 0.4rem; align-items: center;">
-                            <span class="panel-badge" id="review-ttft-badge">TTFT: 287 ms</span>
-                            <span class="panel-badge" id="review-elapsed-badge">287 ms</span>
+                            <span class="panel-badge" id="review-elapsed-badge">Latency: 287 ms</span>
                             <span class="panel-badge" id="review-engine-badge">Jev Model</span>
                         </div>
                     </div>
@@ -3211,8 +3209,7 @@
                     <div class="panel-header">
                         <div class="panel-title"><span>🎯</span> Classification & Routing Policy</div>
                         <div style="display: flex; gap: 0.4rem; align-items: center;">
-                            <span class="panel-badge" id="topic-ttft-badge">TTFT: 287 ms</span>
-                            <span class="panel-badge" id="topic-elapsed-badge">287 ms</span>
+                            <span class="panel-badge" id="topic-elapsed-badge">Latency: 287 ms</span>
                             <span class="panel-badge" id="topic-engine-badge">Jev Model</span>
                         </div>
                     </div>
@@ -3346,8 +3343,7 @@
                     <div class="panel-header">
                         <div class="panel-title"><span>📋</span> Evaluated Decision Output</div>
                         <div style="display: flex; gap: 0.4rem; align-items: center;">
-                            <span class="panel-badge" id="custom-ttft-badge">TTFT: --</span>
-                            <span class="panel-badge" id="custom-elapsed-badge">0 ms</span>
+                            <span class="panel-badge" id="custom-elapsed-badge">Latency: --</span>
                         </div>
                     </div>
 
@@ -3408,10 +3404,6 @@
                 <div class="history-stat-box">
                     <span class="history-stat-val" id="hist-success-rate">100%</span>
                     <span class="history-stat-lbl">Success Rate (<span id="hist-ok-err-counts">0 / 0</span>)</span>
-                </div>
-                <div class="history-stat-box">
-                    <span class="history-stat-val" id="hist-avg-ttft">0 ms</span>
-                    <span class="history-stat-lbl">Average TTFT (Time To First Token)</span>
                 </div>
                 <div class="history-stat-box">
                     <span class="history-stat-val" id="hist-avg-latency">0 ms</span>
@@ -3482,7 +3474,6 @@
                             <option value="model">Model (model: TEXT)</option>
                             <option value="endpoint">API Endpoint (endpoint: TEXT)</option>
                             <option value="status">Status (status: TEXT)</option>
-                            <option value="ttft_ms">TTFT Latency (ttft_ms: REAL)</option>
                             <option value="elapsed_ms">Total Latency (elapsed_ms: REAL)</option>
                             <option value="is_mock">Mode (is_mock: INTEGER 0/1)</option>
                             <option value="client_info">Client Info (client_info: TEXT)</option>
@@ -3540,7 +3531,7 @@
                             <option value="review_analysis">Review Analysis</option>
                             <option value="topic_classification">Topic Classification</option>
                             <option value="custom_decision">Custom Decision</option>
-                            <option value="benchmark_ttft">TTFT Benchmark</option>
+                            <option value="benchmark_latency">Latency Benchmark</option>
                         </select>
                     </div>
                     <div class="filter-field">
@@ -3615,7 +3606,6 @@
                             <option value="timestamp_asc">Timestamp (Oldest First)</option>
                             <option value="elapsed_desc">Latency (Slowest First)</option>
                             <option value="elapsed_asc">Latency (Fastest First)</option>
-                            <option value="ttft_desc">TTFT (Highest First)</option>
                         </select>
                     </div>
                     <div class="filter-field">
@@ -3680,9 +3670,6 @@
                             </th>
                             <th class="sortable" onclick="handleSortHeader('elapsed_ms')" style="width: 105px;" title="Sort by Total Latency">
                                 Latency <span class="sort-indicator" id="sort-ind-elapsed_ms"></span>
-                            </th>
-                            <th class="sortable" onclick="handleSortHeader('ttft_ms')" style="width: 95px;" title="Sort by TTFT">
-                                TTFT <span class="sort-indicator" id="sort-ind-ttft_ms"></span>
                             </th>
                             <th class="sortable" onclick="handleSortHeader('is_mock')" style="width: 85px;" title="Sort by Mode">
                                 Mode <span class="sort-indicator" id="sort-ind-is_mock"></span>
@@ -3873,7 +3860,6 @@
                 <span class="status-pill">Action: <strong id="pm-action">--</strong></span>
                 <span class="status-pill">Provider: <strong id="pm-provider">--</strong></span>
                 <span class="status-pill">Model: <strong id="pm-model">--</strong></span>
-                <span class="status-pill">TTFT: <strong id="pm-ttft">--</strong></span>
                 <span class="status-pill">Latency: <strong id="pm-latency">--</strong></span>
                 <span class="status-pill" id="pm-status-pill">Status: <strong>--</strong></span>
                 <span class="status-pill">Client: <strong id="pm-client">--</strong></span>
@@ -4119,7 +4105,7 @@
             }
         }
 
-        async function runBenchmarkTTFT() {
+        async function runBenchmarkLatency() {
             const valEl = document.getElementById('stat-latency-val');
             const lblEl = document.getElementById('stat-latency-lbl');
             const tagEl = document.getElementById('benchmark-status-tag');
@@ -4127,15 +4113,14 @@
             if (valEl) valEl.textContent = 'Measuring...';
 
             try {
-                const res = await fetch('/api/benchmark-ttft');
+                const res = await fetch('/api/benchmark-latency');
                 if (res.ok) {
                     const data = await res.json();
                     const lat = Math.round(data.avg_latency_ms || data.latency_ms || 287);
-                    const ttft = Math.round(data.avg_ttft_ms || data.ttft_ms || lat);
                     if (valEl) valEl.textContent = `${lat} ms`;
-                    if (lblEl) lblEl.textContent = `Inference Latency (TTFT ~${ttft} ms)`;
+                    if (lblEl) lblEl.textContent = `Inference Latency`;
                     if (tagEl) tagEl.textContent = '✓ Measured';
-                    showToast(`TTFT Benchmark: Latency ${lat} ms, TTFT ~${ttft} ms`);
+                    showToast(`Latency Benchmark: ${lat} ms`);
                 } else {
                     if (valEl) valEl.textContent = '287 ms';
                     if (tagEl) tagEl.textContent = '⚡ Benchmark';
@@ -4145,6 +4130,7 @@
                 if (tagEl) tagEl.textContent = '⚡ Benchmark';
             }
         }
+        const runBenchmarkTTFT = runBenchmarkLatency;
 
         const playgroundTemplates = [
             {
@@ -4399,11 +4385,11 @@
                 statusClass: "badge-status-active",
                 modularity: "100.00%",
                 tech: ["Python 3", "OpenRouter", "RLCD Training"],
-                desc: "TypeSafe's System One model delivering typed decisions (Choice, Score, Noul) and calibrated probabilities in 287ms tested latency (TTFT: 287ms). Code retains full control flow while Jev fills atomic semantic judgment slots.",
+                desc: "TypeSafe's System One model delivering typed decisions (Choice, Score, Noul) and calibrated probabilities in 287ms tested latency. Code retains full control flow while Jev fills atomic semantic judgment slots.",
                 runCmd: "py D:\\programming\\jevtools\\jev_demo.py --mock",
                 testCmd: "py -c \"import jev_demo; print(jev_demo.mask_key('sk-or-v1-test1234'))\"",
                 webServices: [
-                    { name: "System One Cockpit (:8089)", url: "http://localhost:8089" }
+                    { name: "JevTools (:8089)", url: "http://localhost:8089" }
                 ],
                 features: [
                     "RLCD-calibrated probabilities that represent true uncertainty rather than model overconfidence.",
@@ -4553,7 +4539,7 @@
             switchTaskMode(tabId);
         }
 
-        // Fetch Server Status & Synchronize All Cockpit Badges
+        // Fetch Server Status & Synchronize All Badges
         async function fetchServerStatus() {
             try {
                 const res = await fetch('/api/status');
@@ -4621,11 +4607,6 @@
                     const statValEl = document.getElementById('stat-latency-val');
                     if (statValEl) statValEl.textContent = data.tested_inference_latency_str;
                 }
-                if (data.tested_ttft_str) {
-                    const statLblEl = document.getElementById('stat-latency-lbl');
-                    if (statLblEl) statLblEl.textContent = `Inference Latency (TTFT ~${data.tested_ttft_str})`;
-                }
-
                 // Benchmarks count sync
                 if (data.benchmarks) {
                     const totalCases = (data.benchmarks.reviews_count || 5) + (data.benchmarks.topics_count || 5);
@@ -4781,14 +4762,10 @@
                 `;
             }
 
-            // TTFT and Latency Badges
-            if (res.ttft_ms) {
-                const el = document.getElementById('review-ttft-badge');
-                if (el) el.textContent = `TTFT: ${Math.round(res.ttft_ms)} ms`;
-            }
+            // Latency Badge
             if (res.elapsed_ms) {
                 const el = document.getElementById('review-elapsed-badge');
-                if (el) el.textContent = `${Math.round(res.elapsed_ms)} ms`;
+                if (el) el.textContent = `Latency: ${Math.round(res.elapsed_ms)} ms`;
             }
 
             // Raw JSON
@@ -4898,14 +4875,10 @@
             document.getElementById('topic-depth-val').textContent = `${res.technical_depth.toFixed(2)} (Raw: ${res.technical_depth_raw}/2)`;
             document.getElementById('topic-depth-bar').style.width = `${res.technical_depth * 100}%`;
 
-            // TTFT and Latency Badges
-            if (res.ttft_ms) {
-                const el = document.getElementById('topic-ttft-badge');
-                if (el) el.textContent = `TTFT: ${Math.round(res.ttft_ms)} ms`;
-            }
+            // Latency Badge
             if (res.elapsed_ms) {
                 const el = document.getElementById('topic-elapsed-badge');
-                if (el) el.textContent = `${Math.round(res.elapsed_ms)} ms`;
+                if (el) el.textContent = `Latency: ${Math.round(res.elapsed_ms)} ms`;
             }
 
             // Raw JSON
@@ -4951,11 +4924,8 @@
                 if (data.error) throw new Error(data.error);
 
                 document.getElementById('custom-output-pre').textContent = JSON.stringify(data, null, 2);
-                if (data.metadata?.ttft_ms) {
-                    document.getElementById('custom-ttft-badge').textContent = `TTFT: ${Math.round(data.metadata.ttft_ms)} ms`;
-                }
                 if (data.metadata?.elapsed_ms) {
-                    document.getElementById('custom-elapsed-badge').textContent = `${Math.round(data.metadata.elapsed_ms)} ms`;
+                    document.getElementById('custom-elapsed-badge').textContent = `Latency: ${Math.round(data.metadata.elapsed_ms)} ms`;
                 }
                 loadHistoryData();
             } catch (err) {
@@ -5540,7 +5510,7 @@
             const valInput = document.getElementById('struct-filter-val');
             if (valInput) {
                 if (col === 'id') valInput.placeholder = 'e.g. 1, 2, 3...';
-                else if (col === 'elapsed_ms' || col === 'ttft_ms') valInput.placeholder = 'e.g. 250 (ms)';
+                else if (col === 'elapsed_ms') valInput.placeholder = 'e.g. 250 (ms)';
                 else if (col === 'is_mock') valInput.placeholder = '0 (live) or 1 (mock)';
                 else if (col === 'status') valInput.placeholder = 'success or error';
                 else if (col === 'action_type') valInput.placeholder = 'review_analysis, topic_classification...';
@@ -5675,7 +5645,7 @@
                     if (act.name === 'review_analysis') label = 'Customer Reviews';
                     else if (act.name === 'topic_classification') label = 'Topic Classification';
                     else if (act.name === 'custom_decision') label = 'Custom Decisions';
-                    else if (act.name === 'benchmark_ttft') label = 'TTFT Benchmarks';
+                    else if (act.name === 'benchmark_ttft' || act.name === 'benchmark_latency') label = 'Latency Benchmarks';
 
                     const isActive = curAction === act.name;
                     chips.push(`
@@ -5792,7 +5762,7 @@
                 historySortOrder = (historySortOrder === 'asc') ? 'desc' : 'asc';
             } else {
                 historySortBy = col;
-                historySortOrder = (col === 'id' || col === 'timestamp' || col === 'elapsed_ms' || col === 'ttft_ms') ? 'desc' : 'asc';
+                historySortOrder = (col === 'id' || col === 'timestamp' || col === 'elapsed_ms') ? 'desc' : 'asc';
             }
 
             const select = document.getElementById('history-sort-select');
@@ -5811,7 +5781,7 @@
         }
 
         function updateSortIndicators() {
-            const cols = ['id', 'timestamp', 'action_type', 'provider', 'elapsed_ms', 'ttft_ms', 'is_mock', 'status'];
+            const cols = ['id', 'timestamp', 'action_type', 'provider', 'elapsed_ms', 'is_mock', 'status'];
             cols.forEach(c => {
                 const el = document.getElementById(`sort-ind-${c}`);
                 if (el) {
@@ -6222,9 +6192,6 @@
             const okErrEl = document.getElementById('hist-ok-err-counts');
             if (okErrEl) okErrEl.textContent = `${okCount} ok / ${errCount} err`;
 
-            const ttftEl = document.getElementById('hist-avg-ttft');
-            if (ttftEl) ttftEl.textContent = `${Math.round(stats.avg_ttft_ms || 0)} ms`;
-
             const latEl = document.getElementById('hist-avg-latency');
             if (latEl) latEl.textContent = `${Math.round(stats.avg_latency_ms || 0)} ms`;
 
@@ -6271,9 +6238,9 @@
                 } else if (item.action_type === 'custom_decision') {
                     actionBadgeClass = 'badge-action-custom';
                     actionLabel = 'Custom Decision';
-                } else if (item.action_type === 'benchmark_ttft') {
+                } else if (item.action_type === 'benchmark_ttft' || item.action_type === 'benchmark_latency') {
                     actionBadgeClass = 'badge-action-benchmark';
-                    actionLabel = 'TTFT Benchmark';
+                    actionLabel = 'Latency Benchmark';
                 }
 
                 const modeTag = item.is_mock
@@ -6284,7 +6251,6 @@
                     ? `<span class="badge-status-ok" style="cursor: pointer;" onclick="applyQuickFilter('status', 'success')">● OK</span>`
                     : `<span class="badge-status-err" style="cursor: pointer;" onclick="applyQuickFilter('status', 'error')">● ERR</span>`;
 
-                const ttftStr = item.ttft_ms ? `${Math.round(item.ttft_ms)} ms` : '--';
                 const latStr = item.elapsed_ms ? `${Math.round(item.elapsed_ms)} ms` : '--';
                 const providerModel = `${escapeHtml(item.provider || 'openrouter')} / ${escapeHtml(item.model || 'default')}`;
                 const safeId = typeof item.id === 'number' ? item.id : parseInt(item.id, 10) || 0;
@@ -6303,7 +6269,6 @@
                             ${providerModel}
                         </td>
                         <td style="font-family: var(--font-mono); font-size: 0.82rem; font-weight: 600;">${escapeHtml(latStr)}</td>
-                        <td style="font-family: var(--font-mono); font-size: 0.82rem; color: #94a3b8;">${escapeHtml(ttftStr)}</td>
                         <td>${modeTag}</td>
                         <td>${statusTag}</td>
                         <td class="payload-snippet" title="${escapeHtml(snippet)}">${escapeHtml(snippet)}</td>
@@ -6342,7 +6307,6 @@
             document.getElementById('pm-action').textContent = item.action_type;
             document.getElementById('pm-provider').textContent = item.provider || 'openrouter';
             document.getElementById('pm-model').textContent = item.model || 'default';
-            document.getElementById('pm-ttft').textContent = item.ttft_ms ? `${Math.round(item.ttft_ms)} ms` : '--';
             document.getElementById('pm-latency').textContent = item.elapsed_ms ? `${Math.round(item.elapsed_ms)} ms` : '--';
             document.getElementById('pm-client').textContent = item.client_info || 'unknown';
 

@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "jevtools"
 version = "0.1.0"
-description = "A toolkit, knowledge base, web cockpit, and reference implementation for Jev (TypeSafe System One)."
+description = "A toolkit, knowledge base, web dashboard, and reference implementation for Jev (TypeSafe System One)."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "GPL-3.0-or-later"}
