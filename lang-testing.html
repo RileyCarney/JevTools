@@ -1,0 +1,2383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JevTools — Language Testing Lab</title>
+
+    <!-- Brand Favicons & App Icons -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+    <link rel="icon" type="image/png" sizes="64x64" href="assets/favicon.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="assets/icon.png">
+    <link rel="shortcut icon" href="assets/favicon.ico">
+
+    <!-- OpenGraph Social Preview -->
+    <meta property="og:title" content="JevTools — Language Testing Lab">
+    <meta property="og:description" content="Call Jev from any language. Modular, runnable examples for Rust, Python, TypeScript, Go, and more.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#0a1329">
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════════
+           DESIGN TOKENS — matches index.html exactly
+        ═══════════════════════════════════════════════════════════════ */
+        :root {
+            --dark-blue-deep:    #050b1a;
+            --dark-blue:         #0a1329;
+            --dark-blue-surface: #0f1c3f;
+            --dark-blue-glow:    rgba(15, 28, 63, 0.6);
+
+            --brand-blue:        #0f4bb5;
+            --brand-blue-glow:   rgba(15, 75, 181, 0.45);
+            --brand-indigo:      #232f8a;
+            --brand-purple:      #7b2cbf;
+            --brand-purple-light:#a855f7;
+            --brand-purple-glow: rgba(123, 44, 191, 0.5);
+            --brand-shadow:      #6c2ea9;
+            --brand-shadow-glow: rgba(108, 46, 169, 0.5);
+
+            --brand-red:         #8b5cf6;
+            --brand-red-glow:    rgba(139, 92, 246, 0.45);
+
+            --primary:           #8b5cf6;
+            --primary-glow:      rgba(139, 92, 246, 0.45);
+            --secondary:         #7b2cbf;
+            --secondary-glow:    rgba(123, 44, 191, 0.4);
+            --accent:            #a855f7;
+            --accent-glow:       rgba(168, 85, 247, 0.4);
+            --success:           #c084fc;
+            --danger:            #c084fc;
+            --warning:           #c084fc;
+            --bg-color:          #030712;
+            --card-bg:           rgba(10, 19, 41, 0.88);
+            --card-border:       rgba(123, 44, 191, 0.28);
+            --card-hover-border: rgba(168, 85, 247, 0.65);
+            --modal-bg:          rgba(7, 12, 28, 0.98);
+            --text-main:         #ffffff;
+            --text-muted:        #cbd5e1;
+            --font-mono:         "Consolas", "Fira Code", "Courier New", monospace;
+
+            /* Language accent colours (used per-tab) */
+            --rust-orange:       #ce4a0a;
+            --rust-glow:         rgba(206, 74, 10, 0.45);
+            --python-blue:       #3776ab;
+            --python-glow:       rgba(55, 118, 171, 0.45);
+            --ts-blue:           #007acc;
+            --ts-glow:           rgba(0, 122, 204, 0.45);
+            --go-cyan:           #00acd7;
+            --go-glow:           rgba(0, 172, 215, 0.45);
+            --java-red:          #f89820;
+            --java-glow:         rgba(248, 152, 32, 0.45);
+            --http-green:        #22c55e;
+            --http-glow:         rgba(34, 197, 94, 0.45);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* Neon top bar */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, #0a1329 0%, #0f347a 25%, #232f8a 50%, #7b2cbf 75%, #a855f7 100%);
+            z-index: 9999;
+            box-shadow: 0 0 16px rgba(168, 85, 247, 0.6);
+        }
+
+        body, html {
+            width: 100%; min-height: 100%;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* PCB-style animated background canvas */
+        #bg-canvas {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1; pointer-events: none;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 2rem 2rem 6rem 2rem;
+            position: relative; z-index: 1;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           TITLE PANE — JevTools branding + contact links
+        ═══════════════════════════════════════════════════════════════ */
+        .title-pane {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            background: linear-gradient(135deg, rgba(10, 19, 41, 0.94) 0%, rgba(30, 20, 60, 0.9) 100%);
+            border: 1px solid var(--card-border);
+            border-left: 3px solid #8b5cf6;
+            padding: 0.85rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(14px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .title-pane-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .title-logo {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            box-shadow: 0 0 12px rgba(123, 44, 191, 0.5);
+            transition: all 0.25s ease;
+        }
+
+        .title-logo:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(168, 85, 247, 0.7); }
+
+        .title-brand {
+            display: flex; flex-direction: column;
+        }
+
+        .title-brand-name {
+            font-size: 1.25rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #a855f7 0%, #8b5cf6 40%, #c084fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-brand-sub {
+            font-size: 0.72rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .title-divider {
+            width: 1px; height: 36px;
+            background: rgba(255,255,255,0.12);
+        }
+
+        .title-page-label {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-size: 0.85rem; font-weight: 700;
+            color: #d0d0f0;
+        }
+
+        .title-page-label .pill {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            background: linear-gradient(135deg, rgba(10,19,41,0.85) 0%, rgba(123,44,191,0.35) 100%);
+            border: 1px solid #a855f7;
+            color: #ffffff;
+            padding: 0.15rem 0.55rem;
+            border-radius: 4px;
+            box-shadow: 0 0 8px rgba(168,85,247,0.3);
+        }
+
+        /* Contact links in title pane */
+        .title-contact-links {
+            display: flex; align-items: center;
+            gap: 0.6rem; flex-wrap: wrap;
+        }
+
+        .contact-link {
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #d0d8f0;
+            font-size: 0.8rem; font-weight: 700;
+            padding: 0.4rem 0.85rem;
+            border-radius: 6px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+
+        .contact-link:hover {
+            background: linear-gradient(135deg, rgba(10,19,41,0.8) 0%, rgba(123,44,191,0.3) 100%);
+            border-color: #8b5cf6;
+            color: #ffffff;
+            box-shadow: 0 0 14px rgba(139,92,246,0.5);
+            transform: translateY(-1px);
+        }
+
+        .contact-link svg { flex-shrink: 0; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           PAGE HEADING BLOCK
+        ═══════════════════════════════════════════════════════════════ */
+        .page-heading {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            animation: fadeInDown 0.7s ease-out 0.1s both;
+        }
+
+        .page-heading h1 {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 900;
+            letter-spacing: 1px;
+            background: linear-gradient(90deg, #8b5cf6 0%, #c084fc 50%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.6rem;
+        }
+
+        .page-heading p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 720px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           TOP PANE — Language Selector Tab Bar
+        ═══════════════════════════════════════════════════════════════ */
+        .lang-tab-pane {
+            background: rgba(18, 18, 35, 0.75);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            animation: fadeInDown 0.8s ease-out 0.15s both;
+        }
+
+        .lang-tab-pane-header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 0.8rem;
+            margin-bottom: 0.9rem;
+        }
+
+        .lang-tab-pane-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        .lang-tab-pane-title::before {
+            content: '';
+            display: inline-block;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        .lang-count-badge {
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid var(--primary);
+            color: #d0b0ff;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+        }
+
+        .lang-tab-bar {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .lang-tab-btn {
+            display: flex; align-items: center; gap: 0.55rem;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            padding: 0.65rem 1.1rem;
+            border-radius: 10px;
+            font-size: 0.88rem; font-weight: 700;
+            cursor: pointer;
+            transition: all 0.28s ease;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .lang-tab-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Active state colours per language */
+        .lang-tab-btn.active[data-lang="rust"] {
+            background: linear-gradient(135deg, #1a0d05 0%, #3d1504 40%, #7c2a07 80%, #ce4a0a 100%);
+            border-color: var(--rust-orange);
+            color: #fff;
+            box-shadow: 0 0 18px var(--rust-glow);
+        }
+        .lang-tab-btn.active[data-lang="python"] {
+            background: linear-gradient(135deg, #040e1a 0%, #0d2545 40%, #1a4a7a 80%, #3776ab 100%);
+            border-color: var(--python-blue);
+            color: #fff;
+            box-shadow: 0 0 18px var(--python-glow);
+        }
+        .lang-tab-btn.active[data-lang="typescript"] {
+            background: linear-gradient(135deg, #040e1a 0%, #00284a 40%, #005080 80%, #007acc 100%);
+            border-color: var(--ts-blue);
+            color: #fff;
+            box-shadow: 0 0 18px var(--ts-glow);
+        }
+        .lang-tab-btn.active[data-lang="go"] {
+            background: linear-gradient(135deg, #040f13 0%, #003040 40%, #005566 80%, #00acd7 100%);
+            border-color: var(--go-cyan);
+            color: #fff;
+            box-shadow: 0 0 18px var(--go-glow);
+        }
+        .lang-tab-btn.active[data-lang="java"] {
+            background: linear-gradient(135deg, #1a1000 0%, #3d2800 40%, #7c5000 80%, #f89820 100%);
+            border-color: var(--java-red);
+            color: #fff;
+            box-shadow: 0 0 18px var(--java-glow);
+        }
+        .lang-tab-btn.active[data-lang="http"] {
+            background: linear-gradient(135deg, #040f07 0%, #0d2b14 40%, #155228 80%, #22c55e 100%);
+            border-color: var(--http-green);
+            color: #fff;
+            box-shadow: 0 0 18px var(--http-glow);
+        }
+
+        .lang-tab-icon { font-size: 1.1rem; line-height: 1; }
+
+        .lang-tab-meta {
+            display: flex; flex-direction: column; line-height: 1.2;
+        }
+
+        .lang-tab-meta .lang-name { font-size: 0.88rem; font-weight: 800; }
+        .lang-tab-meta .lang-type {
+            font-size: 0.68rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .lang-status-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            margin-left: auto;
+        }
+
+        .lang-tab-btn.active .lang-status-dot {
+            background: currentColor;
+            box-shadow: 0 0 6px currentColor;
+            animation: pulseDot 2s infinite;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           LANGUAGE TAB CONTENT PANELS
+        ═══════════════════════════════════════════════════════════════ */
+        .lang-content {
+            display: none;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        .lang-content.active { display: block; }
+
+        /* Studio layout: left = info/form, right = code + output */
+        .studio-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 1.8rem;
+            align-items: start;
+        }
+
+        @media (max-width: 1024px) {
+            .studio-layout { grid-template-columns: 1fr; }
+        }
+
+        /* Frosted Panel */
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.8rem;
+            backdrop-filter: blur(14px);
+            position: relative;
+        }
+
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.4rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.9rem;
+        }
+
+        .panel-title {
+            font-size: 1.1rem; font-weight: 800;
+            color: var(--text-main);
+            display: flex; align-items: center; gap: 0.6rem;
+        }
+
+        .panel-badge {
+            font-size: 0.72rem; font-weight: 700;
+            padding: 0.22rem 0.6rem;
+            border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            background: rgba(123, 44, 191, 0.25);
+            color: #e0b0ff;
+            border: 1px solid var(--primary);
+        }
+
+        /* Language-specific panel border accent */
+        .panel[data-lang-accent="rust"]       { border-left: 3px solid var(--rust-orange); }
+        .panel[data-lang-accent="python"]     { border-left: 3px solid var(--python-blue); }
+        .panel[data-lang-accent="typescript"] { border-left: 3px solid var(--ts-blue); }
+        .panel[data-lang-accent="go"]         { border-left: 3px solid var(--go-cyan); }
+        .panel[data-lang-accent="java"]       { border-left: 3px solid var(--java-red); }
+        .panel[data-lang-accent="http"]       { border-left: 3px solid var(--http-green); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           INFO / DESCRIPTION CARDS
+        ═══════════════════════════════════════════════════════════════ */
+        .info-section { margin-bottom: 1.4rem; }
+        .info-section h3 {
+            font-size: 0.82rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.55rem;
+        }
+        .info-section p {
+            font-size: 0.9rem; line-height: 1.6;
+            color: #b0b8d8;
+        }
+
+        .setup-steps { display: flex; flex-direction: column; gap: 0.65rem; }
+        .setup-step {
+            display: flex; align-items: flex-start; gap: 0.7rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+        }
+        .step-num {
+            width: 22px; height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0a1329 0%, #7b2cbf 100%);
+            border: 1px solid #a855f7;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 900;
+            color: #fff; flex-shrink: 0;
+        }
+        .step-text { font-size: 0.85rem; color: #b8c0d8; line-height: 1.5; }
+        .step-text code {
+            background: rgba(139,92,246,0.15);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 3px;
+            padding: 0.1rem 0.35rem;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            color: #c4b5fd;
+        }
+
+        /* Capability chips */
+        .capability-chips {
+            display: flex; flex-wrap: wrap; gap: 0.5rem;
+            margin-top: 0.9rem;
+        }
+        .cap-chip {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            color: #c4b5fd;
+            font-size: 0.76rem; font-weight: 700;
+            padding: 0.25rem 0.65rem;
+            border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           CODE DISPLAY
+        ═══════════════════════════════════════════════════════════════ */
+        .code-panel {
+            background: rgba(5, 5, 12, 0.9);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(14px);
+        }
+
+        .code-panel-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0.75rem 1.2rem;
+            background: rgba(255,255,255,0.03);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .code-file-tab {
+            display: flex; align-items: center; gap: 0.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.78rem; color: #a0a8c0;
+        }
+
+        .code-file-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+        }
+        .dot-rust       { background: var(--rust-orange); box-shadow: 0 0 6px var(--rust-glow); }
+        .dot-python     { background: var(--python-blue); box-shadow: 0 0 6px var(--python-glow); }
+        .dot-typescript { background: var(--ts-blue);     box-shadow: 0 0 6px var(--ts-glow); }
+        .dot-go         { background: var(--go-cyan);     box-shadow: 0 0 6px var(--go-glow); }
+        .dot-java       { background: var(--java-red);    box-shadow: 0 0 6px var(--java-glow); }
+        .dot-http       { background: var(--http-green);  box-shadow: 0 0 6px var(--http-glow); }
+
+        .code-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+        .btn-copy {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: var(--text-muted);
+            font-size: 0.75rem; font-weight: 700;
+            padding: 0.3rem 0.7rem;
+            border-radius: 5px; cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: var(--font-mono);
+        }
+        .btn-copy:hover {
+            border-color: var(--primary);
+            color: #c4b5fd;
+            background: rgba(139,92,246,0.12);
+        }
+
+        /* Code tabs within code panel */
+        .code-sub-tabs {
+            display: flex; gap: 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            overflow-x: auto;
+        }
+        .code-sub-tab {
+            background: transparent;
+            border: none; border-bottom: 2px solid transparent;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 0.78rem; font-weight: 600;
+            padding: 0.55rem 1rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        .code-sub-tab:hover { color: var(--text-main); background: rgba(255,255,255,0.03); }
+        .code-sub-tab.active {
+            color: #c4b5fd;
+            border-bottom-color: var(--primary);
+            background: rgba(139,92,246,0.08);
+        }
+
+        pre {
+            margin: 0;
+            padding: 1.4rem 1.6rem;
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.65;
+            color: #ccd6f6;
+        }
+
+        /* Syntax highlight classes */
+        .kw  { color: #c792ea; font-weight: 700; }   /* keyword */
+        .fn  { color: #82aaff; }                       /* function */
+        .st  { color: #c3e88d; }                       /* string */
+        .cm  { color: #637777; font-style: italic; }   /* comment */
+        .nm  { color: #f78c6c; }                       /* number */
+        .ty  { color: #ffcb6b; }                       /* type */
+        .op  { color: #89ddff; }                       /* operator */
+        .at  { color: #f07178; }                       /* attribute/decorator */
+        .mt  { color: #80cbc4; }                       /* method call */
+
+        .code-section { display: none; }
+        .code-section.active { display: block; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           RESULTS / RESPONSE PANEL
+        ═══════════════════════════════════════════════════════════════ */
+        .response-panel {
+            margin-top: 1.8rem;
+        }
+
+        .response-header {
+            display: flex; align-items: center; gap: 0.8rem;
+            padding: 0.75rem 1.2rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px 10px 0 0;
+        }
+        .response-label {
+            font-family: var(--font-mono);
+            font-size: 0.78rem; font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: 0.8px;
+        }
+        .response-status {
+            margin-left: auto;
+            font-family: var(--font-mono); font-size: 0.78rem;
+            padding: 0.15rem 0.55rem;
+            border-radius: 4px;
+            font-weight: 700;
+        }
+        .response-status.ok {
+            background: rgba(34,197,94,0.15);
+            border: 1px solid rgba(34,197,94,0.4);
+            color: #86efac;
+        }
+
+        .response-body {
+            background: rgba(3, 5, 15, 0.9);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            padding: 1.2rem 1.5rem;
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            line-height: 1.65;
+            color: #ccd6f6;
+            overflow-x: auto;
+        }
+
+        /* Answer cards inside response */
+        .answer-cards { display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem; }
+
+        .answer-card {
+            background: rgba(10, 19, 41, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+        }
+
+        .answer-card-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 0.7rem;
+        }
+
+        .answer-id {
+            font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700;
+            color: #c4b5fd;
+        }
+
+        .answer-type-badge {
+            font-family: var(--font-mono); font-size: 0.7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            padding: 0.15rem 0.5rem; border-radius: 4px;
+        }
+        .badge-noul   { background: rgba(139,92,246,0.2); border: 1px solid #7c3aed; color: #c4b5fd; }
+        .badge-choice { background: rgba(0,122,204,0.2);  border: 1px solid #0ea5e9; color: #7dd3fc; }
+        .badge-score  { background: rgba(34,197,94,0.2);  border: 1px solid #16a34a; color: #86efac; }
+
+        .meter-bar-bg {
+            width: 100%; height: 8px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 4px; overflow: hidden;
+        }
+        .meter-bar-fill {
+            height: 100%; border-radius: 4px;
+            transition: width 0.7s cubic-bezier(0.1, 0.9, 0.2, 1);
+            background: linear-gradient(90deg, #0a1329 0%, #1e295d 25%, #4c1d95 65%, #8b5cf6 100%);
+        }
+        .meter-val-row {
+            display: flex; justify-content: space-between;
+            font-size: 0.8rem; margin-bottom: 0.4rem;
+        }
+        .meter-val { font-family: var(--font-mono); font-weight: 700; color: var(--primary); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           COMING SOON PLACEHOLDER
+        ═══════════════════════════════════════════════════════════════ */
+        .coming-soon-panel {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            backdrop-filter: blur(14px);
+            text-align: center;
+            position: relative; overflow: hidden;
+        }
+        .coming-soon-panel::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center top, rgba(123,44,191,0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .coming-soon-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .coming-soon-panel h3 {
+            font-size: 1.3rem; font-weight: 800;
+            color: var(--text-main); margin-bottom: 0.5rem;
+        }
+        .coming-soon-panel p {
+            font-size: 0.9rem; color: var(--text-muted);
+            max-width: 440px; margin: 0 auto 1.4rem;
+            line-height: 1.6;
+        }
+        .wip-chip {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            background: linear-gradient(135deg, rgba(10,19,41,0.85) 0%, rgba(123,44,191,0.35) 100%);
+            border: 1px solid #a855f7;
+            color: #e0b0ff;
+            font-size: 0.78rem; font-weight: 700;
+            padding: 0.35rem 0.85rem; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.8px;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ARCH DIAGRAM — Server ↔ Client architecture note
+        ═══════════════════════════════════════════════════════════════ */
+        .arch-note {
+            background: linear-gradient(135deg, rgba(10,19,41,0.92) 0%, rgba(30,20,60,0.88) 100%);
+            border: 1px solid rgba(123,44,191,0.4);
+            border-radius: 12px;
+            padding: 1.1rem 1.4rem;
+            margin-bottom: 1.8rem;
+            display: flex; align-items: flex-start; gap: 0.9rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .arch-note-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.15rem; }
+        .arch-note-text { font-size: 0.85rem; color: #b8c0d8; line-height: 1.6; }
+        .arch-note-text strong { color: #ffffff; }
+        .arch-note-text code {
+            background: rgba(139,92,246,0.15);
+            border: 1px solid rgba(139,92,246,0.3);
+            border-radius: 3px; padding: 0.1rem 0.35rem;
+            font-family: var(--font-mono); font-size: 0.82rem;
+            color: #c4b5fd;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           SECURITY BANNER
+        ═══════════════════════════════════════════════════════════════ */
+        .security-banner {
+            background: linear-gradient(135deg, rgba(5,5,15,0.95) 0%, rgba(88,28,135,0.25) 100%);
+            border: 1px solid rgba(139,92,246,0.35);
+            border-left: 3px solid #c084fc;
+            border-radius: 10px;
+            padding: 0.85rem 1.2rem;
+            margin-top: 1.6rem;
+            display: flex; align-items: flex-start; gap: 0.75rem;
+            font-size: 0.82rem; color: #b0b8d8; line-height: 1.5;
+        }
+        .security-banner strong { color: #e0b0ff; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           PRIMITIVE QUICK-REF TABLE
+        ═══════════════════════════════════════════════════════════════ */
+        .quick-ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+            margin-top: 0.8rem;
+        }
+        .quick-ref-table th {
+            text-align: left; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.8px;
+            font-size: 0.72rem; color: var(--text-muted);
+            padding: 0.5rem 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .quick-ref-table td {
+            padding: 0.55rem 0.8rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #b8c0d8; vertical-align: top;
+        }
+        .quick-ref-table tr:last-child td { border-bottom: none; }
+        .quick-ref-table tr:hover td { background: rgba(255,255,255,0.03); }
+        .quick-ref-table td code {
+            font-family: var(--font-mono);
+            background: rgba(139,92,246,0.12);
+            border: 1px solid rgba(139,92,246,0.25);
+            border-radius: 3px; padding: 0.1rem 0.35rem;
+            font-size: 0.8rem; color: #c4b5fd;
+        }
+        .quick-ref-table td strong { color: #ffffff; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           ANIMATIONS
+        ═══════════════════════════════════════════════════════════════ */
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%       { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           SCROLLBAR
+        ═══════════════════════════════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(123,44,191,0.4);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(168,85,247,0.6); }
+
+        /* ═══════════════════════════════════════════════════════════════
+           FOOTER
+        ═══════════════════════════════════════════════════════════════ */
+        .page-footer {
+            text-align: center;
+            padding: 2.5rem 0 1rem;
+            color: rgba(203, 213, 225, 0.5);
+            font-size: 0.8rem;
+        }
+        .page-footer a { color: #8b5cf6; text-decoration: none; }
+        .page-footer a:hover { text-decoration: underline; }
+
+        /* Responsive tweaks */
+        @media (max-width: 700px) {
+            .title-pane { flex-direction: column; align-items: flex-start; }
+            .lang-tab-bar { gap: 0.4rem; }
+            .lang-tab-btn { padding: 0.55rem 0.8rem; font-size: 0.8rem; }
+            pre { font-size: 0.75rem; padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- PCB animated background -->
+<canvas id="bg-canvas"></canvas>
+
+<div class="container">
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         TITLE PANE
+    ═══════════════════════════════════════════════════════════════ -->
+    <header class="title-pane">
+        <div class="title-pane-left">
+            <a href="index.html" title="JevTools Home">
+                <img src="assets/favicon.png" alt="JevTools Logo" class="title-logo">
+            </a>
+            <div class="title-brand">
+                <span class="title-brand-name">JevTools</span>
+                <span class="title-brand-sub">Jev / TypeSafe System One</span>
+            </div>
+            <div class="title-divider"></div>
+            <div class="title-page-label">
+                <span>Language Testing Lab</span>
+                <span class="pill">v1.0</span>
+            </div>
+        </div>
+
+        <nav class="title-contact-links" aria-label="Contact and links">
+            <!-- GitHub -->
+            <a class="contact-link" href="https://github.com/RileyCarney/JevTools" target="_blank" rel="noopener">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 5.303 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+                </svg>
+                GitHub
+            </a>
+            <!-- TypeSafe Docs -->
+            <a class="contact-link" href="https://docs.typesafe.ai" target="_blank" rel="noopener">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                TypeSafe Docs
+            </a>
+            <!-- TypeSafe Console -->
+            <a class="contact-link" href="https://console.typesafe.ai" target="_blank" rel="noopener">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                Console
+            </a>
+            <!-- Home cockpit -->
+            <a class="contact-link" href="index.html">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                Cockpit
+            </a>
+        </nav>
+    </header>
+
+    <!-- Page Heading -->
+    <div class="page-heading">
+        <h1>⚡ Jev Language Testing Lab</h1>
+        <p>Modular, runnable call examples for Jev (TypeSafe System One) across every major language and runtime — from server-side Rust to browser-native JavaScript. Each tab is a self-contained implementation module you can drop into your own stack.</p>
+    </div>
+
+    <!-- Architecture note -->
+    <div class="arch-note">
+        <div class="arch-note-icon">🔐</div>
+        <div class="arch-note-text">
+            <strong>Server ↔ Client Architecture:</strong> All examples that carry an API key run server-side (Rust Actix-web, Python FastAPI, Node.js, Go net/http, Java Spring Boot) and expose a thin <code>/api/judge</code> proxy. Browser-side examples (TypeScript fetch) call the local proxy — never the TypeSafe API directly. This keeps <code>TYPESAFE_API_KEY</code> out of your JavaScript bundles. See the <strong>HTTP Raw</strong> tab for curl/REST examples that can be used in any environment.
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         TOP PANE — Language Selector
+    ═══════════════════════════════════════════════════════════════ -->
+    <div class="lang-tab-pane">
+        <div class="lang-tab-pane-header">
+            <div class="lang-tab-pane-title">
+                Available Language Modules
+            </div>
+            <span class="lang-count-badge">6 Languages</span>
+        </div>
+        <div class="lang-tab-bar" role="tablist" aria-label="Language selection">
+            <button class="lang-tab-btn active" data-lang="rust"       role="tab" aria-selected="true"  onclick="switchLang('rust')">
+                <span class="lang-tab-icon">🦀</span>
+                <div class="lang-tab-meta"><span class="lang-name">Rust</span><span class="lang-type">Server</span></div>
+                <span class="lang-status-dot"></span>
+            </button>
+            <button class="lang-tab-btn" data-lang="python"     role="tab" aria-selected="false" onclick="switchLang('python')">
+                <span class="lang-tab-icon">🐍</span>
+                <div class="lang-tab-meta"><span class="lang-name">Python</span><span class="lang-type">Server / CLI</span></div>
+                <span class="lang-status-dot"></span>
+            </button>
+            <button class="lang-tab-btn" data-lang="typescript" role="tab" aria-selected="false" onclick="switchLang('typescript')">
+                <span class="lang-tab-icon">🔷</span>
+                <div class="lang-tab-meta"><span class="lang-name">TypeScript</span><span class="lang-type">Browser / Node</span></div>
+                <span class="lang-status-dot"></span>
+            </button>
+            <button class="lang-tab-btn" data-lang="go"         role="tab" aria-selected="false" onclick="switchLang('go')">
+                <span class="lang-tab-icon">🐹</span>
+                <div class="lang-tab-meta"><span class="lang-name">Go</span><span class="lang-type">Server</span></div>
+                <span class="lang-status-dot"></span>
+            </button>
+            <button class="lang-tab-btn" data-lang="java"       role="tab" aria-selected="false" onclick="switchLang('java')">
+                <span class="lang-tab-icon">☕</span>
+                <div class="lang-tab-meta"><span class="lang-name">Java</span><span class="lang-type">Server / Spring</span></div>
+                <span class="lang-status-dot"></span>
+            </button>
+            <button class="lang-tab-btn" data-lang="http"       role="tab" aria-selected="false" onclick="switchLang('http')">
+                <span class="lang-tab-icon">🌐</span>
+                <div class="lang-tab-meta"><span class="lang-name">HTTP Raw</span><span class="lang-type">curl / REST</span></div>
+                <span class="lang-status-dot"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         RUST TAB
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="tab-rust" class="lang-content active">
+        <div class="studio-layout">
+
+            <!-- Left: Info Panel -->
+            <div class="panel" data-lang-accent="rust">
+                <div class="panel-header">
+                    <div class="panel-title">🦀 Rust + Actix-web</div>
+                    <span class="panel-badge">Server-side</span>
+                </div>
+
+                <div class="info-section">
+                    <h3>Overview</h3>
+                    <p>Call the TypeSafe Jev API from a Rust Actix-web server using the <code>reqwest</code> HTTP client and <code>serde_json</code> for JSON serialization. The server exposes a <code>/api/judge</code> endpoint that browsers and CLI clients call. The TypeSafe API key never leaves the server.</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>Setup Steps</h3>
+                    <div class="setup-steps">
+                        <div class="setup-step">
+                            <span class="step-num">1</span>
+                            <span class="step-text">Add dependencies to <code>Cargo.toml</code>: <code>actix-web</code>, <code>reqwest</code>, <code>serde</code>, <code>serde_json</code>, <code>tokio</code></span>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">2</span>
+                            <span class="step-text">Set environment variable: <code>export TYPESAFE_API_KEY=sk-ts-...</code></span>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">3</span>
+                            <span class="step-text">Run with: <code>cargo run --release</code>. Server starts on <code>http://127.0.0.1:8090</code></span>
+                        </div>
+                        <div class="setup-step">
+                            <span class="step-num">4</span>
+                            <span class="step-text">POST to <code>/api/judge</code> with a JSON body containing <code>text</code> to classify</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>Jev Primitives Used</h3>
+                    <div class="capability-chips">
+                        <span class="cap-chip">📊 Noul — billing?</span>
+                        <span class="cap-chip">🎯 Choice — department</span>
+                        <span class="cap-chip">📈 Score — urgency</span>
+                        <span class="cap-chip">⚡ Fan-out (3 parallel)</span>
+                    </div>
+                </div>
+
+                <div class="info-section">
+                    <h3>Primitive Reference</h3>
+                    <table class="quick-ref-table">
+                        <thead>
+                            <tr>
+                                <th>Primitive</th>
+                                <th>Return</th>
+                                <th>Use When</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>Noul</strong></td>
+                                <td><code>float 0–1</code></td>
+                                <td>Yes/no probability</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Choice</strong></td>
+                                <td><code>string key</code> + probabilities</td>
+                                <td>Pick one of N options</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Score</strong></td>
+                                <td><code>float</code> on ordered levels</td>
+                                <td>Degree on a spectrum</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="security-banner">
+                    🔐 <span><strong>Key Security:</strong> The <code>TYPESAFE_API_KEY</code> is read once at startup via <code>std::env::var</code> and stored in <code>AppState</code>. It is never serialized into any HTTP response or logged. Clients only see the <code>/api/judge</code> proxy response.</span>
+                </div>
+            </div>
+
+            <!-- Right: Code Panel -->
+            <div>
+                <div class="code-panel">
+                    <div class="code-panel-header">
+                        <div class="code-file-tab">
+                            <span class="code-file-dot dot-rust"></span>
+                            <span>src/main.rs</span>
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn-copy" onclick="copyCode('rust-server')">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="code-sub-tabs">
+                        <button class="code-sub-tab active" onclick="showCodeSection('rust','server')">main.rs (Server)</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('rust','cargo')">Cargo.toml</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('rust','client')">Browser Client</button>
+                    </div>
+                    <div id="rust-server" class="code-section active">
+<pre><span class="cm">// src/main.rs — JevTools Rust Example</span>
+<span class="cm">// Actix-web server that proxies Jev (TypeSafe System One) calls</span>
+<span class="cm">// API key stays server-side; clients POST to /api/judge</span>
+
+<span class="kw">use</span> actix_web::{<span class="fn">get</span>, <span class="fn">post</span>, web, App, HttpResponse, HttpServer, Responder};
+<span class="kw">use</span> reqwest::Client;
+<span class="kw">use</span> serde::{Deserialize, Serialize};
+<span class="kw">use</span> serde_json::{json, Value};
+<span class="kw">use</span> std::env;
+
+<span class="cm">// ─── Shared application state ───────────────────────────────────────</span>
+<span class="at">#[derive(Clone)]</span>
+<span class="kw">struct</span> <span class="ty">AppState</span> {
+    api_key: <span class="ty">String</span>,
+    http:    Client,
+}
+
+<span class="cm">// ─── Request / Response types ────────────────────────────────────────</span>
+<span class="at">#[derive(Deserialize)]</span>
+<span class="kw">struct</span> <span class="ty">JudgeRequest</span> {
+    text: <span class="ty">String</span>,
+}
+
+<span class="at">#[derive(Serialize)]</span>
+<span class="kw">struct</span> <span class="ty">JudgeResponse</span> {
+    billing:    <span class="ty">f64</span>,           <span class="cm">// Noul: 0–1 probability</span>
+    department: <span class="ty">String</span>,        <span class="cm">// Choice: winning key</span>
+    confidence: <span class="ty">f64</span>,           <span class="cm">// Choice confidence</span>
+    urgency:    <span class="ty">f64</span>,           <span class="cm">// Score: 0–(levels-1)</span>
+    model:      <span class="ty">String</span>,
+}
+
+<span class="cm">// ─── Health check ────────────────────────────────────────────────────</span>
+<span class="at">#[get("/api/status")]</span>
+<span class="kw">async fn</span> <span class="fn">status</span>() -> <span class="kw">impl</span> Responder {
+    HttpResponse::Ok().<span class="mt">json</span>(json!({
+        <span class="st">"engine"</span>: <span class="st">"jev-latest"</span>,
+        <span class="st">"runtime"</span>: <span class="st">"rust/actix-web"</span>,
+        <span class="st">"ok"</span>: <span class="kw">true</span>
+    }))
+}
+
+<span class="cm">// ─── Jev proxy endpoint ───────────────────────────────────────────────</span>
+<span class="at">#[post("/api/judge")]</span>
+<span class="kw">async fn</span> <span class="fn">judge</span>(
+    data:    web::Data&lt;<span class="ty">AppState</span>&gt;,
+    payload: web::Json&lt;<span class="ty">JudgeRequest</span>&gt;,
+) -> <span class="kw">impl</span> Responder {
+
+    <span class="cm">// Build the TypeSafe Jev request body with 3 parallel questions</span>
+    <span class="kw">let</span> body = json!({
+        <span class="st">"model"</span>: <span class="st">"jev-latest"</span>,
+        <span class="st">"state"</span>: { <span class="st">"message"</span>: payload.text },
+        <span class="st">"questions"</span>: {
+            <span class="st">"billing"</span>: {
+                <span class="st">"type"</span>: <span class="st">"noul"</span>,
+                <span class="st">"instructions"</span>: <span class="st">"Is `message` about a billing or payment issue?"</span>
+            },
+            <span class="st">"department"</span>: {
+                <span class="st">"type"</span>: <span class="st">"choice"</span>,
+                <span class="st">"instructions"</span>: <span class="st">"Which support team should handle `message`?"</span>,
+                <span class="st">"criteria"</span>: {
+                    <span class="st">"billing"</span>:   <span class="st">"Payment, subscription, or invoice issues."</span>,
+                    <span class="st">"technical"</span>: <span class="st">"Bugs, API errors, or integration problems."</span>,
+                    <span class="st">"sales"</span>:     <span class="st">"Pricing, upgrades, or new account questions."</span>,
+                    <span class="st">"other"</span>:     <span class="st">"None of the above."</span>
+                }
+            },
+            <span class="st">"urgency"</span>: {
+                <span class="st">"type"</span>: <span class="st">"score"</span>,
+                <span class="st">"instructions"</span>: <span class="st">"How urgent does `message` appear?"</span>,
+                <span class="st">"criteria"</span>: [
+                    <span class="st">"Can wait days — no expressed urgency."</span>,
+                    <span class="st">"Should be resolved this week — some concern."</span>,
+                    <span class="st">"Needs action today — strong urgency or anger."</span>
+                ]
+            }
+        }
+    });
+
+    <span class="cm">// Call TypeSafe API</span>
+    <span class="kw">let</span> resp = data.http
+        .<span class="mt">post</span>(<span class="st">"https://api.typesafe.ai/v1/systemone"</span>)
+        .<span class="mt">bearer_auth</span>(&amp;data.api_key)
+        .<span class="mt">json</span>(&amp;body)
+        .<span class="mt">send</span>()
+        .<span class="kw">await</span>;
+
+    <span class="kw">let</span> resp = <span class="kw">match</span> resp {
+        Ok(r) => r,
+        Err(e) => {
+            <span class="kw">return</span> HttpResponse::BadGateway()
+                .<span class="mt">json</span>(json!({ <span class="st">"error"</span>: e.to_string() }));
+        }
+    };
+
+    <span class="kw">let</span> jev: Value = <span class="kw">match</span> resp.<span class="mt">json</span>().<span class="kw">await</span> {
+        Ok(v) => v,
+        Err(e) => {
+            <span class="kw">return</span> HttpResponse::InternalServerError()
+                .<span class="mt">json</span>(json!({ <span class="st">"error"</span>: e.to_string() }));
+        }
+    };
+
+    <span class="cm">// Extract typed answers from response</span>
+    <span class="kw">let</span> answers = &amp;jev[<span class="st">"answers"</span>];
+
+    <span class="kw">let</span> billing = answers[<span class="st">"billing"</span>][<span class="st">"noul"</span>]
+        .<span class="mt">as_f64</span>().<span class="mt">unwrap_or</span>(<span class="nm">0.0</span>);
+
+    <span class="kw">let</span> department = answers[<span class="st">"department"</span>][<span class="st">"choice"</span>]
+        .<span class="mt">as_str</span>().<span class="mt">unwrap_or</span>(<span class="st">"other"</span>).<span class="mt">to_string</span>();
+
+    <span class="kw">let</span> confidence = answers[<span class="st">"department"</span>][<span class="st">"confidence"</span>]
+        .<span class="mt">as_f64</span>().<span class="mt">unwrap_or</span>(<span class="nm">0.0</span>);
+
+    <span class="kw">let</span> urgency = answers[<span class="st">"urgency"</span>][<span class="st">"score"</span>]
+        .<span class="mt">as_f64</span>().<span class="mt">unwrap_or</span>(<span class="nm">0.0</span>);
+
+    <span class="kw">let</span> model = jev[<span class="st">"model"</span>]
+        .<span class="mt">as_str</span>().<span class="mt">unwrap_or</span>(<span class="st">"jev-latest"</span>).<span class="mt">to_string</span>();
+
+    <span class="cm">// Confidence-gated routing in code (policy stays server-side)</span>
+    <span class="kw">if</span> confidence &lt; <span class="nm">0.5</span> {
+        println!(<span class="st">"[jev] Low confidence {:.2} → flag for review"</span>, confidence);
+    }
+
+    HttpResponse::Ok().<span class="mt">json</span>(<span class="ty">JudgeResponse</span> {
+        billing, department, confidence, urgency, model,
+    })
+}
+
+<span class="cm">// ─── Main ─────────────────────────────────────────────────────────────</span>
+<span class="at">#[actix_web::main]</span>
+<span class="kw">async fn</span> <span class="fn">main</span>() -> std::io::<span class="ty">Result</span>&lt;()&gt; {
+    <span class="kw">let</span> api_key = env::<span class="mt">var</span>(<span class="st">"TYPESAFE_API_KEY"</span>)
+        .<span class="mt">expect</span>(<span class="st">"TYPESAFE_API_KEY must be set"</span>);
+
+    <span class="kw">let</span> state = web::<span class="mt">Data</span>::<span class="mt">new</span>(<span class="ty">AppState</span> {
+        api_key,
+        http: Client::<span class="mt">new</span>(),
+    });
+
+    println!(<span class="st">"🦀 JevTools Rust server → http://127.0.0.1:8090"</span>);
+
+    HttpServer::<span class="mt">new</span>(<span class="kw">move</span> || {
+        App::<span class="mt">new</span>()
+            .<span class="mt">app_data</span>(state.<span class="mt">clone</span>())
+            .<span class="mt">service</span>(<span class="fn">status</span>)
+            .<span class="mt">service</span>(<span class="fn">judge</span>)
+    })
+    .<span class="mt">bind</span>(<span class="st">"127.0.0.1:8090"</span>)?
+    .<span class="mt">run</span>()
+    .<span class="kw">await</span>
+}</pre>
+                    </div>
+                    <div id="rust-cargo" class="code-section">
+<pre><span class="cm"># Cargo.toml — JevTools Rust dependencies</span>
+[package]
+name    = <span class="st">"jevtools-rust"</span>
+version = <span class="st">"0.1.0"</span>
+edition = <span class="st">"2021"</span>
+
+[[bin]]
+name = <span class="st">"jevtools-rust"</span>
+path = <span class="st">"src/main.rs"</span>
+
+[dependencies]
+actix-web  = <span class="st">"4"</span>
+reqwest    = { version = <span class="st">"0.12"</span>, features = [<span class="st">"json"</span>] }
+serde      = { version = <span class="st">"1"</span>,    features = [<span class="st">"derive"</span>] }
+serde_json = <span class="st">"1"</span>
+tokio      = { version = <span class="st">"1"</span>,    features = [<span class="st">"full"</span>] }
+
+<span class="cm"># Run:
+#   export TYPESAFE_API_KEY=sk-ts-...
+#   cargo run --release
+#
+# Endpoints:
+#   GET  http://127.0.0.1:8090/api/status
+#   POST http://127.0.0.1:8090/api/judge
+#       { "text": "I was charged twice!" }
+</span></pre>
+                    </div>
+                    <div id="rust-client" class="code-section">
+<pre><span class="cm">// Browser client — calls the Rust proxy, not TypeSafe directly</span>
+<span class="cm">// Include this script in your HTML; no API key exposed.</span>
+
+<span class="kw">const</span> JEV_PROXY = <span class="st">"http://127.0.0.1:8090/api/judge"</span>;
+
+<span class="kw">async function</span> <span class="fn">callJev</span>(text) {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(JEV_PROXY, {
+    method:  <span class="st">"POST"</span>,
+    headers: { <span class="st">"Content-Type"</span>: <span class="st">"application/json"</span> },
+    body:    JSON.<span class="mt">stringify</span>({ text }),
+  });
+
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="ty">Error</span>(`Proxy error: ${res.status}`);
+  <span class="kw">return</span> res.<span class="mt">json</span>();   <span class="cm">// { billing, department, confidence, urgency, model }</span>
+}
+
+<span class="cm">// Example usage</span>
+<span class="fn">callJev</span>(<span class="st">"I was charged twice. This needs to be fixed ASAP!"</span>)
+  .<span class="mt">then</span>(ans => {
+    console.<span class="mt">log</span>(<span class="st">"Billing prob:"</span>, ans.billing);       <span class="cm">// 0.94</span>
+    console.<span class="mt">log</span>(<span class="st">"Department:"</span>,   ans.department);     <span class="cm">// "billing"</span>
+    console.<span class="mt">log</span>(<span class="st">"Confidence:"</span>,   ans.confidence);    <span class="cm">// 0.87</span>
+    console.<span class="mt">log</span>(<span class="st">"Urgency:"</span>,      ans.urgency);       <span class="cm">// 1.8 (of 2 max)</span>
+  })
+  .<span class="mt">catch</span>(console.error);
+</pre>
+                    </div>
+                </div>
+
+                <!-- Example Response -->
+                <div class="response-panel">
+                    <div class="response-header">
+                        <span class="response-label">🔵 Example Response</span>
+                        <span class="response-status ok">200 OK</span>
+                    </div>
+                    <div class="response-body">
+<pre>{
+  <span class="st">"billing"</span>:    <span class="nm">0.94</span>,
+  <span class="st">"department"</span>: <span class="st">"billing"</span>,
+  <span class="st">"confidence"</span>: <span class="nm">0.87</span>,
+  <span class="st">"urgency"</span>:    <span class="nm">1.8</span>,
+  <span class="st">"model"</span>:      <span class="st">"jev-latest"</span>
+}</pre>
+                        <div class="answer-cards">
+                            <div class="answer-card">
+                                <div class="answer-card-header">
+                                    <span class="answer-id">billing</span>
+                                    <span class="answer-type-badge badge-noul">Noul</span>
+                                </div>
+                                <div class="meter-val-row"><span style="color:#b0b8d8;font-size:0.8rem">P(billing issue)</span><span class="meter-val">0.94</span></div>
+                                <div class="meter-bar-bg"><div class="meter-bar-fill" style="width:94%"></div></div>
+                            </div>
+                            <div class="answer-card">
+                                <div class="answer-card-header">
+                                    <span class="answer-id">department → "billing"</span>
+                                    <span class="answer-type-badge badge-choice">Choice</span>
+                                </div>
+                                <div class="meter-val-row"><span style="color:#b0b8d8;font-size:0.8rem">Confidence</span><span class="meter-val">0.87</span></div>
+                                <div class="meter-bar-bg"><div class="meter-bar-fill" style="width:87%"></div></div>
+                            </div>
+                            <div class="answer-card">
+                                <div class="answer-card-header">
+                                    <span class="answer-id">urgency</span>
+                                    <span class="answer-type-badge badge-score">Score</span>
+                                </div>
+                                <div class="meter-val-row"><span style="color:#b0b8d8;font-size:0.8rem">Score (0–2 levels)</span><span class="meter-val">1.8 / 2</span></div>
+                                <div class="meter-bar-bg"><div class="meter-bar-fill" style="width:90%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         PYTHON TAB
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="tab-python" class="lang-content">
+        <div class="studio-layout">
+            <div class="panel" data-lang-accent="python">
+                <div class="panel-header">
+                    <div class="panel-title">🐍 Python SDK</div>
+                    <span class="panel-badge">Server / CLI</span>
+                </div>
+                <div class="info-section">
+                    <h3>Overview</h3>
+                    <p>The <strong>official Python SDK</strong> (<code>typesafe-sdk</code>) provides sync and async clients with type-safe accessors. This is the most ergonomic way to call Jev from Python servers, data pipelines, or CLI scripts.</p>
+                </div>
+                <div class="info-section">
+                    <h3>Setup Steps</h3>
+                    <div class="setup-steps">
+                        <div class="setup-step"><span class="step-num">1</span><span class="step-text">Install: <code>pip install typesafe-sdk</code> or <code>uv add typesafe-sdk</code></span></div>
+                        <div class="setup-step"><span class="step-num">2</span><span class="step-text">Set: <code>export TYPESAFE_API_KEY=sk-ts-...</code></span></div>
+                        <div class="setup-step"><span class="step-num">3</span><span class="step-text">Run: <code>python jev_judge.py</code></span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h3>Primitives Used</h3>
+                    <div class="capability-chips">
+                        <span class="cap-chip">📊 Noul</span>
+                        <span class="cap-chip">🎯 Choice</span>
+                        <span class="cap-chip">📈 Score</span>
+                        <span class="cap-chip">⚡ Speculative Fan-out</span>
+                        <span class="cap-chip">🔄 Async Client</span>
+                    </div>
+                </div>
+                <div class="security-banner">
+                    🔐 <span><strong>Key Security:</strong> <code>TypeSafeClient()</code> reads <code>TYPESAFE_API_KEY</code> from the environment automatically. Never hard-code keys in source files.</span>
+                </div>
+            </div>
+            <div>
+                <div class="code-panel">
+                    <div class="code-panel-header">
+                        <div class="code-file-tab">
+                            <span class="code-file-dot dot-python"></span>
+                            <span>jev_judge.py</span>
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn-copy" onclick="copyCode('python-sync')">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="code-sub-tabs">
+                        <button class="code-sub-tab active" onclick="showCodeSection('python','sync')">Sync SDK</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('python','async')">Async SDK</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('python','fastapi')">FastAPI Server</button>
+                    </div>
+                    <div id="python-sync" class="code-section active">
+<pre><span class="cm"># jev_judge.py — Synchronous Jev SDK example</span>
+<span class="cm"># pip install typesafe-sdk</span>
+
+<span class="kw">from</span> typesafe_sdk <span class="kw">import</span> Choice, Noul, Score, TypeSafeClient
+
+<span class="kw">def</span> <span class="fn">judge_message</span>(text: <span class="ty">str</span>) -> <span class="ty">dict</span>:
+    <span class="st">"""Run 3 parallel Jev judgments on a support message."""</span>
+    <span class="kw">with</span> TypeSafeClient() <span class="kw">as</span> client:
+        response = client.<span class="mt">system_one</span>(
+            state={<span class="st">"message"</span>: text},
+            questions={
+                <span class="st">"billing"</span>: Noul(
+                    instructions=<span class="st">"Is `message` about a billing or payment issue?"</span>
+                ),
+                <span class="st">"department"</span>: Choice(
+                    instructions=<span class="st">"Which support team should handle `message`?"</span>,
+                    criteria={
+                        <span class="st">"billing"</span>:   <span class="st">"Payment, subscription, or invoice issues."</span>,
+                        <span class="st">"technical"</span>: <span class="st">"Bugs, API errors, or integration problems."</span>,
+                        <span class="st">"sales"</span>:     <span class="st">"Pricing, upgrades, or new account questions."</span>,
+                        <span class="st">"other"</span>:     <span class="st">"None of the above."</span>,
+                    },
+                ),
+                <span class="st">"urgency"</span>: Score(
+                    instructions=<span class="st">"How urgent does `message` appear?"</span>,
+                    criteria=[
+                        <span class="st">"Can wait days — no expressed urgency."</span>,
+                        <span class="st">"Should be resolved this week."</span>,
+                        <span class="st">"Needs action today — strong urgency."</span>,
+                    ],
+                ),
+            },
+        )
+
+    <span class="cm"># Typed shorthand accessors</span>
+    billing    = response.nouls[<span class="st">"billing"</span>].noul          <span class="cm"># float 0–1</span>
+    department = response.choices[<span class="st">"department"</span>].choice    <span class="cm"># str</span>
+    confidence = response.choices[<span class="st">"department"</span>].confidence <span class="cm"># float 0–1</span>
+    urgency    = response.scores[<span class="st">"urgency"</span>].score         <span class="cm"># float 0–2</span>
+
+    <span class="cm"># Confidence-gated routing (policy in code, not questions)</span>
+    <span class="kw">if</span> confidence &lt; <span class="nm">0.5</span>:
+        action = <span class="st">"route_to_human"</span>
+    <span class="kw">elif</span> department == <span class="st">"billing"</span>:
+        action = <span class="st">"open_billing_ticket"</span>
+    <span class="kw">elif</span> department == <span class="st">"technical"</span>:
+        action = <span class="st">"open_tech_ticket"</span>
+    <span class="kw">else</span>:
+        action = <span class="st">"open_general_ticket"</span>
+
+    <span class="kw">return</span> {
+        <span class="st">"billing"</span>:    billing,
+        <span class="st">"department"</span>: department,
+        <span class="st">"confidence"</span>: confidence,
+        <span class="st">"urgency"</span>:    urgency,
+        <span class="st">"action"</span>:     action,
+    }
+
+
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    result = <span class="fn">judge_message</span>(<span class="st">"I was charged twice. Fix this ASAP!"</span>)
+    <span class="kw">for</span> k, v <span class="kw">in</span> result.items():
+        print(<span class="fn">f</span><span class="st">"  {k}: {v}"</span>)</pre>
+                    </div>
+                    <div id="python-async" class="code-section">
+<pre><span class="cm"># async version — for FastAPI, Starlette, or asyncio pipelines</span>
+<span class="kw">import</span> asyncio
+<span class="kw">from</span> typesafe_sdk <span class="kw">import</span> AsyncTypeSafeClient, Choice, Noul, Score
+
+<span class="kw">async def</span> <span class="fn">judge_async</span>(text: <span class="ty">str</span>) -> <span class="ty">dict</span>:
+    <span class="kw">async with</span> AsyncTypeSafeClient() <span class="kw">as</span> client:
+        response = <span class="kw">await</span> client.<span class="mt">system_one</span>(
+            state={<span class="st">"message"</span>: text},
+            questions={
+                <span class="st">"billing"</span>:    Noul(<span class="st">"Is `message` about billing?"</span>),
+                <span class="st">"department"</span>: Choice(
+                    <span class="st">"Which team handles `message`?"</span>,
+                    criteria={<span class="st">"billing"</span>: <span class="st">"Payment issues"</span>,
+                              <span class="st">"technical"</span>: <span class="st">"Bug reports"</span>,
+                              <span class="st">"other"</span>: <span class="st">"All else"</span>}
+                ),
+                <span class="st">"urgency"</span>: Score(
+                    <span class="st">"How urgent is `message`?"</span>,
+                    criteria=[<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>]
+                ),
+            },
+        )
+    <span class="kw">return</span> {
+        <span class="st">"billing"</span>:    response.nouls[<span class="st">"billing"</span>].noul,
+        <span class="st">"department"</span>: response.choices[<span class="st">"department"</span>].choice,
+        <span class="st">"urgency"</span>:    response.scores[<span class="st">"urgency"</span>].score,
+    }
+
+<span class="cm"># Run standalone</span>
+<span class="kw">if</span> __name__ == <span class="st">"__main__"</span>:
+    result = asyncio.<span class="mt">run</span>(<span class="fn">judge_async</span>(<span class="st">"My account is broken!"</span>))
+    print(result)</pre>
+                    </div>
+                    <div id="python-fastapi" class="code-section">
+<pre><span class="cm"># FastAPI server with Jev — pip install fastapi uvicorn typesafe-sdk</span>
+<span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+<span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel
+<span class="kw">from</span> typesafe_sdk <span class="kw">import</span> AsyncTypeSafeClient, Choice, Noul, Score
+
+app = <span class="fn">FastAPI</span>(title=<span class="st">"JevTools Python"</span>)
+
+<span class="kw">class</span> <span class="ty">JudgeRequest</span>(BaseModel):
+    text: <span class="ty">str</span>
+
+<span class="at">@app.post</span>(<span class="st">"/api/judge"</span>)
+<span class="kw">async def</span> <span class="fn">judge</span>(req: <span class="ty">JudgeRequest</span>):
+    <span class="kw">async with</span> AsyncTypeSafeClient() <span class="kw">as</span> client:
+        r = <span class="kw">await</span> client.<span class="mt">system_one</span>(
+            state={<span class="st">"message"</span>: req.text},
+            questions={
+                <span class="st">"billing"</span>:    Noul(<span class="st">"Is `message` about billing?"</span>),
+                <span class="st">"department"</span>: Choice(
+                    <span class="st">"Which team handles `message`?"</span>,
+                    criteria={<span class="st">"billing"</span>: <span class="st">"Payment."</span>,
+                              <span class="st">"technical"</span>: <span class="st">"Bugs."</span>,
+                              <span class="st">"other"</span>: <span class="st">"All else."</span>}
+                ),
+                <span class="st">"urgency"</span>: Score(<span class="st">"How urgent?"</span>, [<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>]),
+            },
+        )
+    <span class="kw">return</span> {
+        <span class="st">"billing"</span>:    r.nouls[<span class="st">"billing"</span>].noul,
+        <span class="st">"department"</span>: r.choices[<span class="st">"department"</span>].choice,
+        <span class="st">"confidence"</span>: r.choices[<span class="st">"department"</span>].confidence,
+        <span class="st">"urgency"</span>:    r.scores[<span class="st">"urgency"</span>].score,
+    }
+
+<span class="cm"># uvicorn main:app --reload</span></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         TYPESCRIPT TAB
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="tab-typescript" class="lang-content">
+        <div class="studio-layout">
+            <div class="panel" data-lang-accent="typescript">
+                <div class="panel-header">
+                    <div class="panel-title">🔷 TypeScript / Node.js</div>
+                    <span class="panel-badge">Browser / Node</span>
+                </div>
+                <div class="info-section">
+                    <h3>Overview</h3>
+                    <p>The official <strong><code>@typesafe-ai/sdk</code></strong> package provides full TypeScript type inference — answer types are automatically inferred from question types; no casting needed. Works in Node.js 20+ (server) or via the browser proxy pattern.</p>
+                </div>
+                <div class="info-section">
+                    <h3>Setup Steps</h3>
+                    <div class="setup-steps">
+                        <div class="setup-step"><span class="step-num">1</span><span class="step-text"><code>npm install @typesafe-ai/sdk</code></span></div>
+                        <div class="setup-step"><span class="step-num">2</span><span class="step-text"><code>export TYPESAFE_API_KEY=sk-ts-...</code> (server only)</span></div>
+                        <div class="setup-step"><span class="step-num">3</span><span class="step-text"><code>npx tsx jev_judge.ts</code></span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h3>Primitives Used</h3>
+                    <div class="capability-chips">
+                        <span class="cap-chip">📊 noul()</span>
+                        <span class="cap-chip">🎯 choice()</span>
+                        <span class="cap-chip">📈 score()</span>
+                        <span class="cap-chip">🔷 Full type inference</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="code-panel">
+                    <div class="code-panel-header">
+                        <div class="code-file-tab">
+                            <span class="code-file-dot dot-typescript"></span>
+                            <span>jev_judge.ts</span>
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn-copy" onclick="copyCode('typescript-node')">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="code-sub-tabs">
+                        <button class="code-sub-tab active" onclick="showCodeSection('typescript','node')">Node.js SDK</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('typescript','browser')">Browser Fetch</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('typescript','express')">Express Server</button>
+                    </div>
+                    <div id="typescript-node" class="code-section active">
+<pre><span class="cm">// jev_judge.ts — TypeScript SDK (Node.js server-side)</span>
+<span class="cm">// npm install @typesafe-ai/sdk</span>
+<span class="cm">// npx tsx jev_judge.ts</span>
+
+<span class="kw">import</span> { choice, noul, score, TypeSafeClient } <span class="kw">from</span> <span class="st">"@typesafe-ai/sdk"</span>;
+
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="ty">TypeSafeClient</span>();
+<span class="cm">// Reads TYPESAFE_API_KEY from process.env automatically</span>
+
+<span class="kw">async function</span> <span class="fn">judgeMessage</span>(text: <span class="ty">string</span>) {
+  <span class="kw">const</span> response = <span class="kw">await</span> client.<span class="mt">systemOne</span>({
+    state: { message: text },
+    questions: {
+      billing: <span class="fn">noul</span>(<span class="st">"Is `message` about a billing or payment issue?"</span>),
+
+      department: <span class="fn">choice</span>(<span class="st">"Which support team handles `message`?"</span>, {
+        billing:   <span class="st">"Payment, subscription, or invoice issues."</span>,
+        technical: <span class="st">"Bugs, API errors, or integration problems."</span>,
+        sales:     <span class="st">"Pricing, upgrades, or new account questions."</span>,
+        other:     <span class="st">"None of the above."</span>,
+      }),
+
+      urgency: <span class="fn">score</span>(<span class="st">"How urgent does `message` appear?"</span>, [
+        <span class="st">"Can wait days — no expressed urgency."</span>,
+        <span class="st">"Should be resolved this week — some concern."</span>,
+        <span class="st">"Needs action today — strong urgency or anger."</span>,
+      ]),
+    },
+  });
+
+  <span class="cm">// Answer types are fully inferred — no casting needed</span>
+  <span class="kw">const</span> billing    = response.answers.billing.noul;         <span class="cm">// number</span>
+  <span class="kw">const</span> dept       = response.answers.department.choice;    <span class="cm">// "billing"|"technical"|"sales"|"other"</span>
+  <span class="kw">const</span> confidence = response.answers.department.confidence; <span class="cm">// number</span>
+  <span class="kw">const</span> urgency    = response.answers.urgency.score;         <span class="cm">// number</span>
+
+  <span class="cm">// Confidence-gated routing in code</span>
+  <span class="kw">let</span> action: <span class="ty">string</span>;
+  <span class="kw">if</span> (confidence &lt; <span class="nm">0.5</span>) {
+    action = <span class="st">"route_to_human"</span>;
+  } <span class="kw">else if</span> (dept === <span class="st">"billing"</span>) {
+    action = <span class="st">"open_billing_ticket"</span>;
+  } <span class="kw">else if</span> (dept === <span class="st">"technical"</span>) {
+    action = <span class="st">"open_tech_ticket"</span>;
+  } <span class="kw">else</span> {
+    action = <span class="st">"open_general_ticket"</span>;
+  }
+
+  <span class="kw">return</span> { billing, department: dept, confidence, urgency, action };
+}
+
+<span class="cm">// Run</span>
+<span class="fn">judgeMessage</span>(<span class="st">"I was charged twice. Fix this ASAP!"</span>)
+  .<span class="mt">then</span>(console.log)
+  .<span class="mt">catch</span>(console.error);</pre>
+                    </div>
+                    <div id="typescript-browser" class="code-section">
+<pre><span class="cm">// Browser client — calls a local proxy server, NOT TypeSafe directly</span>
+<span class="cm">// Safe: no API key in browser JavaScript</span>
+
+<span class="kw">const</span> PROXY_URL = <span class="st">"/api/judge"</span>;  <span class="cm">// same-origin proxy</span>
+
+<span class="kw">interface</span> <span class="ty">JudgeResult</span> {
+  billing:    <span class="ty">number</span>;
+  department: <span class="ty">string</span>;
+  confidence: <span class="ty">number</span>;
+  urgency:    <span class="ty">number</span>;
+}
+
+<span class="kw">async function</span> <span class="fn">callJevProxy</span>(text: <span class="ty">string</span>): Promise&lt;<span class="ty">JudgeResult</span>&gt; {
+  <span class="kw">const</span> res = <span class="kw">await</span> <span class="fn">fetch</span>(PROXY_URL, {
+    method:  <span class="st">"POST"</span>,
+    headers: { <span class="st">"Content-Type"</span>: <span class="st">"application/json"</span> },
+    body:    JSON.<span class="mt">stringify</span>({ text }),
+  });
+  <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="ty">Error</span>(`HTTP ${res.status}`);
+  <span class="kw">return</span> res.<span class="mt">json</span>() <span class="kw">as</span> Promise&lt;<span class="ty">JudgeResult</span>&gt;;
+}
+
+<span class="cm">// Hook up to a form submit</span>
+document.<span class="mt">getElementById</span>(<span class="st">"analyze-btn"</span>)?.addEventListener(<span class="st">"click"</span>, <span class="kw">async</span> () => {
+  <span class="kw">const</span> text = (document.<span class="mt">getElementById</span>(<span class="st">"message-input"</span>) <span class="kw">as</span> <span class="ty">HTMLInputElement</span>).value;
+  <span class="kw">const</span> result = <span class="kw">await</span> <span class="fn">callJevProxy</span>(text);
+  console.<span class="mt">log</span>(result.department, result.confidence);
+});</pre>
+                    </div>
+                    <div id="typescript-express" class="code-section">
+<pre><span class="cm">// Express.js proxy server — npm install express @typesafe-ai/sdk</span>
+<span class="kw">import</span> express <span class="kw">from</span> <span class="st">"express"</span>;
+<span class="kw">import</span> { choice, noul, score, TypeSafeClient } <span class="kw">from</span> <span class="st">"@typesafe-ai/sdk"</span>;
+
+<span class="kw">const</span> app    = <span class="fn">express</span>();
+<span class="kw">const</span> client = <span class="kw">new</span> <span class="ty">TypeSafeClient</span>();
+
+app.<span class="mt">use</span>(express.<span class="fn">json</span>());
+
+app.<span class="mt">post</span>(<span class="st">"/api/judge"</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">const</span> { text } = req.body;
+  <span class="kw">const</span> r = <span class="kw">await</span> client.<span class="mt">systemOne</span>({
+    state: { message: text },
+    questions: {
+      billing:    <span class="fn">noul</span>(<span class="st">"Is `message` about billing?"</span>),
+      department: <span class="fn">choice</span>(<span class="st">"Which team?"</span>, {
+                    billing: <span class="st">"Payment."</span>, technical: <span class="st">"Bugs."</span>, other: <span class="st">"All else."</span> }),
+      urgency:    <span class="fn">score</span>(<span class="st">"How urgent?"</span>, [<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>]),
+    },
+  });
+  res.<span class="mt">json</span>({
+    billing:    r.answers.billing.noul,
+    department: r.answers.department.choice,
+    confidence: r.answers.department.confidence,
+    urgency:    r.answers.urgency.score,
+  });
+});
+
+app.<span class="mt">listen</span>(<span class="nm">8091</span>, () => console.<span class="mt">log</span>(<span class="st">"🔷 Express/Jev → http://localhost:8091"</span>));</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         GO TAB
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="tab-go" class="lang-content">
+        <div class="studio-layout">
+            <div class="panel" data-lang-accent="go">
+                <div class="panel-header">
+                    <div class="panel-title">🐹 Go (net/http)</div>
+                    <span class="panel-badge">Server</span>
+                </div>
+                <div class="info-section">
+                    <h3>Overview</h3>
+                    <p>Call the TypeSafe Jev HTTP API from Go using the standard <code>net/http</code> package. No third-party Jev SDK exists yet for Go — these examples use raw HTTP with <code>encoding/json</code> for clean, dependency-free integration.</p>
+                </div>
+                <div class="info-section">
+                    <h3>Setup Steps</h3>
+                    <div class="setup-steps">
+                        <div class="setup-step"><span class="step-num">1</span><span class="step-text">Standard library only — no <code>go get</code> needed</span></div>
+                        <div class="setup-step"><span class="step-num">2</span><span class="step-text"><code>export TYPESAFE_API_KEY=sk-ts-...</code></span></div>
+                        <div class="setup-step"><span class="step-num">3</span><span class="step-text"><code>go run main.go</code></span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h3>Approach</h3>
+                    <div class="capability-chips">
+                        <span class="cap-chip">🌐 Raw HTTP API</span>
+                        <span class="cap-chip">📦 encoding/json</span>
+                        <span class="cap-chip">⚡ No deps</span>
+                        <span class="cap-chip">🔒 Key server-side</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="code-panel">
+                    <div class="code-panel-header">
+                        <div class="code-file-tab">
+                            <span class="code-file-dot dot-go"></span>
+                            <span>main.go</span>
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn-copy" onclick="copyCode('go-server')">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="code-sub-tabs">
+                        <button class="code-sub-tab active" onclick="showCodeSection('go','server')">HTTP Server</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('go','cli')">CLI Script</button>
+                    </div>
+                    <div id="go-server" class="code-section active">
+<pre><span class="cm">// main.go — JevTools Go example using net/http + encoding/json</span>
+<span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="st">"bytes"</span>
+    <span class="st">"encoding/json"</span>
+    <span class="st">"fmt"</span>
+    <span class="st">"io"</span>
+    <span class="st">"log"</span>
+    <span class="st">"net/http"</span>
+    <span class="st">"os"</span>
+)
+
+<span class="kw">const</span> jevEndpoint = <span class="st">"https://api.typesafe.ai/v1/systemone"</span>
+
+<span class="kw">type</span> <span class="ty">JudgeRequest</span> <span class="kw">struct</span> {
+    Text <span class="ty">string</span> <span class="st">`json:"text"`</span>
+}
+
+<span class="kw">type</span> <span class="ty">JudgeResult</span> <span class="kw">struct</span> {
+    Billing    <span class="ty">float64</span> <span class="st">`json:"billing"`</span>
+    Department <span class="ty">string</span>  <span class="st">`json:"department"`</span>
+    Confidence <span class="ty">float64</span> <span class="st">`json:"confidence"`</span>
+    Urgency    <span class="ty">float64</span> <span class="st">`json:"urgency"`</span>
+}
+
+<span class="kw">func</span> <span class="fn">callJev</span>(apiKey, text <span class="ty">string</span>) (*<span class="ty">JudgeResult</span>, <span class="ty">error</span>) {
+    body, _ := json.<span class="mt">Marshal</span>(<span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>{
+        <span class="st">"model"</span>: <span class="st">"jev-latest"</span>,
+        <span class="st">"state"</span>: <span class="kw">map</span>[<span class="ty">string</span>]<span class="ty">string</span>{<span class="st">"message"</span>: text},
+        <span class="st">"questions"</span>: <span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>{
+            <span class="st">"billing"</span>: <span class="kw">map</span>[<span class="ty">string</span>]<span class="ty">string</span>{
+                <span class="st">"type"</span>:         <span class="st">"noul"</span>,
+                <span class="st">"instructions"</span>: <span class="st">"Is `message` about billing?"</span>,
+            },
+            <span class="st">"department"</span>: <span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>{
+                <span class="st">"type"</span>:         <span class="st">"choice"</span>,
+                <span class="st">"instructions"</span>: <span class="st">"Which team handles `message`?"</span>,
+                <span class="st">"criteria"</span>: <span class="kw">map</span>[<span class="ty">string</span>]<span class="ty">string</span>{
+                    <span class="st">"billing"</span>:   <span class="st">"Payment issues."</span>,
+                    <span class="st">"technical"</span>: <span class="st">"Bug reports."</span>,
+                    <span class="st">"other"</span>:     <span class="st">"All else."</span>,
+                },
+            },
+            <span class="st">"urgency"</span>: <span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>{
+                <span class="st">"type"</span>:         <span class="st">"score"</span>,
+                <span class="st">"instructions"</span>: <span class="st">"How urgent is `message`?"</span>,
+                <span class="st">"criteria"</span>:     []<span class="ty">string</span>{<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>},
+            },
+        },
+    })
+
+    req, _ := http.<span class="mt">NewRequest</span>(http.MethodPost, jevEndpoint,
+        bytes.<span class="mt">NewReader</span>(body))
+    req.Header.<span class="mt">Set</span>(<span class="st">"Authorization"</span>, <span class="st">"Bearer "</span>+apiKey)
+    req.Header.<span class="mt">Set</span>(<span class="st">"Content-Type"</span>, <span class="st">"application/json"</span>)
+
+    resp, err := http.<span class="mt">DefaultClient</span>.<span class="mt">Do</span>(req)
+    <span class="kw">if</span> err != <span class="kw">nil</span> {
+        <span class="kw">return</span> <span class="kw">nil</span>, err
+    }
+    <span class="kw">defer</span> resp.Body.<span class="mt">Close</span>()
+
+    <span class="kw">var</span> raw <span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>
+    <span class="kw">if</span> err := json.<span class="mt">NewDecoder</span>(resp.Body).<span class="mt">Decode</span>(&amp;raw); err != <span class="kw">nil</span> {
+        <span class="kw">return</span> <span class="kw">nil</span>, err
+    }
+
+    answers := raw[<span class="st">"answers"</span>].(<span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>)
+    result := &amp;<span class="ty">JudgeResult</span>{
+        Billing:    answers[<span class="st">"billing"</span>].(<span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>)[<span class="st">"noul"</span>].(<span class="ty">float64</span>),
+        Department: answers[<span class="st">"department"</span>].(<span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>)[<span class="st">"choice"</span>].(<span class="ty">string</span>),
+        Confidence: answers[<span class="st">"department"</span>].(<span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>)[<span class="st">"confidence"</span>].(<span class="ty">float64</span>),
+        Urgency:    answers[<span class="st">"urgency"</span>].(<span class="kw">map</span>[<span class="ty">string</span>]<span class="kw">any</span>)[<span class="st">"score"</span>].(<span class="ty">float64</span>),
+    }
+    <span class="kw">return</span> result, <span class="kw">nil</span>
+}
+
+<span class="kw">func</span> <span class="fn">judgeHandler</span>(apiKey <span class="ty">string</span>) http.HandlerFunc {
+    <span class="kw">return func</span>(w http.ResponseWriter, r *http.Request) {
+        <span class="kw">var</span> req <span class="ty">JudgeRequest</span>
+        json.<span class="mt">NewDecoder</span>(r.Body).<span class="mt">Decode</span>(&amp;req)
+
+        result, err := <span class="fn">callJev</span>(apiKey, req.Text)
+        <span class="kw">if</span> err != <span class="kw">nil</span> {
+            http.<span class="mt">Error</span>(w, err.<span class="mt">Error</span>(), http.StatusBadGateway)
+            <span class="kw">return</span>
+        }
+        w.Header().<span class="mt">Set</span>(<span class="st">"Content-Type"</span>, <span class="st">"application/json"</span>)
+        json.<span class="mt">NewEncoder</span>(w).<span class="mt">Encode</span>(result)
+    }
+}
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    apiKey := os.<span class="mt">Getenv</span>(<span class="st">"TYPESAFE_API_KEY"</span>)
+    <span class="kw">if</span> apiKey == <span class="st">""</span> {
+        log.<span class="mt">Fatal</span>(<span class="st">"TYPESAFE_API_KEY not set"</span>)
+    }
+    http.<span class="mt">HandleFunc</span>(<span class="st">"/api/judge"</span>, <span class="fn">judgeHandler</span>(apiKey))
+    fmt.<span class="mt">Println</span>(<span class="st">"🐹 Go/Jev server → http://127.0.0.1:8092"</span>)
+    log.<span class="mt">Fatal</span>(http.<span class="mt">ListenAndServe</span>(<span class="st">":8092"</span>, <span class="kw">nil</span>))
+}</pre>
+                    </div>
+                    <div id="go-cli" class="code-section">
+<pre><span class="cm">// Standalone CLI usage — go run main.go</span>
+<span class="cm">// Replace the main() function with this snippet for a quick test:</span>
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    apiKey := os.<span class="mt">Getenv</span>(<span class="st">"TYPESAFE_API_KEY"</span>)
+    result, err := <span class="fn">callJev</span>(apiKey, <span class="st">"I was charged twice. Fix this ASAP!"</span>)
+    <span class="kw">if</span> err != <span class="kw">nil</span> {
+        log.<span class="mt">Fatal</span>(err)
+    }
+    fmt.<span class="mt">Printf</span>(<span class="st">"billing:    %.2f\n"</span>, result.Billing)
+    fmt.<span class="mt">Printf</span>(<span class="st">"department: %s (conf %.2f)\n"</span>, result.Department, result.Confidence)
+    fmt.<span class="mt">Printf</span>(<span class="st">"urgency:    %.2f\n"</span>, result.Urgency)
+
+    <span class="cm">// Confidence-gated routing</span>
+    <span class="kw">switch</span> {
+    <span class="kw">case</span> result.Confidence &lt; <span class="nm">0.5</span>:
+        fmt.<span class="mt">Println</span>(<span class="st">"action: route_to_human"</span>)
+    <span class="kw">case</span> result.Department == <span class="st">"billing"</span>:
+        fmt.<span class="mt">Println</span>(<span class="st">"action: open_billing_ticket"</span>)
+    <span class="kw">default</span>:
+        fmt.<span class="mt">Println</span>(<span class="st">"action: open_general_ticket"</span>)
+    }
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         JAVA TAB
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="tab-java" class="lang-content">
+        <div class="studio-layout">
+            <div class="panel" data-lang-accent="java">
+                <div class="panel-header">
+                    <div class="panel-title">☕ Java / Spring Boot</div>
+                    <span class="panel-badge">Server / JVM</span>
+                </div>
+                <div class="info-section">
+                    <h3>Overview</h3>
+                    <p>Call the TypeSafe Jev API from Java using the built-in <code>java.net.http.HttpClient</code> (Java 11+) and Jackson for JSON. The Spring Boot example creates a REST endpoint acting as a proxy with the API key held server-side in <code>application.properties</code>.</p>
+                </div>
+                <div class="info-section">
+                    <h3>Setup Steps</h3>
+                    <div class="setup-steps">
+                        <div class="setup-step"><span class="step-num">1</span><span class="step-text">Java 11+ required. Add <code>spring-boot-starter-web</code> + <code>jackson-databind</code> to <code>pom.xml</code></span></div>
+                        <div class="setup-step"><span class="step-num">2</span><span class="step-text">Set <code>typesafe.api-key=sk-ts-...</code> in <code>application.properties</code></span></div>
+                        <div class="setup-step"><span class="step-num">3</span><span class="step-text"><code>mvn spring-boot:run</code></span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h3>Approach</h3>
+                    <div class="capability-chips">
+                        <span class="cap-chip">☕ Java 11+ HttpClient</span>
+                        <span class="cap-chip">🍃 Spring Boot REST</span>
+                        <span class="cap-chip">📦 Jackson JSON</span>
+                        <span class="cap-chip">🔒 Config key</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="code-panel">
+                    <div class="code-panel-header">
+                        <div class="code-file-tab">
+                            <span class="code-file-dot dot-java"></span>
+                            <span>JevController.java</span>
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn-copy" onclick="copyCode('java-controller')">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="code-sub-tabs">
+                        <button class="code-sub-tab active" onclick="showCodeSection('java','controller')">Spring Boot</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('java','standalone')">Standalone CLI</button>
+                    </div>
+                    <div id="java-controller" class="code-section active">
+<pre><span class="cm">// JevController.java — Spring Boot REST endpoint for Jev</span>
+<span class="kw">package</span> com.example.jevtools;
+
+<span class="kw">import</span> com.fasterxml.jackson.databind.JsonNode;
+<span class="kw">import</span> com.fasterxml.jackson.databind.ObjectMapper;
+<span class="kw">import</span> org.springframework.beans.factory.annotation.Value;
+<span class="kw">import</span> org.springframework.web.bind.annotation.*;
+
+<span class="kw">import</span> java.net.URI;
+<span class="kw">import</span> java.net.http.*;
+<span class="kw">import</span> java.util.Map;
+
+<span class="at">@RestController</span>
+<span class="at">@RequestMapping</span>(<span class="st">"/api"</span>)
+<span class="kw">public class</span> <span class="ty">JevController</span> {
+
+    <span class="at">@Value</span>(<span class="st">"${typesafe.api-key}"</span>)
+    <span class="kw">private</span> <span class="ty">String</span> apiKey;
+
+    <span class="kw">private final</span> <span class="ty">ObjectMapper</span> mapper = <span class="kw">new</span> <span class="ty">ObjectMapper</span>();
+    <span class="kw">private final</span> <span class="ty">HttpClient</span>   http   = HttpClient.<span class="mt">newHttpClient</span>();
+
+    <span class="at">@PostMapping</span>(<span class="st">"/judge"</span>)
+    <span class="kw">public</span> <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">Object</span>&gt; <span class="fn">judge</span>(<span class="at">@RequestBody</span> <span class="ty">Map</span>&lt;<span class="ty">String</span>, <span class="ty">String</span>&gt; req)
+            <span class="kw">throws</span> <span class="ty">Exception</span> {
+
+        <span class="kw">var</span> body = mapper.<span class="mt">writeValueAsString</span>(<span class="ty">Map</span>.of(
+            <span class="st">"model"</span>, <span class="st">"jev-latest"</span>,
+            <span class="st">"state"</span>, <span class="ty">Map</span>.of(<span class="st">"message"</span>, req.<span class="mt">get</span>(<span class="st">"text"</span>)),
+            <span class="st">"questions"</span>, <span class="ty">Map</span>.of(
+                <span class="st">"billing"</span>, <span class="ty">Map</span>.of(
+                    <span class="st">"type"</span>, <span class="st">"noul"</span>,
+                    <span class="st">"instructions"</span>, <span class="st">"Is `message` about a billing issue?"</span>
+                ),
+                <span class="st">"department"</span>, <span class="ty">Map</span>.of(
+                    <span class="st">"type"</span>, <span class="st">"choice"</span>,
+                    <span class="st">"instructions"</span>, <span class="st">"Which team handles `message`?"</span>,
+                    <span class="st">"criteria"</span>, <span class="ty">Map</span>.of(
+                        <span class="st">"billing"</span>, <span class="st">"Payment issues."</span>,
+                        <span class="st">"technical"</span>, <span class="st">"Bug reports."</span>,
+                        <span class="st">"other"</span>, <span class="st">"All else."</span>
+                    )
+                ),
+                <span class="st">"urgency"</span>, <span class="ty">Map</span>.of(
+                    <span class="st">"type"</span>, <span class="st">"score"</span>,
+                    <span class="st">"instructions"</span>, <span class="st">"How urgent is `message`?"</span>,
+                    <span class="st">"criteria"</span>, <span class="kw">new</span> <span class="ty">String</span>[]{<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>}
+                )
+            )
+        ));
+
+        <span class="kw">var</span> httpReq = HttpRequest.<span class="mt">newBuilder</span>()
+            .<span class="mt">uri</span>(URI.<span class="mt">create</span>(<span class="st">"https://api.typesafe.ai/v1/systemone"</span>))
+            .<span class="mt">header</span>(<span class="st">"Authorization"</span>, <span class="st">"Bearer "</span> + apiKey)
+            .<span class="mt">header</span>(<span class="st">"Content-Type"</span>, <span class="st">"application/json"</span>)
+            .<span class="mt">POST</span>(HttpRequest.BodyPublishers.<span class="mt">ofString</span>(body))
+            .<span class="mt">build</span>();
+
+        <span class="kw">var</span> resp    = http.<span class="mt">send</span>(httpReq, HttpResponse.BodyHandlers.<span class="mt">ofString</span>());
+        <span class="ty">JsonNode</span> jev = mapper.<span class="mt">readTree</span>(resp.<span class="mt">body</span>());
+        <span class="ty">JsonNode</span> ans = jev.<span class="mt">path</span>(<span class="st">"answers"</span>);
+
+        <span class="kw">return</span> <span class="ty">Map</span>.of(
+            <span class="st">"billing"</span>,    ans.<span class="mt">path</span>(<span class="st">"billing"</span>)   .<span class="mt">path</span>(<span class="st">"noul"</span>)      .<span class="mt">asDouble</span>(),
+            <span class="st">"department"</span>, ans.<span class="mt">path</span>(<span class="st">"department"</span>).<span class="mt">path</span>(<span class="st">"choice"</span>)    .<span class="mt">asText</span>(),
+            <span class="st">"confidence"</span>, ans.<span class="mt">path</span>(<span class="st">"department"</span>).<span class="mt">path</span>(<span class="st">"confidence"</span>).<span class="mt">asDouble</span>(),
+            <span class="st">"urgency"</span>,    ans.<span class="mt">path</span>(<span class="st">"urgency"</span>)   .<span class="mt">path</span>(<span class="st">"score"</span>)     .<span class="mt">asDouble</span>()
+        );
+    }
+}</pre>
+                    </div>
+                    <div id="java-standalone" class="code-section">
+<pre><span class="cm">// Standalone Java 11+ CLI — no Spring required</span>
+<span class="cm">// javac JevCli.java && java JevCli</span>
+<span class="kw">import</span> java.net.URI;
+<span class="kw">import</span> java.net.http.*;
+<span class="kw">import</span> java.nio.charset.StandardCharsets;
+
+<span class="kw">public class</span> <span class="ty">JevCli</span> {
+    <span class="kw">public static void</span> <span class="fn">main</span>(<span class="ty">String</span>[] args) <span class="kw">throws</span> <span class="ty">Exception</span> {
+        <span class="ty">String</span> apiKey = System.<span class="mt">getenv</span>(<span class="st">"TYPESAFE_API_KEY"</span>);
+        <span class="ty">String</span> text   = <span class="st">"I was charged twice. Fix this ASAP!"</span>;
+
+        <span class="ty">String</span> reqBody = <span class="st">"""
+            {
+              "model": "jev-latest",
+              "state": {"message": "%s"},
+              "questions": {
+                "billing":    {"type":"noul","instructions":"Is `message` about billing?"},
+                "department": {"type":"choice","instructions":"Which team handles `message`?",
+                               "criteria":{"billing":"Payment.","technical":"Bugs.","other":"All else."}},
+                "urgency":    {"type":"score","instructions":"How urgent?",
+                               "criteria":["Low","Medium","High"]}
+              }
+            }"""</span>.<span class="mt">formatted</span>(text);
+
+        <span class="kw">var</span> req = HttpRequest.<span class="mt">newBuilder</span>()
+            .<span class="mt">uri</span>(URI.<span class="mt">create</span>(<span class="st">"https://api.typesafe.ai/v1/systemone"</span>))
+            .<span class="mt">header</span>(<span class="st">"Authorization"</span>, <span class="st">"Bearer "</span> + apiKey)
+            .<span class="mt">header</span>(<span class="st">"Content-Type"</span>, <span class="st">"application/json"</span>)
+            .<span class="mt">POST</span>(HttpRequest.BodyPublishers.<span class="mt">ofString</span>(reqBody))
+            .<span class="mt">build</span>();
+
+        <span class="kw">var</span> resp = HttpClient.<span class="mt">newHttpClient</span>()
+            .<span class="mt">send</span>(req, HttpResponse.BodyHandlers.<span class="mt">ofString</span>());
+
+        System.out.<span class="mt">println</span>(resp.<span class="mt">body</span>());
+    }
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         HTTP RAW TAB
+    ═══════════════════════════════════════════════════════════════ -->
+    <div id="tab-http" class="lang-content">
+        <div class="studio-layout">
+            <div class="panel" data-lang-accent="http">
+                <div class="panel-header">
+                    <div class="panel-title">🌐 HTTP Raw / curl</div>
+                    <span class="panel-badge">Any Language</span>
+                </div>
+                <div class="info-section">
+                    <h3>Overview</h3>
+                    <p>The TypeSafe API is a plain HTTPS REST endpoint. You can call it from any language, tool, or CI pipeline that can make HTTP POST requests. These examples work as-is from a terminal or can be adapted to any HTTP library.</p>
+                </div>
+                <div class="info-section">
+                    <h3>Endpoint</h3>
+                    <div class="setup-steps">
+                        <div class="setup-step"><span class="step-num">POST</span><span class="step-text"><code>https://api.typesafe.ai/v1/systemone</code></span></div>
+                        <div class="setup-step"><span class="step-num">Auth</span><span class="step-text"><code>Authorization: Bearer $TYPESAFE_API_KEY</code></span></div>
+                        <div class="setup-step"><span class="step-num">Body</span><span class="step-text"><code>Content-Type: application/json</code> with <code>model</code>, <code>state</code>, <code>questions</code></span></div>
+                    </div>
+                </div>
+                <div class="info-section">
+                    <h3>Compatible With</h3>
+                    <div class="capability-chips">
+                        <span class="cap-chip">📟 curl</span>
+                        <span class="cap-chip">🔧 httpie</span>
+                        <span class="cap-chip">📬 Postman</span>
+                        <span class="cap-chip">🤖 CI/CD</span>
+                        <span class="cap-chip">🦾 Any language</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="code-panel">
+                    <div class="code-panel-header">
+                        <div class="code-file-tab">
+                            <span class="code-file-dot dot-http"></span>
+                            <span>HTTP Request</span>
+                        </div>
+                        <div class="code-actions">
+                            <button class="btn-copy" onclick="copyCode('http-curl')">📋 Copy</button>
+                        </div>
+                    </div>
+                    <div class="code-sub-tabs">
+                        <button class="code-sub-tab active" onclick="showCodeSection('http','curl')">curl</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('http','schema')">Request Schema</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('http','response')">Response Schema</button>
+                        <button class="code-sub-tab"        onclick="showCodeSection('http','ps')">PowerShell</button>
+                    </div>
+                    <div id="http-curl" class="code-section active">
+<pre><span class="cm"># Full 3-primitive Jev call via curl</span>
+<span class="cm"># Run from a terminal where TYPESAFE_API_KEY is exported</span>
+
+curl -s -X POST https://api.typesafe.ai/v1/systemone \
+  -H <span class="st">"Authorization: Bearer $TYPESAFE_API_KEY"</span> \
+  -H <span class="st">"Content-Type: application/json"</span> \
+  -d <span class="st">'{
+    "model": "jev-latest",
+    "state": {
+      "message": "I was charged twice. Fix this ASAP!"
+    },
+    "questions": {
+      "billing": {
+        "type": "noul",
+        "instructions": "Is `message` about a billing or payment issue?"
+      },
+      "department": {
+        "type": "choice",
+        "instructions": "Which support team should handle `message`?",
+        "criteria": {
+          "billing":   "Payment, subscription, or invoice issues.",
+          "technical": "Bugs, API errors, or integration problems.",
+          "sales":     "Pricing, upgrades, or new account questions.",
+          "other":     "None of the above."
+        }
+      },
+      "urgency": {
+        "type": "score",
+        "instructions": "How urgent does `message` appear?",
+        "criteria": [
+          "Can wait days — no expressed urgency.",
+          "Should be resolved this week — some concern.",
+          "Needs action today — strong urgency or anger."
+        ]
+      }
+    }
+  }'</span> | python -m json.tool</pre>
+                    </div>
+                    <div id="http-schema" class="code-section">
+<pre><span class="cm">// Full request schema (JSON)</span>
+{
+  <span class="st">"model"</span>: <span class="st">"jev-latest"</span>,          <span class="cm">// required</span>
+  <span class="st">"state"</span>: <span class="st">"&lt;string | object | array&gt;"</span>,  <span class="cm">// required</span>
+  <span class="st">"questions"</span>: {
+    <span class="st">"&lt;question_id&gt;"</span>: {             <span class="cm">// your code key; never sent to model</span>
+      <span class="st">"type"</span>: <span class="st">"noul | choice | score"</span>,
+      <span class="st">"instructions"</span>: <span class="st">"&lt;string | object | array&gt;"</span>,
+      <span class="st">"criteria"</span>: <span class="cm">// required for choice/score; optional for noul</span>
+        <span class="cm">// Choice:  { "key": "description", ... }</span>
+        <span class="cm">// Score:   [ "level 0 desc", "level 1 desc", ... ]</span>
+        <span class="cm">// Noul:    { "yes": "...", "no": "..." }  (optional)</span>
+    }
+  }
+}
+
+<span class="cm">// Notes:
+// - All questions in one request run in PARALLEL (speculative fan-out)
+// - state is shared across all questions
+// - question_id is for your code only, not sent to Jev
+// - Reference state fields in instructions: `message`, `ticket.messages[0].text`
+</span></pre>
+                    </div>
+                    <div id="http-response" class="code-section">
+<pre><span class="cm">// Example response JSON</span>
+{
+  <span class="st">"model"</span>: <span class="st">"jev-latest"</span>,
+  <span class="st">"answers"</span>: {
+    <span class="st">"billing"</span>: {
+      <span class="st">"type"</span>: <span class="st">"noul"</span>,
+      <span class="st">"noul"</span>: <span class="nm">0.94</span>      <span class="cm">// probability (0–1); near 1 = strong yes</span>
+    },
+    <span class="st">"department"</span>: {
+      <span class="st">"type"</span>: <span class="st">"choice"</span>,
+      <span class="st">"choice"</span>: <span class="st">"billing"</span>,   <span class="cm">// winning key</span>
+      <span class="st">"probabilities"</span>: {
+        <span class="st">"billing"</span>:   <span class="nm">0.87</span>,
+        <span class="st">"technical"</span>: <span class="nm">0.08</span>,
+        <span class="st">"sales"</span>:     <span class="nm">0.03</span>,
+        <span class="st">"other"</span>:     <span class="nm">0.02</span>
+      },
+      <span class="st">"confidence"</span>: <span class="nm">0.83</span>  <span class="cm">// 0 = even spread, 1 = fully concentrated</span>
+    },
+    <span class="st">"urgency"</span>: {
+      <span class="st">"type"</span>: <span class="st">"score"</span>,
+      <span class="st">"score"</span>: <span class="nm">1.8</span>,     <span class="cm">// float; can fall between integer levels</span>
+      <span class="st">"legend"</span>: [<span class="st">"Can wait."</span>, <span class="st">"This week."</span>, <span class="st">"Today."</span>],
+      <span class="st">"probabilities"</span>: [<span class="nm">0.05</span>, <span class="nm">0.15</span>, <span class="nm">0.80</span>],
+      <span class="st">"confidence"</span>: <span class="nm">0.72</span>
+    }
+  },
+  <span class="st">"usage"</span>: {
+    <span class="st">"input_tokens"</span>:  <span class="nm">180</span>,
+    <span class="st">"output_tokens"</span>: <span class="nm">32</span>
+  }
+}</pre>
+                    </div>
+                    <div id="http-ps" class="code-section">
+<pre><span class="cm"># PowerShell — call Jev from Windows or CI without curl</span>
+$body = @{
+    model     = <span class="st">"jev-latest"</span>
+    state     = @{ message = <span class="st">"I was charged twice. Fix this ASAP!"</span> }
+    questions = @{
+        billing    = @{ type = <span class="st">"noul"</span>; instructions = <span class="st">"Is `message` about billing?"</span> }
+        department = @{
+            type         = <span class="st">"choice"</span>
+            instructions = <span class="st">"Which team handles `message`?"</span>
+            criteria     = @{
+                billing   = <span class="st">"Payment issues."</span>
+                technical = <span class="st">"Bug reports."</span>
+                other     = <span class="st">"All else."</span>
+            }
+        }
+        urgency = @{
+            type         = <span class="st">"score"</span>
+            instructions = <span class="st">"How urgent is `message`?"</span>
+            criteria     = @(<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>)
+        }
+    }
+} | ConvertTo-Json -Depth 10
+
+$headers = @{
+    Authorization  = <span class="st">"Bearer $env:TYPESAFE_API_KEY"</span>
+    <span class="st">"Content-Type"</span> = <span class="st">"application/json"</span>
+}
+
+$resp = Invoke-RestMethod `
+    -Method POST `
+    -Uri <span class="st">"https://api.typesafe.ai/v1/systemone"</span> `
+    -Headers $headers `
+    -Body $body
+
+$resp.answers | ConvertTo-Json -Depth 5</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════════════ -->
+    <footer class="page-footer">
+        <p>
+            JevTools Language Testing Lab &mdash;
+            <a href="https://docs.typesafe.ai" target="_blank">TypeSafe Docs</a> ·
+            <a href="https://github.com/RileyCarney/JevTools" target="_blank">GitHub</a> ·
+            <a href="index.html">Cockpit UI</a>
+        </p>
+        <p style="margin-top:0.4rem">MIT License · Built with Jev (TypeSafe System One)</p>
+    </footer>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════════ -->
+<script>
+/* ─── PCB Canvas Background ──────────────────────────────────────── */
+(function () {
+    const canvas = document.getElementById('bg-canvas');
+    const ctx    = canvas.getContext('2d');
+    let W, H, nodes = [], pulses = [];
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+
+    function mkNodes(n) {
+        nodes = [];
+        for (let i = 0; i < n; i++) {
+            nodes.push({
+                x: Math.random() * W,
+                y: Math.random() * H,
+                r: Math.random() * 1.5 + 0.5,
+            });
+        }
+    }
+
+    function mkPulse() {
+        if (nodes.length < 2) return;
+        const a = nodes[Math.floor(Math.random() * nodes.length)];
+        const b = nodes[Math.floor(Math.random() * nodes.length)];
+        pulses.push({ ax: a.x, ay: a.y, bx: b.x, by: b.y, t: 0, spd: 0.006 + Math.random() * 0.008 });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Grid lines
+        ctx.strokeStyle = 'rgba(123,44,191,0.04)';
+        ctx.lineWidth   = 0.5;
+        const gs = 60;
+        for (let x = 0; x < W; x += gs) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+        for (let y = 0; y < H; y += gs) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+        // Nodes
+        nodes.forEach(n => {
+            ctx.beginPath();
+            ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(139,92,246,0.25)';
+            ctx.fill();
+        });
+
+        // Pulses
+        pulses = pulses.filter(p => {
+            p.t += p.spd;
+            if (p.t > 1) return false;
+
+            const px = p.ax + (p.bx - p.ax) * p.t;
+            const py = p.ay + (p.by - p.ay) * p.t;
+
+            ctx.beginPath();
+            ctx.moveTo(p.ax, p.ay);
+            ctx.lineTo(px, py);
+            ctx.strokeStyle = `rgba(168,85,247,${0.08 * (1 - p.t)})`;
+            ctx.lineWidth   = 0.8;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(px, py, 2, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(192,132,252,${0.5 * (1 - p.t)})`;
+            ctx.fill();
+            return true;
+        });
+
+        if (Math.random() < 0.04) mkPulse();
+        requestAnimationFrame(draw);
+    }
+
+    window.addEventListener('resize', () => { resize(); mkNodes(55); });
+    resize(); mkNodes(55); draw();
+})();
+
+/* ─── Language Tab Switcher ─────────────────────────────────────── */
+function switchLang(lang) {
+    document.querySelectorAll('.lang-tab-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.lang === lang);
+        b.setAttribute('aria-selected', b.dataset.lang === lang ? 'true' : 'false');
+    });
+    document.querySelectorAll('.lang-content').forEach(c => {
+        c.classList.toggle('active', c.id === 'tab-' + lang);
+    });
+}
+
+/* ─── Code Sub-Tab Switcher ─────────────────────────────────────── */
+function showCodeSection(lang, section) {
+    const panel   = document.getElementById('tab-' + lang);
+    const tabs    = panel.querySelectorAll('.code-sub-tab');
+    const sections = panel.querySelectorAll('.code-section');
+
+    // Match by index
+    tabs.forEach((t, i) => {
+        const match = t.textContent.toLowerCase().includes(section);
+        t.classList.toggle('active', match);
+    });
+    sections.forEach(s => {
+        s.classList.toggle('active', s.id === lang + '-' + section);
+    });
+}
+
+/* ─── Copy to Clipboard ─────────────────────────────────────────── */
+function copyCode(sectionId) {
+    const el = document.getElementById(sectionId);
+    if (!el) return;
+    const text = el.innerText || el.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = event.currentTarget;
+        const orig = btn.textContent;
+        btn.textContent = '✅ Copied!';
+        btn.style.borderColor = '#22c55e';
+        btn.style.color       = '#86efac';
+        setTimeout(() => {
+            btn.textContent      = orig;
+            btn.style.borderColor = '';
+            btn.style.color       = '';
+        }, 1800);
+    });
+}
+</script>
+</body>
+</html>
