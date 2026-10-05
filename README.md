@@ -22,7 +22,7 @@ A toolkit, knowledge base, web dashboard, and reference implementation for build
 
 ## Repository Architecture
 
-- **[`index.html`](./index.html):** Futuristic, cybernetic Web Cockpit styled to match the official GitHub banner preview. Features the 3D extruded `JEVTOOLS` wordmark with GitHub Octocat integration, a dynamic PCB circuit board matrix canvas with animated glowing electron pulses, real-time probability meters, dynamic routing banners, an interactive Request History & Storage inspector, and an architecture hub.
+- **[`index.html`](./index.html):** Futuristic, cybernetic Web Dashboard styled to match the official GitHub banner preview. Features the 3D extruded `JEVTOOLS` wordmark with GitHub Octocat integration, a dynamic PCB circuit board matrix canvas with animated glowing electron pulses, real-time probability meters, dynamic routing banners, an interactive Request History & Storage inspector, and an architecture hub.
 - **[`assets/`](./assets/):** Brand visual assets, including the high-resolution GitHub repository preview banner (`jevtools_banner.png`, `jevtools_card.png`), app icon (`icon.png`), and vector SVG favicons and logos (`favicon.svg`, `jevtools_logo.svg`).
 - **[`database.py`](./database.py):** Zero-dependency local SQLite database engine (`jevtools.db`, strictly gitignored) for personal device storage. Captures all outgoing requests, incoming responses, decision metrics, latency, and status without third-party dependencies.
 - **[`server.py`](./server.py):** Zero-dependency Python localhost web server (CORS-enabled, port auto-scanning, browser auto-launch, asset serving) exposing REST API endpoints:
@@ -34,7 +34,7 @@ A toolkit, knowledge base, web dashboard, and reference implementation for build
   - `GET /api/history`: Paginated query history with search, action filtering, and detail lookups.
   - `GET /api/history/stats`: Aggregate request counts, success rates, latency averages, and database size.
   - `POST /api/history/clear` & `DELETE /api/history`: Purges logs and compacts disk storage via `VACUUM`.
-- **[`start_ui.bat`](./start_ui.bat) / [`start_dashboard.bat`](./start_dashboard.bat):** One-click batch launchers for the web cockpit.
+- **[`start_ui.bat`](./start_ui.bat) / [`start_dashboard.bat`](./start_dashboard.bat):** One-click batch launchers for the web dashboard.
 - **[`jev_demo.py`](./jev_demo.py):** Enhanced, production-ready CLI application and Python library:
   - **Demo 1 (Customer Review Analysis):** Speculative fan-out evaluating 6 questions in parallel, weighted composite scoring, and action escalation.
   - **Demo 2 (Topic Classification):** Multi-dimensional classification, property detection, and confidence-gated routing.
@@ -47,7 +47,7 @@ A toolkit, knowledge base, web dashboard, and reference implementation for build
 
 ## Quick Start
 
-### 1. Launching the Web Cockpit UI
+### 1. Launching the Web Dashboard UI
 
 Double-click **`start_ui.bat`** or run from your terminal:
 
@@ -58,7 +58,7 @@ py server.py
 The server binds automatically to `http://localhost:8089` (or next free port) and opens your browser.
 
 > [!TIP]
-> The cockpit comes with a full **Offline Mock Mode (Zero-Credit Testing)** toggle, allowing you to interactively test arbitrary reviews, custom topics, and raw Jev JSON payloads without consuming API credits or requiring an internet connection.
+> The dashboard comes with a full **Offline Mock Mode (Zero-Credit Testing)** toggle, allowing you to interactively test arbitrary reviews, custom topics, and raw Jev JSON payloads without consuming API credits or requiring an internet connection.
 
 ### 2. Running via CLI
 
@@ -95,10 +95,10 @@ All outgoing requests (prompt inputs, application state, typed questions) and in
 
 - **100% On-Device & Gitignored:** The database file (`jevtools.db`), SQLite journals (`*.db-journal`), and database wildcards (`*.sqlite`, `*.sqlite3`) are strictly added to [`.gitignore`](./.gitignore). Your data, API payloads, and internal evaluations **never leave your local machine** and will never be committed to source control.
 - **Zero Dependencies:** Powered by Python's standard `sqlite3` library with WAL (Write-Ahead Logging) mode and thread-safe connections.
-- **Inspect via Web UI:** The Cockpit UI includes a dedicated **📜 Request History & Database Structure** tab featuring:
+- **Inspect via Web UI:** The Dashboard UI includes a dedicated **📜 Request History & Database Structure** tab featuring:
   - **Database Structure & Schema Explorer:** Interactive view of SQLite table schema, PRAGMA metadata, column definitions, data types, nullability, constraints, and indexes.
   - **Structural Column Filter Tool:** Filter across any structural column in the SQLite schema (`id`, `timestamp`, `action_type`, `provider`, `model`, `endpoint`, `status`, `elapsed_ms`, `is_mock`, `request_payload`, `response_payload`, `error_message`, `client_info`) with operators (`=`, `!=`, `contains`, `starts_with`, `ends_with`, `>`, `>=`, `<`, `<=`, `is_null`, `is_not_null`).
-  - **Unrestricted Database Viewing by Default:** The Web Cockpit and `GET /api/history` show every request in the database by default (`limit=all`), with selectable page sizes (10, 25, 50, 100, 250, All) and full pagination controls.
+  - **Unrestricted Database Viewing by Default:** The Web Dashboard and `GET /api/history` show every request in the database by default (`limit=all`), with selectable page sizes (10, 25, 50, 100, 250, All) and full pagination controls.
   - **Database Structure & Schema Explorer:** Interactive schema card viewer with column metrics (non-null counts, distinct counts, sample values) and click-to-filter support.
   - **Direct Browser Navigation Routes:** Navigate directly to `http://127.0.0.1:8080/database`, `/db`, `/history`, or `/explorer` to jump straight to the database explorer.
   - **Dynamic Quick-Filter Chips & Sorting:** Clickable status/action chips and sortable column headers (`Timestamp`, `Latency`, `Action`, `Status`, `ID`).

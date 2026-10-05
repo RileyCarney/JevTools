@@ -15,7 +15,7 @@ Unlike generative Large Language Models that output unconstrained conversational
 ## Table of Contents
 - [Prerequisites](#prerequisites)
 - [Quick Start](#quick-start)
-  - [1. Web Cockpit UI (Localhost Dashboard)](#1-web-cockpit-ui-localhost-dashboard)
+  - [1. Web Dashboard UI (Localhost Dashboard)](#1-web-dashboard-ui-localhost-dashboard)
   - [2. Setting Your OpenRouter API Key](#2-setting-your-openrouter-api-key)
   - [3. Running the Demo via CLI](#3-running-the-demo-via-cli)
   - [4. Custom Text Analysis (--review, --topic)](#4-custom-text-analysis---review---topic)
@@ -48,9 +48,9 @@ Unlike generative Large Language Models that output unconstrained conversational
 
 ## Quick Start
 
-### 1. Web Cockpit UI (Localhost Dashboard)
+### 1. Web Dashboard UI (Localhost Dashboard)
 
-Launch the interactive cyber/dark Web Cockpit:
+Launch the interactive cyber/dark Web Dashboard:
 
 ```powershell
 # Double-click start_ui.bat or run:
@@ -127,7 +127,7 @@ py jev_demo.py --mock
 
 ### 6. Personal Device Data Storage & History Tracking
 
-Every evaluation sent through the CLI or Web Cockpit is automatically recorded in a local SQLite database (`jevtools.db`):
+Every evaluation sent through the CLI or Web Dashboard is automatically recorded in a local SQLite database (`jevtools.db`):
 - **Stored Data:** Timestamp, client identifier (`cli`, `web_ui`), action type (`analyze_review`, `classify_topic`, `custom_decision`, `openrouter_latency`), execution mode (`live` vs `mock`), full request payload (state text, questions, criteria), full response payload (answers, probabilities, composite score, routing action), status (`ok` or `error`), and elapsed inference latency.
 - **Privacy & Gitignore:** The database file `jevtools.db` is strictly listed in `.gitignore`. Your prompts, user data, customer reviews, and evaluation results stay exclusively on your personal device and are never committed to Git.
 - **Inspect History & Database Structure:**

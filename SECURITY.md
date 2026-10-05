@@ -132,7 +132,7 @@ Traditional LLM architectures allow untrusted inputs to dictate workflow and con
 | :--- | :--- | :--- |
 | **Authentication & Secrets** | Key leakage in logs, unmasked keys in APIs, credential retention in files | User intentionally sharing their personal API key |
 | **Data Storage & Injection** | SQL injection in `database.py`, path traversal in `server.py`, file disclosure | Direct physical tampering with `jevtools.db` on unlocked machine |
-| **Web Server & UI** | Cross-Site Scripting (XSS) in cockpit, CORS escalation, SSRF | Localhost denial of service by overloading local port |
+| **Web Server & UI** | Cross-Site Scripting (XSS) in dashboard, CORS escalation, SSRF | Localhost denial of service by overloading local port |
 | **Supply Chain** | Vulnerable pinned development dependencies, malicious build scripts | Upstream service outages (OpenRouter / TypeSafe downtime) |
 | **Model Judgment** | Prompt injection altering deterministic control flow | Probabilistic variance inherent to LLM classification |
 
@@ -353,7 +353,7 @@ def clear_history(db_path: Optional[str] = None) -> int:
 
 ---
 
-#### 8. DOM XSS Elimination in Web Cockpit
+#### 8. DOM XSS Elimination in Web Dashboard
 - **Published Date**: 2026-09-25 01:10:04 -07:00
 - **Commit**: [`f3e817a7e9b0396ebe715bcbc1ee65f31a083fb4`](https://github.com/RileyCarney/JevTools/commit/f3e817a7e9b0396ebe715bcbc1ee65f31a083fb4)
 - **Branch**: [`main`](https://github.com/RileyCarney/JevTools/tree/main)
@@ -447,7 +447,7 @@ if (
 All security-related history is tied directly to the repository branch structure:
 
 - **[`main` Branch](https://github.com/RileyCarney/JevTools/tree/main)**:  
-  The production release branch containing the fully hardened zero-dependency engine, database audit logger, web cockpit, and test suite.  
+  The production release branch containing the fully hardened zero-dependency engine, database audit logger, web dashboard, and test suite.  
   - Current Head: [`a88e0fc`](https://github.com/RileyCarney/JevTools/commit/a88e0fcdd5403049e5ea4cf2e4a21b1b91c6beb6)
 - **[`RileyCarney-Templates` Branch](https://github.com/RileyCarney/JevTools/tree/RileyCarney-Templates)**:  
   The initial demo development branch where the CLI decision engine, secret resolution hierarchy, and mock mode were first introduced.  
